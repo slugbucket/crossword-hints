@@ -1,0 +1,25 @@
+{%- extends "views/layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword Setters
+{%- endblock -%}
+
+{%- block page_content -%}
+<p>
+<a href="/crossword-setters/new">Add new crossword setter</a><br />
+{%- if setters -%}
+<table cellpadding="0" cellspacing="0" class="indextable">
+  <tr class="indextable"><th>name</th><th>Setter type</th><th>&nbsp;</th></tr>
+{%- for setter in setters -%}
+<tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
+    <td>{{ setter['name'] }}</td><td>{{ setter['setter_type_name'] }}</td><td><a href="/crossword-setters/{{ setter['rowid'] }}/edit" title="Edit {{ setter['name'] }}"><img src="/static/images/edit-icon.png"</a></td>
+</tr>
+{%- else -%}
+No setters found.
+{%- endfor -%}
+</table>
+{%- endif -%}
+<br />
+<a href="/crossword-setters/new">Add new crossword setter</a><br />
+</p>
+{%- endblock -%}
+{{ super() }}

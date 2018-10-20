@@ -1,0 +1,15 @@
+{%- extends "views/layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword solution types
+{%- endblock -%}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>New solution type</h2>
+
+{% include "views/solution-types/_form.html" %}
+<input type="submit" name="submit" value="Add solution type">
+<input type="reset" value="Reset" />
+<br />
+<a href="/solution-types">Back to index</a>
+{% endblock %}

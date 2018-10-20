@@ -1,0 +1,9 @@
+{%- extends "error_layout.html" -%}
+{%- block fourzeronine -%}
+{{ super() }}
+
+<p>
+A database query error has occurred: {{ errmsg }}
+</p>
+<p>Back to <a href="/">index</a>.
+{%- endblock -%}

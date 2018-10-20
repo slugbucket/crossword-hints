@@ -1,0 +1,9 @@
+{%- extends "views/layouts/crossword-hints.html" %}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>Solution type - {{ stype['name']}}</h2>
+
+<br />
+<a href="/solution-types">Back to index</a>
+{% endblock %}

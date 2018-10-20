@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<title>Commissions resource planner</title>
+<link rel="stylesheet" type="text/css" href="/static/stylesheets/dynaform.css">
+
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.structure.css">
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.theme.css">
+<script src="/static/javascript/jquery-3.2.1.min.js"></script>
+<script src="/static/jquery-ui-1.12.1/jquery-ui.js"></script>
+<script>
+  $( document ).ready(function() {$( "#tabs" ).tabs();});
+</script>
+</head>
+
+<body>
+<h1>Semafone configuration</h1>
+{%- with messages = get_flashed_messages() -%}
+  {%- if messages -%}
+  <div id="messages">
+    <ul class="flashes">
+    {%- for message in messages -%}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+<div class="cleaner"></div>
+  {%- endif -%}
+{%- endwith -%}
+{%- import "macros.html" as f -%}
+{%- block fourzerofour -%}{%- endblock -%}
+{%- block fourzeronine -%}{%- endblock -%}
+{%- block fivezerozero -%}{%- endblock -%}
+
+</body>
+</html>

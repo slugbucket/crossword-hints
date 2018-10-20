@@ -1,0 +1,13 @@
+<p>
+Use this form to edit the details of a crossword solution.
+</p>
+<form action="#" method="POST">
+    <fieldset id="solution_types">
+        <legend>Crossword solution types</legend>
+        {{ f.label('name', 'Name') }}
+        {{ f.input_tag('name', class="xwordhints", value=stype['name']|default('solution name')) }}
+
+        {{ f.textarea('description', value=stype['description']|default('Description of solution type'), rows="8", cols="80", ) }}
+    </fieldset>
+
+</form>

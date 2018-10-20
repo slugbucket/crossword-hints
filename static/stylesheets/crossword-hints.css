@@ -1,0 +1,248 @@
+ul.navbar li {
+  float: left;
+  list-style-type: none;
+}
+ul.navbar li a:link, ul.navbar li a:visited {
+  display: block;
+  //width: 140px;
+  font-weight: bold;
+  color: #606060;
+  background-color:#dee5f0;
+  text-align: center;
+  padding: 2px 10px 2px 10px;
+  text-decoration: none;
+  //text-transform: uppercase;
+  border-right: 1px solid #606060;
+}
+ul.navbar li a:hover, ul.navbar li a:active {
+  background-color: #606060;
+  color: #FFFFFF;
+}
+#nav {
+  background-color: #dee5f0;
+  width: 100%;
+  height: 1.5em;
+}
+
+/* table styles */
+table.indextable {
+  text-align: left;
+  width: 75%;
+  border-left: 1px #000000 solid;
+  border-bottom: 1px #000000 solid;
+}
+table.indextable tr>th {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+  border-width: 1px 1px 0px 0px;
+  border-color: #000000;
+  border-style: solid;
+}
+table.indextable th a:visited, th a:active {
+  font-size: 0.75em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+}
+table.indextable th .current {
+  padding-right: 12px;
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+.indextable th .asc {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+  background-image: url('up_arrow.png');
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+table.indextable th .desc {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+  background-image: url('down_arrow.png');
+}
+
+table.indextable th a  {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+
+}
+table.indextable th a:hover, th a:visited, th a:active  {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+
+}
+table.indextable tr>td {
+  font-size: 0.75em;
+  padding: 0.2em 1.0em 0.1em 0.5em;
+  color: #000000;
+  border-width: 1px 1px 0px 0px;
+  border-color: #000000;
+  border-style: solid;
+}
+
+table.indextable tr.ma_row_light {
+    text-decoration: none;
+    background-color: #FFF;
+    color: #0020d7;
+}
+table.indextable tr.ma_row_dark td {
+  text-decoration: none;
+  background-color: #CCC;
+}
+table.indextable tr.ma_row_dark td a {
+  background-color: #CCC;
+  color: #0020d7;
+}
+table.indextable a:visited {
+      text-decoration: none;
+      color: #0020d7;
+}
+table tr.ma_row_dark  a:focus, table.ma_row_dark a:hover {
+      text-decoration: underline;
+      background-color: #CCC;
+}
+table tr.ma_row_light a:focus, table.ma_row_light a:hover {
+      text-decoration: underline;
+}
+table.indextable a:focus, table.indextable a:hover {
+      text-decoration: underline;
+
+      color: #0020d7;
+}
+table.indextable a {
+      text-decoration: none;
+      background-color: #fff;
+      color: #0020d7;
+}
+
+.fsetrow .monthrow{
+  /* border: #ff0000 solid 0.1em; */
+  float: left;
+  width: 100%;
+  display: inline;
+}
+fieldset {
+  padding: 1em;
+  font:80%/1 sans-serif;
+  border: #000000 1px solid;
+  border-radius: 5px;
+}
+.conf_fieldset {
+  padding: 1em;
+  font:80%/1 sans-serif;
+  border: #000000 1px solid;
+  border-radius: 5px;
+}
+.settings_box {
+  width: 30%;
+  display: inline-block;
+  /* debug stuff */
+  padding: 0.25em;
+  font: 80%/1 sans-serif;
+  /* border: #000000 1px solid; */
+  vertical-align: top;
+}
+.overview_settings {
+  width: 50%;
+}
+fieldset input, fieldset select, fieldset select option {
+  margin: 0.1em;
+  width: 39%;
+  border: #000000 1px solid;
+  border-radius: 5px;
+  padding-left: 0.25em;
+  background-color: #7399cc;
+}
+input.submit {
+  margin: 0.1em;
+  border: #000000 1px solid;
+  border-radius: 5px;
+  padding-left: 0.1em;
+}
+label {
+  float:left;
+  width:50%;
+  margin-right:0.5em;
+  padding-top:0.2em;
+  text-align:right;
+  font-weight:bold;
+}
+.remove_xword_solution {
+  /* border: 1px #000 solid; */
+  vertical-align: middle;
+  padding-top:0.2em;
+}
+/* Reset the float */
+.cleaner {
+  clear: both;
+}
+#messages {
+  border: #e87152 solid 1px;
+  border-radius: 5px;
+  width: 75%;
+}
+ul.flashes, ul.flashes li{
+  list-style-type: none;
+  color: #ee4040;
+  font-family: Helvetica, Sans-serif;
+  padding: 0px;
+  margin: 0.5em 0.1em 0.1em 0.5em;
+}
+body {
+  font-family: Helvetica, Sans-serif;
+}
+
+/*
+ * modal dialog styling
+ */
+.button{
+  border:1px solid #333;
+  background:#6479fd;
+}
+.button:hover{
+  background:#a4a9fd;
+}
+.dialog{
+  border:5px solid #666;
+  padding:10px;
+  background:#3A3A3A;
+  position:absolute;
+  display:none;
+}
+.dialog label{
+  display:inline-block;
+  color:#cecece;
+}
+input[type=text]{
+  border:1px solid #333;
+  display:inline-block;
+  margin:5px;
+}
+#btnOK, #btnCancel{
+  border:1px solid #000;
+  background:#ff9999;
+  margin:5px;
+}
+
+#btnOK:hover, #btnCancel:hover{
+  border:1px solid #000;
+  background:#ffacac;
+ }

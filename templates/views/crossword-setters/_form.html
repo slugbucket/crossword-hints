@@ -1,0 +1,12 @@
+<p>
+Use this form to edit the details of a crossword setter.
+</p>
+<form class="" action="/crossword-setters/submit" method="POST">
+    <fieldset id="crossword_setters">
+        <legend>Crossword setters</legend>
+        {{ f.label('name', 'Name') }}
+        {{ f.input_tag('name', class="xwordhints", value=setter['name']|default('Setter name')) }}
+
+        {{ f.select('setter_type_id', s_types, default=setter['setter_type_id'], title='Setter type')}}
+    </fieldset>
+</form>

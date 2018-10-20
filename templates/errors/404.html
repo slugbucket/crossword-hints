@@ -1,0 +1,9 @@
+{%- extends "error_layout.html" -%}
+{%- block fourzeronine -%}
+{{ super() }}
+
+<p>
+Page not found: {{ errmsg }}
+</p>
+<p>Back to <a href="/">index</a>.
+{%- endblock -%}
