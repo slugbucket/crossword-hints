@@ -1,9 +1,8 @@
 {%- extends "error_layout.html" -%}
 {%- block fivezerozero -%}
-{{ super() }}
-
 <p>
-An application error has occurred: {{ errmsg }}
+Server error: {{ errmsg }}
 </p>
-<p>Back to <a href="/">index</a>.
+<p>Back to <a href="/">cue search</a>.
 {%- endblock -%}
+{{ super() }}
