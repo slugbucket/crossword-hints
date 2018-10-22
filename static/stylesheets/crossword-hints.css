@@ -27,9 +27,10 @@ ul.navbar li a:hover, ul.navbar li a:active {
 /* table styles */
 table.indextable {
   text-align: left;
-  width: 75%;
+  width: 60%;
   border-left: 1px #000000 solid;
   border-bottom: 1px #000000 solid;
+  margin-left: 2em;
 }
 table.indextable tr>th {
   font-size: 1.0em;
@@ -144,6 +145,7 @@ fieldset {
   font:80%/1 sans-serif;
   border: #000000 1px solid;
   border-radius: 5px;
+  width: 50%;
 }
 .conf_fieldset {
   padding: 1em;
@@ -170,6 +172,15 @@ fieldset input, fieldset select, fieldset select option {
   border-radius: 5px;
   padding-left: 0.25em;
   background-color: #7399cc;
+}
+textarea.xwordhints {
+  margin: 0.1em;
+  width: 39%;
+  border: #000000 1px solid;
+  border-radius: 5px;
+  padding-left: 0.25em;
+  background-color: #7399cc;
+  resize: none;
 }
 input.submit {
   margin: 0.1em;
