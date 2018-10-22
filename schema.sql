@@ -25,6 +25,7 @@ CREATE TABLE crossword_setters (
   --id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
   name CHAR(32) NOT NULL DEFAULT 'Setter type',
   setter_type_id INTEGER,
+  description CHAR(64) DEFAULT 'A good all-round blend of clues',
   created_at DATETIME,
   updated_at DATETIME
 );

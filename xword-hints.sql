@@ -6,27 +6,27 @@ VALUES
 ('Hard', 'No obvious match between clues and solutions', datetime('now'), datetime('now')),
 ("Don't bother", 'No need to waste time trying to decipher', datetime('now'), datetime('now'));
 
-INSERT INTO crossword_setters(name, setter_type_id, created_at, updated_at)
+INSERT INTO crossword_setters(name, setter_type_id, description, created_at, updated_at)
 VALUES
-('Anarche', '4', datetime('now'), datetime('now')),
-('Crosophile', '4', datetime('now'), datetime('now')),
-('Dac', '4', datetime('now'), datetime('now')),
-('Eimi', '2', datetime('now'), datetime('now')),
-('Glow-worm', '4', datetime('now'), datetime('now')),
-('Hypnos', '4', datetime('now'), datetime('now')),
-('Klingsor', '5', datetime('now'), datetime('now')),
-('Monk', '4', datetime('now'), datetime('now')),
-('Mordred', '4', datetime('now'), datetime('now')),
-('Morph', '4', datetime('now'), datetime('now')),
-('Nestor', '5', datetime('now'), datetime('now')),
-('Phi', '1', datetime('now'), datetime('now')),
-('Poins', '4', datetime('now'), datetime('now')),
-('Punk', '5', datetime('now'), datetime('now')),
-('Quixote', '1', datetime('now'), datetime('now')),
-('Radian', '4', datetime('now'), datetime('now')),
-('Raich', '4', datetime('now'), datetime('now')),
-('Scorpion', '5', datetime('now'), datetime('now')),
-('Tees', '5', datetime('now'), datetime('now'));
+('Anarche', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
+('Crosophile', '3', 'Solvable and more enjoyable then many', datetime('now'), datetime('now')),
+('Dac', '4', 'A rewarding blend and occasionally solvable', datetime('now'), datetime('now')),
+('Eimi', '2', 'Sometimes solvable; worth an hour or so', datetime('now'), datetime('now')),
+('Glow-worm', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
+('Hypnos', '4', 'Worth a peek if you can find a way in', datetime('now'), datetime('now')),
+('Klingsor', '5', 'A few clues perhaps', datetime('now'), datetime('now')),
+('Monk', '4', 'Not even solvable with the solutions', datetime('now'), datetime('now')),
+('Mordred', '4', 'Is that the washing-up that needs doing?', datetime('now'), datetime('now')),
+('Morph', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
+('Nestor', '5', 'A couple of hours of your life you''re never getting back', datetime('now'), datetime('now')),
+('Phi', '1', 'Anagrammatic joy', datetime('now'), datetime('now')),
+('Poins', '4', 'And you wanted something to pass the time on a long journey', datetime('now'), datetime('now')),
+('Punk', '5', 'For hardcore wordplay fans. Avoid', datetime('now'), datetime('now')),
+('Quixote', '2', 'A relaxing way to unwind at the end of the day', datetime('now'), datetime('now')),
+('Radian', '4', 'Rewarding if you can crack the theme', datetime('now'), datetime('now')),
+('Raich', '4', 'The theme is usually out of reach', datetime('now'), datetime('now')),
+('Scorpion', '5', 'For hardcore wordplay fans. Avoid', datetime('now'), datetime('now')),
+('Tees', '5', 'An opportunity for some doodling practice.', datetime('now'), datetime('now'));
 
 INSERT INTO solution_types (name, description, created_at, updated_at)
 VALUES

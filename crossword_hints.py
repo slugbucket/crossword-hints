@@ -81,23 +81,18 @@ Index listing of known setters
 """
 @app.route("/crossword-setters/", methods=["GET"])
 def crossword_setters_index():
-    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid)
-    print("DEBUG: setter type is %s." % rs)
-    for row in rs.dicts():
-        print("DEBUG: crossword_setters_index: Found %s." % row['setter_type_name'])
+    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid)
     return render_template('views/crossword-setters/index.html', setters=rs.dicts(), r=request)
 
 @app.route("/crossword-setters/<int:id>", methods=["GET"])
 def crossword_setters_show(id):
     # Getting the setter id, name and setter_type name should be a simple inner
-    # join across the tables but Peewee makes a complete mess of it so it is
+    # join across the tables but Peewee makes a complete mess of it so it's
     # easier to do raw SQL instead.
     #rs = crossword_setters.get(crossword_setters.rowid, crossword_setters.name, setter_types.name.alias('setter_type_name')).join(setter_types, JOIN.INNER).where((crossword_setters.setter_type_id == setter_types.rowid) & (crossword_setters.rowid == id))
-    rs = crossword_setters.raw('SELECT t1.name, t2.name AS setter_type_name FROM crossword_setters t1 INNER JOIN setter_types t2 ON t1.setter_type_id = t2.rowid  AND t1.rowid = ?', id).tuples()
-    print("DEBUG: crossword_setters_show: Retrieved raw SQL object: %s." % rs)
-    for sname, stname in rs:
-        stype = {"rowid": id, "name": sname, "setter_type_name": stname}
-        print("DEBUG: setter is %s of type %s." % (sname, stname))
+    rs = crossword_setters.raw('SELECT t1.name, t1.description, t2.name AS setter_type_name FROM crossword_setters t1 INNER JOIN setter_types t2 ON t1.setter_type_id = t2.rowid  AND t1.rowid = ?', id).tuples()
+    for sname, descrip, stname in rs:
+        stype = {"rowid": id, "name": sname, "description": descrip, "setter_type_name": stname}
     return render_template('views/crossword-setters/show.html', stype=stype,  r=request)
 
 """
@@ -172,10 +167,16 @@ def solution_types_delete(id):
 """                                                        """
 @app.errorhandler(DoesNotExist)
 def handle_database_error(error):
-    return(render_template('errors/409.html', errmsg=error))
+    return(render_template('errors/409.html', errmsg=error), 409)
 @app.errorhandler(OperationalError)
 def handle_opertional_error(error):
-    return(render_template('errors/409.html', errmsg=error))
+    return(render_template('errors/409.html', errmsg=error), 409)
+@app.errorhandler(404)
+def handle_opertional_error(error):
+    return(render_template('errors/404.html', errmsg=error))
+@app.errorhandler(500)
+def handle_opertional_error(error):
+    return(render_template('errors/500.html', errmsg=error))
 
 """                                                        """
 """  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
@@ -223,6 +224,7 @@ class crossword_setters(BaseModel):
     rowid          = AutoField()
     name           = CharField(null=False, unique=True, max_length=32)
     setter_type    = ForeignKeyField(setter_types)
+    description    = TextField()
     created_at     = DateTimeField(default=datetime.now())
     updated_at     = DateTimeField(default=datetime.now())
 
