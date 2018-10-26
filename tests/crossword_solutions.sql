@@ -1,7 +1,7 @@
-INSERT INTO crossword_solutions(setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
-("2", "Cross off TV cabinet", "dresser", "", "1", datetime('now'), datetime('now')),
+INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
+("2", "Cross off TV cabinet", "dresser", "TV = transvestite, i.e., cross-drasser: remove the cross", "1", datetime('now'), datetime('now')),
 ("2", "An element of extra backsliding - a period that's not over", "sulphur", "", "1", datetime('now'), datetime('now')),
-("2", "Axe bush", "scrub", "", "3", datetime('now'), datetime('now')),
+("2", "Axe bush", "scrub", "scrub is a synonym for both clue words", "3", datetime('now'), datetime('now')),
 ("2", "Initially every girl's ornment for navy dress ...", "epaulette", "", "9", datetime('now'), datetime('now')),
 ("2", "... celebrated by girls in shades", "sunglasses", "celebrated = SUNG + girls = LASSES", "8", datetime('now'), datetime('now')),
 ("2", "Spirit in the heart of Maori country", "zeal", "new-ZEAL-and", "7", datetime('now'), datetime('now')),
@@ -18,7 +18,7 @@ INSERT INTO crossword_solutions(setter_id, clue, solution, solution_hint, soluti
 ("2", "Junior officers in coach reversing - shift to neutral then second", "subalterns", "", "5", datetime('now'), datetime('now')),
 ("2", "Rising sun does maybe in the grasses", "reeds", "Rising means revers, DOEs = deer", "6", datetime('now'), datetime('now')),
 ("2", "What to wear if no atmosphere in club, for instance, taking steps", "spacesuit", "", "5", datetime('now'), datetime('now')),
-("2", "Spirited heartless girl", "lily", "", "1", datetime('now'), datetime('now')),
+("2", "Spirited heartless girl", "lily", "spirited = li-ve-ly (ve is the heart; removed)", "1", datetime('now'), datetime('now')),
 ("2", "Knocked Achilles, say around Troy and as far as this", "hitherto", "", "1", datetime('now'), datetime('now')),
 ("2", "Wine lies split in a circle", "riesling", "R-IESL-ING, RING = circle", "5", datetime('now'), datetime('now')),
 ("2", "Extravagant husband entertains son in apartment", "flamboyant", "FLA-m-BOY-an-T", "8", datetime('now'), datetime('now')),
@@ -89,7 +89,7 @@ INSERT INTO crossword_solutions(setter_id, clue, solution, solution_hint, soluti
 ("2", "Call for protective measures in fencing, often garden fences", "en garde", "oftEN GARDEn", "4", datetime('now'), datetime('now')),
 ("2", "When dancing, I cry, all can be expressive", "lyrical", "ICRYALL", "2", datetime('now'), datetime('now')),
 ("2", "Duke's more hostile and more dangerous", "dicier", "D + ICIER (more hostile)", "8", datetime('now'), datetime('now')),
-("2", "Genuine German playwright, not British", "echt", "brECHT - BRitish", "10", datetime('now'), datetime('now')),
+("2", "Genuine German playwright, not British", "echt", "brECHT - remove BR (British)", "10", datetime('now'), datetime('now')),
 ("2", "Lay cryptic clues before adult readers primarily", "secular", "rearrange CLUES + Adult Readers (primariy)", "4", datetime('now'), datetime('now')),
 ("2", "Fabrication by Feds planted in course of seizure", "figment", "", "9", datetime('now'), datetime('now')),
 ("2", "Commander having office once more", "again", "commander = AGA + having office = IN", "8", datetime('now'), datetime('now')),

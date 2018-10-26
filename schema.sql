@@ -44,11 +44,11 @@ DROP TABLE IF EXISTS crossword_solutions;
 
 CREATE TABLE crossword_solutions (
   --id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  setter_id INTEGER NOT NULL DEFAULT '1',
+  crossword_setter_id INTEGER NOT NULL DEFAULT '1',
   clue VARCHAR(256) NOT NULL,
   solution VARCHAR(64) NOT NULL,
   solution_hint VARCHAR(64),
   solution_type_id INTEGER NOT NULL,
   created_at DATETIME,
   updated_at DATETIME
-)
+);

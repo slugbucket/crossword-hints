@@ -57,9 +57,9 @@ Returns:
   None
 """
 def init_db():
-    for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
-        database.execute_sql("drop table " + tbl)
-    database.create_tables(['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions'])
+    #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
+    #    database.execute_sql("drop table " + tbl)
+    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions])
 
 
 """
@@ -205,47 +205,45 @@ class BaseModel(Model):
             database = database
 
 class activity_logs(BaseModel):
-    rowid          = AutoField()
-    action         = CharField(max_length=32)
-    item           = CharField(max_length=32)
-    item_id        = IntegerField()
-    activity       = TextField()
-    updated_by     = CharField(max_length=32)
-    updated_at     = DateTimeField(default=datetime.now())
+    rowid            = AutoField()
+    action           = CharField(max_length=32)
+    item             = CharField(max_length=32)
+    item_id          = IntegerField()
+    activity         = TextField()
+    updated_by       = CharField(max_length=32)
+    updated_at       = DateTimeField(default=datetime.now())
 
 class setter_types(BaseModel):
-    rowid          = AutoField()
-    name           = CharField(null=False, max_length=16, unique=True)
-    description    = TextField()
-    created_at     = DateTimeField(default=datetime.now())
-    updated_at     = DateTimeField(default=datetime.now())
+    rowid            = AutoField()
+    name             = CharField(null=False, max_length=16, unique=True)
+    description      = TextField()
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
 
 class crossword_setters(BaseModel):
-    rowid          = AutoField()
-    name           = CharField(null=False, unique=True, max_length=32)
-    setter_type    = ForeignKeyField(setter_types)
-    description    = TextField()
-    created_at     = DateTimeField(default=datetime.now())
-    updated_at     = DateTimeField(default=datetime.now())
-
+    rowid            = AutoField()
+    name             = CharField(null=False, unique=True, max_length=32)
+    setter_type      = ForeignKeyField(setter_types)
+    description      = TextField()
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
 
 class solution_types(BaseModel):
-    rowid          = AutoField()
-    name           = CharField(null=False, unique=True, max_length=32)
-    description    = TextField()
-    created_at     = DateTimeField(default=datetime.now())
-    updated_at     = DateTimeField(default=datetime.now())
+    rowid            = AutoField()
+    name             = CharField(null=False, unique=True, max_length=32)
+    description      = TextField()
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
 
 class crossword_solutions(BaseModel):
-    rowid          = AutoField()
-    setter         = ForeignKeyField(crossword_setters)
-    clue           = CharField(null=False, max_length=96)
-    solution       = CharField(null=False, max_length=128)
-    solution_hint  = CharField(null=False, max_length=128)
-    solution_type  = ForeignKeyField(solution_types)
-    created_at     = DateTimeField(default=datetime.now())
-    updated_at     = DateTimeField(default=datetime.now())
-
+    rowid            = AutoField()
+    crossword_setter = ForeignKeyField(crossword_setters)
+    clue             = CharField(null=False, max_length=96)
+    solution         = CharField(null=False, max_length=128)
+    solution_hint    = CharField(null=False, max_length=128)
+    solution_type    = ForeignKeyField(solution_types)
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
 
 """                                             """
 """  E N D   O F   D A T A B A S E   M O D E L  """
