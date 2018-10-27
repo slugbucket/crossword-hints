@@ -1,6 +1,7 @@
 from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file
 from werkzeug import Headers
 from jinja2 import Environment, PackageLoader, select_autoescape
+from markupsafe import Markup, escape
 import sqlite3
 import json
 import os
@@ -126,13 +127,50 @@ def setter_types_show(id):
 
 @app.route("/setter-types/new", methods=["GET", "POST"])
 def setter_types_new():
-    stype={'name': "New setter type", 'description': 'Brief description of this type of setter'}
-    return render_template('views/setter-types/new.html', stype=stype,  r=request)
+    if request.method == "GET":
+        stype={'name': "New setter type", 'description': 'Brief description of this type of setter'}
+        return(render_template('views/setter-types/new.html', stype=stype,  r=request, sbmt='Save new setter type'))
+    print("DEBUG: setter_types_new: Saving new setter type.")
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/setter-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
+    st = setter_types(name=fdata['name'], description=fdata['description'])
+    st.save()
+    return redirect('/setter-types')
+
 
 @app.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
 def setter_types_edit(id):
-    rs = setter_types.get(setter_types.rowid == id)
-    return render_template('views/setter-types/edit.html', stype=rs, r=request)
+    if request.method == "GET":
+        print("DEBUG: setter_types_edit: ")
+        try:
+            rs = setter_types.get(setter_types.rowid == id)
+        except DoesNotExist:
+            flash("Cannot find setter type record for id, %s." % id)
+            return(redirect('/setter-types'))
+        return(render_template('views/setter-types/edit.html', stype=rs, r=request, sbmt='Update setter type'))
+    print("DEBUG: setter_types_new: Updating setter type.")
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/setter-types/edit.html', stype=fdata, r=request, sbmt=request.form['submit']))
+    st = setter_types(rowid=id, name=fdata['name'],
+                      description=fdata['description'],
+                      updated_at=datetime.now())
+    st.save()
+    return(redirect('/setter-types'))
+
+@app.route("/setter-types/<int:id>/delete", methods=["GET"])
+def setter_types_delete(id):
+    try:
+        rs = setter_types.get(setter_types.rowid == id)
+    except DoesNotExist:
+        flash("Cannot find setter type record for id, %s." % id)
+        return(redirect('/setter-types'))
+    rs.delete_instance()
+    return(redirect('/setter-types'))
+
 
 """               """
 """ Soluion types """
@@ -154,18 +192,32 @@ def solution_types_new():
 
 @app.route("/solution-types/<int:id>/edit", methods=["GET", "POST"])
 def solution_types_edit(id):
-    rs = solution_types.get(solution_types.rowid == id)
+    try:
+        rs = solution_types.get(solution_types.rowid == id)
+    except DoesNotExist:
+        flash("Cannot find solution type record for id, %s." % id)
+        return(redirect('/solution-types'))
     print("DEBUG: solution_types_edit: Editing solution type, %s." % rs.name)
     return render_template('views/solution-types/edit.html', stype=rs, r=request)
 
 @app.route("/solution-types/<int:id>/delete", methods=["GET", "POST"])
 def solution_types_delete(id):
-    pass
+    try:
+        rs = solution_types.get(solution_types.rowid == id)
+    except DoesNotExist:
+        flash("Cannot find solution type record for id, %s." % id)
+        return(redirect('/solution-types'))
+    rs.delete_instance()
+    return(redirect("/solution-types"))
+
 
 """                                                        """
 """  E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G   """
 """                                                        """
 @app.errorhandler(DoesNotExist)
+def handle_database_error(error):
+    return(render_template('errors/409.html', errmsg=error), 409)
+@app.errorhandler(409)
 def handle_database_error(error):
     return(render_template('errors/409.html', errmsg=error), 409)
 @app.errorhandler(OperationalError)
@@ -192,6 +244,53 @@ def get_setter_types():
         s_types.append([row['rowid'], row['name']])
     return(s_types)
 
+
+"""
+Basic attempt to sanitize submitted form data
+Attempt to validate all elements in the form data but if ny one element
+is bd make sure the whole form is invalidated.
+"""
+def sanitize_input(form):
+    data = {}
+    rc = ""
+    for elem in request.form:
+        print("DEBUG: setter_types_new: Found form elem: %s set to %s." % (elem, request.form[elem]))
+        if elem == "name":
+            (r, data[elem]) = validate_name(form[elem])
+        elif re.match(r'^.*_id$', elem):
+            (r, data[elem]) = validate_id(form[elem])
+        else:
+            (r, data[elem]) = validate_text(form[elem])
+        if rc == "": rc = r
+    return(rc, data)
+
+
+def validate_name(str):
+    print("DEBUG: validate_name: Checking %s for illegal chars" % str)
+    if not re.match(r'^[a-zA-Z0-9-_.\' ()]*$', str):
+        print("DEBUG: Found invalid chars in %s." % str)
+        return("Invalid characters in name field: Only allowed a-zA-Z0-9-_. '", re.sub('[^a-zA-Z0-9-_\'. ]', "", str))
+    return("", str)
+
+def validate_text(str):
+    return("", str)
+
+"""
+We expect submitted id values to be numeric
+"""
+def validate_id(str):
+    print("DEBUG: validate_id: Checking id value, %s." % str)
+    try:
+        int(str)
+    except ValueError:
+        return("id values must be numeric", "0")
+    return("", str)
+
+"""
+Need to calculate the next rowid value for a table
+"""
+def nextId(tbl):
+    return(database.execute_sql("SELECT MAX(rowid)+1 FROM %s" % tbl),scalar())
 
 """                                                        """
 """  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """

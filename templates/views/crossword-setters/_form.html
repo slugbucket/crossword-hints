@@ -5,11 +5,11 @@ Use this form to edit the details of a crossword setter.
     <fieldset id="crossword_setters">
         <legend>Crossword setters</legend>
         {{ f.label('name', 'Name') }}
-        {{ f.input_tag('name', value=setter['name']|default('Setter name'), class="xwordhints") }}
+        {{ f.input_tag('name', value=(setter['name']|escape)|default('Setter name'), class="xwordhints") }}
 
         {{ f.select('setter_type_id', s_types, default=setter['setter_type_id'], title='Setter type')}}
 
         <label for="description">Description</label>
-        <textarea name='description' cols="80" rows="4" class="xwordhints">{{ setter['description'] }}</textarea>
+        <textarea name='description' cols="80" rows="4" class="xwordhints">{{ setter['description']|escape }}</textarea>
     </fieldset>
 </form>
