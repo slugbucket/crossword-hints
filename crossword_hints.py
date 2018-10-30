@@ -137,6 +137,7 @@ def setter_types_new():
         return(render_template('views/setter-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
     st = setter_types(name=fdata['name'], description=fdata['description'])
     st.save()
+    flash("Saved new setter type, %s" % fdata['name'])
     return redirect('/setter-types')
 
 
@@ -159,6 +160,7 @@ def setter_types_edit(id):
                       description=fdata['description'],
                       updated_at=datetime.now())
     st.save()
+    flash("Updated setter type, %s" % fdata['name'])
     return(redirect('/setter-types'))
 
 @app.route("/setter-types/<int:id>/delete", methods=["GET"])
@@ -169,6 +171,7 @@ def setter_types_delete(id):
         flash("Cannot find setter type record for id, %s." % id)
         return(redirect('/setter-types'))
     rs.delete_instance()
+    flash("Deleted setter type, %s" % rs.name)
     return(redirect('/setter-types'))
 
 

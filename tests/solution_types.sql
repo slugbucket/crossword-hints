@@ -8,4 +8,5 @@ VALUES
 ('Double meaning', 'Mis-direction clue word used in wrong context, e.g., flow-er = river', datetime('now'), datetime('now')),
 ('Sub-words', 'Solution (literally in the clue) found from the end of one clue word and the start of the one following', datetime('now'), datetime('now')),
 ('Word exchange', 'Solution found from solving mutliple sub clues', datetime('now'), datetime('now')),
-('Lucky guess', 'Solution matches one word in the clue, but nothing else', datetime('now'), datetime('now'));
+('Lucky guess', 'Solution matches one word in the clue, but nothing else', datetime('now'), datetime('now')),
+('Subtraction', 'Cue word indicates letters to remove from sub-clue', datetime('now'), datetime('now'));

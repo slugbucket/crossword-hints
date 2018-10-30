@@ -40,7 +40,7 @@ VALUES
 ('Word exchange', 'Solution found from solving mutliple sub clues', datetime('now'), datetime('now')),
 ('Lucky guess', 'Solution matches one word in the clue, but nothing else', datetime('now'), datetime('now'));
 
-INSERT INTO crossword_solutions(setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
+INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
 ("2", "Cross off TV cabinet", "dresser", "", "1", datetime('now'), datetime('now')),
 ("2", "An element of extra backsliding - a period that's not over", "sulphur", "", "1", datetime('now'), datetime('now')),
 ("2", "Axe bush", "scrub", "", "3", datetime('now'), datetime('now')),

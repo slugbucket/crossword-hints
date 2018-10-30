@@ -23,7 +23,7 @@ Tests that involve calls to routes that use the (PeeWee) ORM
 appear to use the development database rather than the one
 for the test.
 To run the tests,
-APP_SETTINGS='test-settings.py' python crossword-hints-test.py
+APP_SETTINGS='test-settings.py' python crossword-hints-tests.py
 """
 class XwordhintsTestCase(unittest.TestCase):
 
@@ -43,7 +43,8 @@ class XwordhintsTestCase(unittest.TestCase):
                 crossword_hints.database.execute_sql(f.read())
 
     def clearSampleData(self):
-        crossword_hints.database.execute_sql("DELETE FROM crossword_solutions")
+        for tbl in ('crossword_solutions', 'solution_types', 'crossword_setters', 'setter_types' ):
+            crossword_hints.database.execute_sql("DELETE FROM %s" % tbl)
 
     def get_request(self, req, follow):
         with crossword_hints.app.app_context():
@@ -65,11 +66,11 @@ class XwordhintsTestCase(unittest.TestCase):
     """                   """
     """   T  E  S  T  S   """
     """                   """
-    def test_empty_db(self):
+    def test_0000_empty_db(self):
         rv = self.app.get('/')
         assert b'Cryptic cue search' in rv.data
 
-    def test_initial_data(self):
+    def test_0001_initial_data(self):
         print("DEBUG: test_initial_data")
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
@@ -77,6 +78,71 @@ class XwordhintsTestCase(unittest.TestCase):
         self.clearSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 0
+
+
+    """        S E T T E R   T Y P E S         """
+    new_setter_type = {name: "Convoluted",
+                       description: "Seriously devious and mindbending clues"}
+
+    def test_000_count_setter_types(self):
+        print("DEBUG: Test full and empty setter types")
+        self.loadSampleData()
+        nr = crossword_hints.setter_types.select().count()
+        print("DEBUG: Found %s rows in the table." % nr)
+        assert nr == 5
+
+    def test_001_list_setter_types(self):
+        print("DEBUG: List the index page")
+        rv = self.app.get('/setter-types/')
+        print("DEBUG: index data contains %s" % rv.data)
+        assert b'Good mix of anagrams' in rv.data
+
+    def test_002_new_setter_type(self):
+        print("DEBUG: Submit a new setter type.")
+        rv = self.app.post('/setter-types/new', new_setter_type)
+        assert b'Saved new setter type, ' in rv.data'
+
+
+    def test_099_clear_data(self):
+        self.clearSampleData()
+        rv = self.app.get('/setter-types/')
+        assert b'Good mix of anagrams' not in rv.data
+        nr = crossword_hints.setter_types.select().count()
+        assert nr == 0
+
+    """    C R O S S W O R D   S E T T E R S   """
+    def test_101_count_crossword_setters(self):
+        print("DEBUG: Test full and empty crossword setters")
+        self.loadSampleData()
+        nr = crossword_hints.crossword_setters.select().count()
+        print("DEBUG: Found %s rows in the table." % nr)
+        assert nr == 19
+        self.clearSampleData()
+        nr = crossword_hints.crossword_setters.select().count()
+        assert nr == 0
+
+    """        S O L U T I O N   T Y P E S     """
+    def test_200_count_solution_types(self):
+        print("DEBUG: Test full and empty solution types")
+        self.loadSampleData()
+        nr = crossword_hints.solution_types.select().count()
+        print("DEBUG: Found %s rows in the table." % nr)
+        assert nr == 10
+        self.clearSampleData()
+        nr = crossword_hints.solution_types.select().count()
+        assert nr == 0
+
+    """             S O L U T I O N S          """
+    def test_300_count_crossword_solutions(self):
+        print("DEBUG: Test full and empty crossword solutions")
+        self.loadSampleData()
+        nr = crossword_hints.crossword_solutions.select().count()
+        print("DEBUG: Found %s rows in the table." % nr)
+        assert nr == 151
+        self.clearSampleData()
+        nr = crossword_hints.crossword_solutions.select().count()
+        assert nr == 0
+
 
 if __name__ == '__main__':
     unittest.main(exit=True)
