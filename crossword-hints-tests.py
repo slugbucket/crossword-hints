@@ -81,10 +81,6 @@ class XwordhintsTestCase(unittest.TestCase):
 
 
     """        S E T T E R   T Y P E S         """
-    new_setter_type = {name: "Convoluted",
-                       description: "Seriously devious and mindbending clues"}
-    upd_setter_type = {name: "Fiendish",
-                       description: "Seriously devious and mindbending clues"}
 
     def test_000_count_setter_types(self):
         print("DEBUG: Test full and empty setter types")
@@ -96,31 +92,32 @@ class XwordhintsTestCase(unittest.TestCase):
     def test_001_list_setter_types(self):
         print("DEBUG: List the index page")
         rv = self.app.get('/setter-types/')
-        print("DEBUG: index data contains %s" % rv.data)
+        #print("DEBUG: index data contains %s" % rv.data)
         assert b'Good mix of anagrams' in rv.data
 
     def test_002_new_setter_type(self):
         print("DEBUG: Submit a new setter type.")
-        rv = self.app.post('/setter-types/new', new_setter_type)
-        assert b'Saved new setter type, ' in rv.data'
+        new_setter_type = {"name": "Convoluted",
+                           "description": "Seriously devious and mindbending clues"}
+        rv = self.app.post('/setter-types/new', data=new_setter_type, follow_redirects=True)
+        assert b'Saved new setter type, ' in rv.data
         nr = crossword_hints.setter_types.select().count()
-        print("DEBUG: Found %s rows in the table." % nr)
         assert nr == 6
 
     def test_003_edit_setter_type(self):
         print("DEBUG: Update a setter type.")
-        rv = self.app.post('/setter-types/new', upd_setter_type)
-        assert b'Updated setter type, Fiendish' in rv.data'
+        upd_setter_type = {"name": "Fiendish",
+                           "description": "Seriously devious and mindbending clues"}
+        rv = self.app.post('/setter-types/6/edit', data=upd_setter_type, follow_redirects=True)
+        assert b'Updated setter type, Fiendish' in rv.data
 
     def test_004_delete_setter_type(self):
         print("DEBUG: Update a setter type.")
-        rv = self.app.post('/setter-types/new', upd_setter_type)
-        assert b'Updated setter type, Fiendish' in rv.data'
+        rv = self.app.get('/setter-types/6/delete', follow_redirects=True)
+        assert b'Deleted setter type, Fiendish' in rv.data
 
     def test_099_clear_data(self):
         self.clearSampleData()
-        rv = self.app.get('/setter-types/')
-        assert b'Good mix of anagrams' not in rv.data
         nr = crossword_hints.setter_types.select().count()
         assert nr == 0
 
