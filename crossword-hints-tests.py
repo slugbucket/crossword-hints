@@ -71,7 +71,6 @@ class XwordhintsTestCase(unittest.TestCase):
         assert b'Cryptic cue search' in rv.data
 
     def test_0001_initial_data(self):
-        print("DEBUG: test_initial_data")
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 151
@@ -83,20 +82,15 @@ class XwordhintsTestCase(unittest.TestCase):
     """        S E T T E R   T Y P E S         """
 
     def test_000_count_setter_types(self):
-        print("DEBUG: Test full and empty setter types")
         self.loadSampleData()
         nr = crossword_hints.setter_types.select().count()
-        print("DEBUG: Found %s rows in the table." % nr)
         assert nr == 5
 
     def test_001_list_setter_types(self):
-        print("DEBUG: List the index page")
         rv = self.app.get('/setter-types/')
-        #print("DEBUG: index data contains %s" % rv.data)
         assert b'Good mix of anagrams' in rv.data
 
     def test_002_new_setter_type(self):
-        print("DEBUG: Submit a new setter type.")
         new_setter_type = {"name": "Convoluted",
                            "description": "Seriously devious and mindbending clues"}
         rv = self.app.post('/setter-types/new', data=new_setter_type, follow_redirects=True)
@@ -105,14 +99,12 @@ class XwordhintsTestCase(unittest.TestCase):
         assert nr == 6
 
     def test_003_edit_setter_type(self):
-        print("DEBUG: Update a setter type.")
         upd_setter_type = {"name": "Fiendish",
                            "description": "Seriously devious and mindbending clues"}
         rv = self.app.post('/setter-types/6/edit', data=upd_setter_type, follow_redirects=True)
         assert b'Updated setter type, Fiendish' in rv.data
 
     def test_004_delete_setter_type(self):
-        print("DEBUG: Update a setter type.")
         rv = self.app.get('/setter-types/6/delete', follow_redirects=True)
         assert b'Deleted setter type, Fiendish' in rv.data
 
@@ -123,21 +115,44 @@ class XwordhintsTestCase(unittest.TestCase):
 
     """    C R O S S W O R D   S E T T E R S   """
     def test_101_count_crossword_setters(self):
-        print("DEBUG: Test full and empty crossword setters")
         self.loadSampleData()
         nr = crossword_hints.crossword_setters.select().count()
-        print("DEBUG: Found %s rows in the table." % nr)
         assert nr == 19
+
+    def test_102_new_crossword_setter(self):
+        new_x_setter = {"name": "Slydeshow",
+                        "setter_type_id": 2,
+                        "description": "On the sly side"}
+        rv = self.app.post('/crossword-setters/new', data=new_x_setter, follow_redirects=True)
+        assert b'Saved new crossword setter, ' in rv.data
+        nr = crossword_hints.crossword_setters.select().count()
+        assert nr == 20
+
+    def test_103_edit_crossword_setter(self):
+        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slydeshow").scalar()
+        upd_x_setter = {"name": "Slydeshow",
+                        "setter_type_id": 3,
+                        "description": "On the sly side"}
+        rv = self.app.post(('/crossword-setters/%s/edit' % csid), data=upd_x_setter, follow_redirects=True)
+        assert b'Updated crossword setter, Slydeshow' in rv.data
+
+    def test_104_delete_crossword_setter(self):
+        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slydeshow").scalar()
+        rv = self.app.get(('/crossword-setters/%s/delete' % csid), follow_redirects=True)
+        assert b'Deleted crossword setter, Slydeshow' in rv.data
+        nr = crossword_hints.crossword_setters.select().count()
+        assert nr == 19
+
+    def test_199_clear_data(self):
         self.clearSampleData()
         nr = crossword_hints.crossword_setters.select().count()
         assert nr == 0
 
+
     """        S O L U T I O N   T Y P E S     """
     def test_200_count_solution_types(self):
-        print("DEBUG: Test full and empty solution types")
         self.loadSampleData()
         nr = crossword_hints.solution_types.select().count()
-        print("DEBUG: Found %s rows in the table." % nr)
         assert nr == 10
         self.clearSampleData()
         nr = crossword_hints.solution_types.select().count()
@@ -145,10 +160,8 @@ class XwordhintsTestCase(unittest.TestCase):
 
     """             S O L U T I O N S          """
     def test_300_count_crossword_solutions(self):
-        print("DEBUG: Test full and empty crossword solutions")
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
-        print("DEBUG: Found %s rows in the table." % nr)
         assert nr == 151
         self.clearSampleData()
         nr = crossword_hints.crossword_solutions.select().count()

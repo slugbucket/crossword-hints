@@ -99,18 +99,58 @@ def crossword_setters_show(id):
 """
 Add a new crossowrd setter
 """
-@app.route("/crossword-setters/new", methods=["GET"])
+@app.route("/crossword-setters/new", methods=["GET", "POST"])
 def crossword_setters_new():
-    setter={'name': "New setter", 'setter_type_id': 1}
-    return render_template('views/crossword-setters/new.html', setter=setter, s_types=get_setter_types(), r=request)
+    if request.method == "GET":
+        setter={'name': "New setter", 'setter_type_id': 1}
+        return render_template('views/crossword-setters/new.html', setter=setter, s_types=get_setter_types(), r=request, sbmt='Save new crossword setter')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/crossword-setters/new.html', setter=fdata, s_types=get_setter_types(), r=request, sbmt=request.form['submit']))
+    st = crossword_setters(name=fdata['name'], setter_type_id=fdata['setter_type_id'], description=fdata['description'])
+    st.save()
+    flash("Saved new crossword setter, %s" % fdata['name'])
+    return redirect('/crossword-setters/')
 
 """
 Edit an existing setter
 """
-@app.route("/crossword-setters/<int:id>/edit", methods=["GET"])
+@app.route("/crossword-setters/<int:id>/edit", methods=["GET", "POST"])
 def crossword_setters_edit(id):
-    rs = crossword_setters.get(crossword_setters.rowid == id)
-    return render_template('views/crossword-setters/edit.html', setter=rs, s_types=get_setter_types(), r=request)
+    if request.method == "GET":
+        try:
+            rs = crossword_setters.get(crossword_setters.rowid == id)
+        except DoesNotExist:
+            flash("Cannot find crossword setter record for id, %s." % id)
+            return(redirect('/crossword-setters'))
+        rs = crossword_setters.get(crossword_setters.rowid == id)
+        return render_template('views/crossword-setters/edit.html', setter=rs, s_types=get_setter_types(), r=request, sbmt='Update crossword setter')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/crossword-setters/edit.html', setter=fdata, r=request, sbmt=request.form['submit']))
+    cs = crossword_setters(rowid=id, name=fdata['name'],
+                           setter_type_id=fdata['setter_type_id'],
+                           description=fdata['description'],
+                           updated_at=datetime.now())
+    cs.save()
+    flash("Updated crossword setter, %s" % fdata['name'])
+    return(redirect('/crossword-setters'))
+
+"""
+Delete an existing setter
+"""
+@app.route("/crossword-setters/<int:id>/delete", methods=["GET"])
+def crossword_setters_delete(id):
+    try:
+        rs = crossword_setters.get(crossword_setters.rowid == id)
+    except DoesNotExist:
+        flash("Cannot find crssword setter record for id, %s." % id)
+        return(redirect('/crossword-setters/'))
+    rs.delete_instance()
+    flash("Deleted crossword setter, %s" % rs.name)
+    return(redirect('/crossword-setters/'))
 
 """              """
 """ Setter types """
@@ -130,7 +170,6 @@ def setter_types_new():
     if request.method == "GET":
         stype={'name': "New setter type", 'description': 'Brief description of this type of setter'}
         return(render_template('views/setter-types/new.html', stype=stype,  r=request, sbmt='Save new setter type'))
-    print("DEBUG: setter_types_new: Saving new setter type.")
     (rc, fdata) = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
@@ -144,14 +183,12 @@ def setter_types_new():
 @app.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
 def setter_types_edit(id):
     if request.method == "GET":
-        print("DEBUG: setter_types_edit: ")
         try:
             rs = setter_types.get(setter_types.rowid == id)
         except DoesNotExist:
             flash("Cannot find setter type record for id, %s." % id)
             return(redirect('/setter-types'))
         return(render_template('views/setter-types/edit.html', stype=rs, r=request, sbmt='Update setter type'))
-    print("DEBUG: setter_types_new: Updating setter type.")
     (rc, fdata) = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
@@ -257,7 +294,6 @@ def sanitize_input(form):
     data = {}
     rc = ""
     for elem in request.form:
-        print("DEBUG: setter_types_new: Found form elem: %s set to %s." % (elem, request.form[elem]))
         if elem == "name":
             (r, data[elem]) = validate_name(form[elem])
         elif re.match(r'^.*_id$', elem):
@@ -269,9 +305,7 @@ def sanitize_input(form):
 
 
 def validate_name(str):
-    print("DEBUG: validate_name: Checking %s for illegal chars" % str)
     if not re.match(r'^[a-zA-Z0-9-_.\' ()]*$', str):
-        print("DEBUG: Found invalid chars in %s." % str)
         return("Invalid characters in name field: Only allowed a-zA-Z0-9-_. '", re.sub('[^a-zA-Z0-9-_\'. ]', "", str))
     return("", str)
 
@@ -282,7 +316,6 @@ def validate_text(str):
 We expect submitted id values to be numeric
 """
 def validate_id(str):
-    print("DEBUG: validate_id: Checking id value, %s." % str)
     try:
         int(str)
     except ValueError:

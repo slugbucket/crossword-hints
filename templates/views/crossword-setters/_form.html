@@ -1,7 +1,7 @@
 <p>
 Use this form to edit the details of a crossword setter.
 </p>
-<form class="" action="/crossword-setters/submit" method="POST">
+<form name="crossword_setters" action="{{ r.path }}" method="POST">
     <fieldset id="crossword_setters">
         <legend>Crossword setters</legend>
         {{ f.label('name', 'Name') }}
@@ -12,4 +12,11 @@ Use this form to edit the details of a crossword setter.
         <label for="description">Description</label>
         <textarea name='description' cols="80" rows="4" class="xwordhints">{{ setter['description']|escape }}</textarea>
     </fieldset>
+
+    <p>
+    <input type="submit" name="submit" value="{{ sbmt|escape }}" />
+    <input type="reset" value="Reset" />
+    <br /><br />
+    <a href="/crossword-setters">Back to index</a>
+    </p>
 </form>
