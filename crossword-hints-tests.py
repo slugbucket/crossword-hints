@@ -119,6 +119,10 @@ class XwordhintsTestCase(unittest.TestCase):
         nr = crossword_hints.crossword_setters.select().count()
         assert nr == 19
 
+    def test_101_list_setter_types(self):
+        rv = self.app.get('/setter-types/')
+        assert b'Good mix of anagrams' in rv.data
+
     def test_102_new_crossword_setter(self):
         new_x_setter = {"name": "Slydeshow",
                         "setter_type_id": 2,
@@ -154,6 +158,34 @@ class XwordhintsTestCase(unittest.TestCase):
         self.loadSampleData()
         nr = crossword_hints.solution_types.select().count()
         assert nr == 10
+
+    def test_201_list_solution_types(self):
+        rv = self.app.get('/solution-types/')
+        assert b'Letter rearrangement' in rv.data
+
+    def test_202_new_solution_type(self):
+        new_solution_type = {"name": "Reverse split",
+                           "description": "Splice reading backwards across two words"}
+        rv = self.app.post('/solution-types/new', data=new_solution_type, follow_redirects=True)
+        assert b'Saved new solution type, ' in rv.data
+        nr = crossword_hints.solution_types.select().count()
+        assert nr == 11
+
+    def test_203_edit_solution_type(self):
+        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Reverse split").scalar()
+        upd_solution_type = {"name": "Reverse splice",
+                           "description": "Splice reading backwards across two words"}
+        rv = self.app.post(('/solution-types/%s/edit' % stid), data=upd_solution_type, follow_redirects=True)
+        assert b'Updated solution type, Reverse splice' in rv.data
+
+    def test_204_delete_solution_type(self):
+        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Reverse splice").scalar()
+        rv = self.app.get(('/solution-types/%s/delete' % stid), follow_redirects=True)
+        assert b'Deleted solution type, Reverse splice' in rv.data
+        nr = crossword_hints.solution_types.select().count()
+        assert nr == 10
+
+    def test_299_clear_data(self):
         self.clearSampleData()
         nr = crossword_hints.solution_types.select().count()
         assert nr == 0

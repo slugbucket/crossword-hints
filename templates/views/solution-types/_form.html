@@ -11,4 +11,11 @@ Use this form to edit the details of a crossword solution.
         <textarea name='description' cols="80" rows="4" class="xwordhints">{{ stype['description']|escape }}</textarea>
     </fieldset>
 
+    <p>
+    <input type="submit" name="submit" value="{{ sbmt }}">
+    <input type="reset" value="Reset" />
+    <br /><br />
+    <a href="/solution-types">Back to index</a>
+    </p>
+
 </form>

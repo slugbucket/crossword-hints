@@ -227,18 +227,38 @@ def solution_types_show(id):
 
 @app.route("/solution-types/new", methods=["GET", "POST"])
 def solution_types_new():
-    stype={'name': "New solution type", 'description': 'Brief description of this type of solution'}
-    return render_template('views/solution-types/new.html', stype=stype,  r=request)
+    if request.method == "GET":
+        stype={'name': "New solution type", 'description': 'Brief description of this type of solution'}
+        return render_template('views/solution-types/new.html', stype=stype,  r=request, sbmt='Save new solution type')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/solution-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
+    st = solution_types(name=fdata['name'], description=fdata['description'])
+    st.save()
+    flash("Saved new solution type, %s" % fdata['name'])
+    return redirect('/solution-types')
 
 @app.route("/solution-types/<int:id>/edit", methods=["GET", "POST"])
 def solution_types_edit(id):
     try:
-        rs = solution_types.get(solution_types.rowid == id)
+        stype = solution_types.get(solution_types.rowid == id)
     except DoesNotExist:
         flash("Cannot find solution type record for id, %s." % id)
         return(redirect('/solution-types'))
-    print("DEBUG: solution_types_edit: Editing solution type, %s." % rs.name)
-    return render_template('views/solution-types/edit.html', stype=rs, r=request)
+    if request.method == "GET":
+        return render_template('views/solution-types/new.html', stype=stype,  r=request, sbmt='Update solution type')
+    print("DEBUG: solution_types_edit: Editing solution type, %s." % stype.name)
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/solution-types/edit.html', stype=fdata, r=request, sbmt=request.form['submit']))
+    st = solution_types(rowid=id, name=fdata['name'],
+                      description=fdata['description'],
+                      updated_at=datetime.now())
+    st.save()
+    flash("Updated solution type, %s" % fdata['name'])
+    return(redirect('/solution-types'))
 
 @app.route("/solution-types/<int:id>/delete", methods=["GET", "POST"])
 def solution_types_delete(id):
@@ -248,6 +268,7 @@ def solution_types_delete(id):
         flash("Cannot find solution type record for id, %s." % id)
         return(redirect('/solution-types'))
     rs.delete_instance()
+    flash("Deleted solution type, %s" % rs.name)
     return(redirect("/solution-types"))
 
 
