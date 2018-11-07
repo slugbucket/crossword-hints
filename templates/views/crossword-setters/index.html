@@ -1,0 +1,26 @@
+{%- extends "views/layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword Setters
+{%- endblock -%}
+
+{%- block page_content -%}
+<p>
+<a href="/crossword-setters/new">Add new crossword setter</a><br />
+{%- if setters -%}
+<table cellpadding="0" cellspacing="0" class="indextable">
+  <tr class="indextable"><th style="width: 20%">Name</th><th>Setter type</th><th style="width: 15%">Actions</th></tr>
+{%- for setter in setters -%}
+<tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
+    <td><a href="/crossword-setters/{{ setter['rowid'] }}">{{ setter['name'] }}</a></td><td>{{ setter['setter_type_name'] }}: {{ setter['description'] }}</td><td><a href="/crossword-setters/{{ setter['rowid'] }}/edit" title="Edit {{ setter['name'] }}"><img src="/static/images/edit-icon.png"</a>&nbsp;
+        <a onclick="return(confirm('Delete {{ setter['name'] }}?'));" href="/crossword-setters/{{ setter['rowid'] }}/delete" title="Delete {{ setter['name'] }}"><img src="/static/images/delete-icon.png" /></a></td>
+</tr>
+{%- else -%}
+No setters found.
+{%- endfor -%}
+</table>
+{%- endif -%}
+<br />
+<a href="/crossword-setters/new">Add new crossword setter</a><br />
+</p>
+{%- endblock -%}
+{{ super() }}

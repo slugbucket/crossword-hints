@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<title>Crossword setters and their solutions</title>
+<link rel="stylesheet" type="text/css" href="/static/stylesheets/crossword-hints.css">
+
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.structure.css">
+<link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.theme.css">
+<script src="/static/javascript/jquery-3.2.1.min.js"></script>
+<script src="/static/jquery-ui-1.12.1/jquery-ui.js"></script>
+<!-- script>
+  $( document ).ready(function() {$( "#tabs" ).tabs();});
+</script -->
+</head>
+
+<body>
+{%- block navmenu -%}{%- endblock -%}
+
+<h1>{% block main_heading %}{% endblock %}</h1>
+{%- with messages = get_flashed_messages() -%}
+  {%- if messages -%}
+  <div id="messages">
+    <ul class="flashes">
+    {%- for message in messages -%}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="cleaner"></div>
+  {%- endif -%}
+{%- endwith -%}
+{%- import "macros.html" as f -%}
+{%- block page_content -%}{%- endblock -%}
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{%- extends "views/layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword solution types
+{%- endblock -%}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>Edit crossword solution type</h2>
+
+{% include "views/solution-types/_form.html" %}
+
+{% endblock %}
