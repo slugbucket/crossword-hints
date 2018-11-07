@@ -119,12 +119,12 @@ class XwordhintsTestCase(unittest.TestCase):
         nr = crossword_hints.crossword_setters.select().count()
         assert nr == 19
 
-    def test_101_list_setter_types(self):
-        rv = self.app.get('/setter-types/')
-        assert b'Good mix of anagrams' in rv.data
+    def test_101_list_crossword_setters(self):
+        rv = self.app.get('/crossword-setters/')
+        assert b'Unrewarding and easily distracted elsewhere' in rv.data
 
     def test_102_new_crossword_setter(self):
-        new_x_setter = {"name": "Slydeshow",
+        new_x_setter = {"name": "Slideshow",
                         "setter_type_id": 2,
                         "description": "On the sly side"}
         rv = self.app.post('/crossword-setters/new', data=new_x_setter, follow_redirects=True)
@@ -133,7 +133,7 @@ class XwordhintsTestCase(unittest.TestCase):
         assert nr == 20
 
     def test_103_edit_crossword_setter(self):
-        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slydeshow").scalar()
+        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slideshow").scalar()
         upd_x_setter = {"name": "Slydeshow",
                         "setter_type_id": 3,
                         "description": "On the sly side"}
@@ -195,6 +195,51 @@ class XwordhintsTestCase(unittest.TestCase):
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 151
+
+    def test_301_list_crossword_solutions(self):
+        rv = self.app.get('/crossword-solutions/')
+        assert b'Add new crossword solution' in rv.data
+
+    def test_302_new_crossword_solution(self):
+        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Hypnos").scalar()
+        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Double meaning").scalar()
+        new_solution = {"crossword_setter_id": csid,
+                        "clue": "One son comes down for Christmas and Easter, perhaps",
+                        "solution": "Islands",
+                        "solution_hint": "1 Son = I-S; comes down = LANDS; Christmas and Easter are ISLANDS",
+                        "solution_type_id": stid,
+                        "created_at": datetime.datetime.now(),
+                        "updated_at": datetime.datetime.now()}
+        rv = self.app.post('/crossword-solutions/new', data=new_solution, follow_redirects=True)
+        assert b'Saved new crossword solution, ' in rv.data
+        nr = crossword_hints.crossword_solutions.select().count()
+        assert nr == 152
+
+    def test_303_edit_crossword_solution(self):
+        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Klingsor").scalar()
+        stid = crossword_hints.crossword_solutions.select(crossword_hints.crossword_solutions.solution_type_id).where(crossword_hints.crossword_solutions.solution == "Islands").scalar()
+        upd_solution = {"crossword_setter_id": csid,
+                        "clue": "One son comes down for Christmas and Easter, perhaps",
+                        "solution": "islands",
+                        "solution_hint": "One Son = I-S; comes down = LANDS; Christmas and Easter are ISLANDS",
+                        "solution_type_id": stid,
+                        "updated_at": datetime.datetime.now()}
+        rv = self.app.post(('/crossword-solutions/%s/edit' % csid), data=upd_solution, follow_redirects=True)
+        assert b'Updated crossword solution, islands' in rv.data
+
+    def test_304_show_crosword_solution(self):
+        soln = crossword_hints.crossword_solutions.get(crossword_hints.crossword_solutions.solution == "islands")
+        rv = self.app.get('/crossword-solutions/%s' % soln)
+        assert b'One son comes down for Christmas and Easter, perhaps' in rv.data
+
+    def test_305_delete_crossword_solution(self):
+        csid = crossword_hints.crossword_solutions.get(crossword_hints.crossword_solutions.solution == "islands")
+        rv = self.app.get(('/crossword-solutions/%s/delete' % csid), follow_redirects=True)
+        assert b'Deleted crossword solution, islands' in rv.data
+        nr = crossword_hints.crossword_solutions.select().count()
+        assert nr == 151
+
+    def test_399_clear_data(self):
         self.clearSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 0

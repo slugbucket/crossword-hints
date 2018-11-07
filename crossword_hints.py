@@ -70,11 +70,114 @@ Params:
 Returns:
   jinja2 template render of list of active requests
 """
+@app.route("/crossword-solutions/")
+def crossword_solution_index():
+    rs = crossword_solutions.raw("""
+         SELECT cs1.name as setter, cs2.solution AS solution, cs2.rowid AS csid, st1.name AS soltype
+         FROM crossword_setters cs1
+           INNER JOIN crossword_solutions cs2
+             ON cs1.rowid = cs2.crossword_setter_id
+           INNER JOIN solution_types st1
+             ON cs2.solution_type_id = st1.rowid""")
+    return(render_template('views/crossword-solutions/index.html', r=request, solns=rs))
+
+
+@app.route("/crossword-solutions/<int:id>", methods=["GET"])
+def crossword_solutions_show(id):
+    # Getting the solution id, name and solution_type name should be a simple inner
+    # join across the tables but Peewee makes a complete mess of it so it's
+    # easier to do raw SQL instead.
+    #rs = crossword_solutions.get(crossword_solutions.rowid, crossword_solutions.name, solution_types.name.alias('solution_type_name')).join(solution_types, JOIN.INNER).where((crossword_solutions.solution_type_id == solution_types.rowid) & (crossword_solutions.rowid == id))
+    rs = crossword_solutions.raw("""
+         SELECT cs1.name as setter,
+                cs2.solution AS solution,
+                cs2.clue AS clue,
+                cs2.solution_hint AS hint,
+                cs2.rowid AS csid,
+                st1.name AS soltype
+         FROM crossword_setters cs1
+           INNER JOIN crossword_solutions cs2
+             ON cs1.rowid = cs2.crossword_setter_id
+           INNER JOIN solution_types st1
+             ON cs2.solution_type_id = st1.rowid
+         WHERE cs2.rowid = ?""", id).tuples()
+    for setter, solution, clue, hint, csid, soltype in rs:
+        xsol = {"csid": csid, "setter": setter, "solution": solution, "clue": clue, "hint": hint, "soltype": soltype}
+    return render_template('views/crossword-solutions/show.html', soln=xsol,  r=request)
+
+"""
+Add a new crossowrd solution
+"""
+@app.route("/crossword-solutions/new", methods=["GET", "POST"])
+def crossword_solutions_new():
+    if request.method == "GET":
+        solution={'clue': "Clue to the answer",
+                  'solution': 'Thesolution',
+                  'solution_hint': 'New solution hint',
+                  'crossword_setter_id': 1,
+                  'solution_type_id': 1}
+        return render_template('views/crossword-solutions/new.html', soln=solution, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt='Save new crossword solution')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/crossword-solutions/new.html', soln=fdata, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt=request.form['submit']))
+    cs = crossword_solutions(crossword_setter_id=fdata['crossword_setter_id'],
+                             clue=fdata['clue'],
+                             solution=fdata['solution'],
+                             solution_hint=fdata['solution_hint'],
+                             solution_type_id=fdata['solution_type_id'],
+                             created_at=datetime.now(),
+                             updated_at=datetime.now())
+    cs.save()
+    flash("Saved new crossword solution, %s" % fdata['solution'])
+    return redirect('/crossword-solutions/')
+
+"""
+Edit an existing solution
+"""
+@app.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
+def crossword_solutions_edit(id):
+    if request.method == "GET":
+        try:
+            rs = crossword_solutions.get(crossword_solutions.rowid == id)
+        except DoesNotExist:
+            flash("Cannot find crossword solution record for id, %s." % id)
+            return(redirect('/crossword-solutions'))
+        return render_template('views/crossword-solutions/edit.html', soln=rs, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt='Update crossword solution')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/crossword-solutions/edit.html', solution=fdata, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt=request.form['submit']))
+    cs = crossword_solutions(rowid=id,
+                             crossword_setter_id=fdata['crossword_setter_id'],
+                             clue=fdata['clue'],
+                             solution=fdata['solution'],
+                             hint=fdata['solution_hint'],
+                             solution_type_id=fdata['solution_type_id'],
+                             updated_at=datetime.now())
+    cs.save()
+    flash("Updated crossword solution, %s" % fdata['solution'])
+    return(redirect('/crossword-solutions'))
+
+@app.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
+def crossword_solutions_delete(id):
+    try:
+        rs = crossword_solutions.get(crossword_solutions.rowid == id)
+    except DoesNotExist:
+        flash("Cannot find solution record for id, %s." % id)
+        return(redirect('/crossword-solutions'))
+    rs.delete_instance()
+    flash("Deleted crossword solution, %s" % rs.solution)
+    return(redirect('/crossword-solutions'))
+
+"""                                                   """
+"""   C  R  O  S  S  W  O  R  D      H  I  N  T  S    """
+"""                                                   """
 @app.route("/xword-hints/", methods=["GET"], defaults={'path': ''})
 @app.route('/', defaults={'path': ''})
 def crossowrd_hints_index(path):
     rs = crossword_solutions.select()
-    return(render_template('views/crossword-hints/index.html', r=request))
+    return(render_template('views/crossword-hints/index.html', r=request, solns=rs))
 
 
 """
@@ -97,7 +200,7 @@ def crossword_setters_show(id):
     return render_template('views/crossword-setters/show.html', stype=stype,  r=request)
 
 """
-Add a new crossowrd setter
+Add a new crossword setter
 """
 @app.route("/crossword-setters/new", methods=["GET", "POST"])
 def crossword_setters_new():
@@ -213,7 +316,7 @@ def setter_types_delete(id):
 
 
 """               """
-""" Soluion types """
+""" Solution types """
 """               """
 @app.route("/solution-types/", methods=["GET"])
 def solution_types_index():
@@ -248,7 +351,6 @@ def solution_types_edit(id):
         return(redirect('/solution-types'))
     if request.method == "GET":
         return render_template('views/solution-types/new.html', stype=stype,  r=request, sbmt='Update solution type')
-    print("DEBUG: solution_types_edit: Editing solution type, %s." % stype.name)
     (rc, fdata) = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
@@ -296,7 +398,7 @@ def handle_opertional_error(error):
 """                                                        """
 """
 Construct an array containing the setter_type rowid and name
-suitable for use in a SELECT from element
+suitable for use in a SELECT form element
 """
 def get_setter_types():
     rs=setter_types.select(setter_types.rowid, setter_types.name)
@@ -305,6 +407,27 @@ def get_setter_types():
         s_types.append([row['rowid'], row['name']])
     return(s_types)
 
+"""
+Construct an array containing the crossword setter rowid and name
+suitable for use in a SELECT form element
+"""
+def get_crossword_setters():
+    cs=crossword_setters.select(crossword_setters.rowid, crossword_setters.name)
+    setters = []
+    for row in cs.dicts():
+        setters.append([row['rowid'], row['name']])
+    return(setters)
+
+"""
+Construct an array containing the solution_type rowid and name
+suitable for use in a SELECT form element
+"""
+def get_solution_types():
+    rs=solution_types.select(solution_types.rowid, solution_types.name)
+    s_types = []
+    for row in rs.dicts():
+        s_types.append([row['rowid'], row['name']])
+    return(s_types)
 
 """
 Basic attempt to sanitize submitted form data

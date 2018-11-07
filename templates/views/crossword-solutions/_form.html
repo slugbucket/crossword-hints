@@ -1,0 +1,28 @@
+<p>
+Use this form to edit the details of a crossword solution.
+</p>
+<form name="crossword_solutions" action="{{ r.path }}" method="POST">
+    <fieldset id="crossword_solutions">
+        <legend>Crossword solutions</legend>
+        {{ f.label('clue', 'Clue') }}
+        {{ f.input_tag('clue', value=(soln['clue']|escape)|default('clue'), class="xwordhints") }}
+
+        {{ f.label('solution', 'Solution') }}
+        {{ f.input_tag('solution', value=(soln['solution']|escape)|default('solution'), class="xwordhints") }}
+
+        {{ f.select('crossword_setter_id', setters, default=soln['crossword_setter_id'], title='Clue setter')}}
+
+        {{ f.label('solution_hint', 'Hint') }}
+        {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints") }}
+
+        {{ f.select('solution_type_id', s_types, default=soln['solution_type_id'], title='Solution type')}}
+
+    </fieldset>
+
+    <p>
+    <input type="submit" name="submit" value="{{ sbmt|escape }}" />
+    <input type="reset" value="Reset" />
+    <br /><br />
+    <a href="/crossword-solutions">Back to index</a>
+    </p>
+</form>
