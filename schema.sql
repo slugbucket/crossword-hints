@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS crossword_setters;
 
 CREATE TABLE crossword_setters (
   --id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  name CHAR(32) NOT NULL DEFAULT 'Setter type',
+  name CHAR(32) NOT NULL DEFAULT 'Setter name',
   setter_type_id INTEGER,
   description CHAR(64) DEFAULT 'A good all-round blend of clues',
   created_at DATETIME,
@@ -49,6 +49,14 @@ CREATE TABLE crossword_solutions (
   solution VARCHAR(64) NOT NULL,
   solution_hint VARCHAR(64),
   solution_type_id INTEGER NOT NULL,
+  created_at DATETIME,
+  updated_at DATETIME
+);
+
+DROP TABLE IF EXISTS cue_words;
+
+CREATE TABLE cue_words (
+  cue_word VARCHAR(32),
   created_at DATETIME,
   updated_at DATETIME
 );

@@ -1,4 +1,38 @@
 {%- extends "views/layouts/crossword-hints.html" %}
+{%- block jquery_func -%}
+<style>
+  .ui-autocomplete-loading {
+    background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+  }
+</style>
+<script>
+$( function() {
+  function log( message ) {
+    $( "<div>" ).text( message ).prependTo( "#log" );
+    $( "#log" ).scrollTop( 0 );
+  }
+
+  $( "#cuewords" ).autocomplete({
+    source: function( request, response ) {
+      $.ajax( {
+        url: "/cue-words/",
+        dataType: "jsonp",
+        data: {
+          cue: request.term
+        },
+        success: function( data ) {
+          response( data );
+        }
+      } );
+    },
+    minLength: 2,
+    //select: function( event, ui ) {
+    //  log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+    //}
+  } );
+} );
+</script>
+{%- endblock -%}
 {%- block page_heading -%}
 Cryptic crossword hints
 {%- endblock -%}
@@ -7,7 +41,29 @@ Cryptic crossword hints
 
 <h1>Cryptic cue search</h1>
 <p>
-Enter a cue word to search for typical clues and their solutions.
+Start typing a cue word nd select from the autocomplete list to search
+for typical clues and their solutions.
+
+<form name="crossword-hints" action="{{ request.path }}" method="post">
+    <div class="ui-widget" style="margin-top:2em; font-family:Arial">
+    <input name="cue_word" type="text" id="cuewords">
+    <!-- div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div -->
+    </div>
+    <input type="submit" value="Find clues" name="submit">
+</form>
+</p>
+
+<p>
+{%- if clues -%}
+<table cellspacing="0" cellpadding="0" class="indextable">
+  <tr><th>Clue</th><th>Setter</th><th>Type</th><th>Hint</th><th>Solution</th></tr>
+  {%- for clue in clues -%}
+  <tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
+      <td>{{ clue.clue }}</td><td>{{ clue.setter }}</td><td>{{ clue.soltype }}</td><td>{{ clue.hint }}</td><td>{{ clue.solution }}</td>
+  </tr>
+  {%- endfor -%}
+</table>
+{%- endif -%}
 </p>
 {%- endblock -%}
 {{ super() }}

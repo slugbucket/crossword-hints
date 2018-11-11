@@ -78,7 +78,8 @@ def crossword_solution_index():
            INNER JOIN crossword_solutions cs2
              ON cs1.rowid = cs2.crossword_setter_id
            INNER JOIN solution_types st1
-             ON cs2.solution_type_id = st1.rowid""")
+             ON cs2.solution_type_id = st1.rowid
+         ORDER BY cs2.solution""")
     return(render_template('views/crossword-solutions/index.html', r=request, solns=rs))
 
 
@@ -152,7 +153,7 @@ def crossword_solutions_edit(id):
                              crossword_setter_id=fdata['crossword_setter_id'],
                              clue=fdata['clue'],
                              solution=fdata['solution'],
-                             hint=fdata['solution_hint'],
+                             solution_hint=fdata['solution_hint'],
                              solution_type_id=fdata['solution_type_id'],
                              updated_at=datetime.now())
     cs.save()
@@ -173,12 +174,60 @@ def crossword_solutions_delete(id):
 """                                                   """
 """   C  R  O  S  S  W  O  R  D      H  I  N  T  S    """
 """                                                   """
-@app.route("/xword-hints/", methods=["GET"], defaults={'path': ''})
-@app.route('/', defaults={'path': ''})
+@app.route("/crossword-hints/", methods=["GET", "POST"], defaults={'path': ''})
+@app.route('/', methods=["GET", "POST"], defaults={'path': ''})
 def crossowrd_hints_index(path):
-    rs = crossword_solutions.select()
-    return(render_template('views/crossword-hints/index.html', r=request, solns=rs))
+    if request.method == "GET":
+        return(render_template('views/crossword-hints/index.html', r=request))
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/crossword-hints/index.html', r=request, sbmt=request.form['submit']))
+    # Ideally, peewee would allow the selection of the columns from the joined
+    # tables but it doesn't seem to recognise them despite what might be in the
+    # documentation. So we have to perform separate lookups for the solution
+    # type and setter
+    #rs = crossword_solutions.select(crossword_solutions.clue, crossword_solutions.solution, crossword_solutions.solution_hint, solution_types.name.alias("soltype"), crossword_setters.name.alias("setter")) \
+    #                          .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+    #                          .switch(crossword_solutions) \
+    #                          .join(crossword_setters, JOIN.INNER, on=(crossword_solutions.crossword_setter_id == crossword_setters.rowid)) \
+    #                          .where(crossword_solutions.clue.contains(fdata['cue_word']))
+    #rs = crossword_solutions.select().where(crossword_solutions.clue.contains(fdata['cue_word']))
+    # A raw query gives it all in one
+    rs = crossword_solutions.raw("""
+SELECT cs1.name as setter, cs2.solution AS solution, cs2.clue AS clue,
+       cs2.solution_hint AS hint, cs2.rowid AS csid, st1.name AS soltype
+         FROM crossword_setters cs1
+           INNER JOIN crossword_solutions cs2
+             ON cs1.rowid = cs2.crossword_setter_id
+           INNER JOIN solution_types st1
+             ON cs2.solution_type_id = st1.rowid
+WHERE cs2.clue LIKE ?
+ORDER BY cs2.solution;
+    """, '%{0}%'.format(fdata['cue_word']))
+    clueset = []
+    for row in rs:
+        clueset.append({"clue": row.clue, "solution": row.solution, "hint": row.solution_hint, "soltype": row.soltype, "setter": row.setter })
+    return(render_template('views/crossword-hints/index.html', r=request, clues=clueset))
 
+"""                                                    """
+""" Search database for cue words matching search term """
+""" JQuery is used to handle an AJAX request to search """
+""" the database for a matching cue word. This submits """
+""" via a GET request with a callback reference that   """
+""" needs to be included in the response in JSONP      """
+"""                                                    """
+@app.route("/cue-words/", methods=["GET"])
+def crossword_cue_search():
+    callback = request.args.get('callback')
+    if not callback or callback == "":
+        return(render_template('errors/409.html', errmsg="Missing JQuery callback value"), 400)
+    rs = cue_words.select(cue_words.rowid, cue_words.cue_word).where(cue_words.cue_word.contains(request.args['cue']))
+    ary = {}
+    for row in rs:
+        ary[row.rowid] = row.cue_word
+    ret = '{0}({1})'.format(callback, json.dumps(ary))
+    return(Response(ret, mimetype="text/json"))
 
 """
 Index listing of known setters
@@ -521,6 +570,12 @@ class crossword_solutions(BaseModel):
     solution         = CharField(null=False, max_length=128)
     solution_hint    = CharField(null=False, max_length=128)
     solution_type    = ForeignKeyField(solution_types)
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
+
+class cue_words(BaseModel):
+    rowid            = AutoField()
+    cue_word         = CharField(null=False, max_length=32)
     created_at       = DateTimeField(default=datetime.now())
     updated_at       = DateTimeField(default=datetime.now())
 
