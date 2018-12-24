@@ -15,18 +15,20 @@ import datetime
 from datetime import date, timedelta, datetime
 
 # To run the application as standalone,
-# export FLASK_APP=xword-hints.py
+# export FLASK_APP=crossword_hints.py
 # flask run
 # or, with uwsgi,
 # uwsgi --ini crossword_hints.ini
 #
-app = Flask(__name__)
+app = Flask(__name__) or create_app('crossword_hints.py')
 try:
     os.environ['APP_SETTINGS']
 except KeyError:
     os.environ['APP_SETTINGS'] = os.path.join(app.root_path, 'default_settings.py')
 
 app.config.from_envvar('APP_SETTINGS')
+# Create an application handle that AWS EB can understand
+application = app
 database = SqliteDatabase(app.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
 database.row_factory = sqlite3.Row
 

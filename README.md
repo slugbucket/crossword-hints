@@ -117,6 +117,44 @@ To run the tests use,
 ```bash
 APP_SETTINGS='test-settings.py' python crossword-hints-test.py
 ```
+# AWS deployment
+
+## Install Elastic Beanstalk CLI
+As described at https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html?icmpid=docs_elasticbeanstalk_console
+
+```bash
+$ pip install awsebcli --upgrade --user
+```
+drop the '--user' option if installing as root, as will be necessary if the
+commands are to be run from a Jenkins jobs.
+
+## Configure AWS IAM access user
+Do not use the root user to deploy the application. Use the AWS IAM dashboard
+to create suitable groups and users with appropriate policies to enable the
+application environment to be deployed.
+
+For a simple Flask application, the following policies should suffice
+* AWSCodeCommitFullAccess
+* AWSElasticBeanstalkFullAccess
+* AWSElasticBeanstalkService
+* ElasticLoadBalancingFullAccess
+
+Create a group, say, flask-apps, with the above policies applied and then
+add a specific application user, say, crossword-hints.
+Create an access key pair and store them safely and never store them in the
+appliction files.
+
+## Initialise EB environment
+```bash
+$ eb init
+```
+
+## Create EB instance
+The application file needs to define an application context called Application
+for it to be loadable
+```bash
+$ eb create crossword-hints --envvars WSGIPath=crossword_hints.py
+```
 
 # Development
 
