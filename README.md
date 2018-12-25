@@ -168,17 +168,49 @@ Use a multibranch pipeline job to prepare, test and deploy the application
 in stages.
 
 ## Build
+To build a standalone copy of the application from a git checkout we can
+use virtualenv and make sure all the required libraries are installed
+
+```bash
+virtualenv crossword-hints
+    cd crossword-hints
+    . ./bin/activate
+     pip install -r requirements.txt
+```
+
+The file, requirements.txt, is also used by AWS ElasticBeanstalk to identify
+the application dependencies and install them before starting the environment.
 
 ## Unit tests
 
 ## Deploy
+Create an archive of the codebase to run the application
+
+```bash
+$ git archive -v -o crossword-hints.zip --format=zip HEAD
+```
+
+If using the EB CLI there is no need to create the archive, code updates can
+be applied directly, but this is still useful when deploying via the console.
 
 # Development
 
 # Updating
+To try out new settings on a particular environment before committing to the
+git repo we can deploy just the candidate files (from git add ...):
+
+```bash
+$ eb deploy --staged crossword-hints-dev
+```
 
 # TODO
-* Investigte WTForms for form validation
+* Investigate WTForms for form validation; perhaps more effort than it's
+  worth; maybe try custom validators for basic checks.
+* Code refactoring; break up into modules
+* Add some authentication and authorization - https://flask-login.readthedocs.io/en/latest/
+* Improve the Jenkins pipeline:
+** deploy to dev, stage and prod environments; align with git-flow
+** exclude the unit tests from dev and prod environments
 
 # References
 Sources of additional information.
