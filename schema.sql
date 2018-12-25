@@ -57,6 +57,7 @@ DROP TABLE IF EXISTS cue_words;
 
 CREATE TABLE cue_words (
   cue_word VARCHAR(32),
+  meaning VARCHAR(64),
   created_at DATETIME,
   updated_at DATETIME
 );

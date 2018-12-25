@@ -117,13 +117,100 @@ To run the tests use,
 ```bash
 APP_SETTINGS='test-settings.py' python crossword-hints-test.py
 ```
+# AWS deployment
+
+## Install Elastic Beanstalk CLI
+As described at https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html?icmpid=docs_elasticbeanstalk_console
+
+```bash
+$ pip install awsebcli --upgrade --user
+```
+drop the '--user' option if installing as root, as will be necessary if the
+commands are to be run from a Jenkins jobs.
+
+## Configure AWS IAM access user
+Do not use the root user to deploy the application. Use the AWS IAM dashboard
+to create suitable groups and users with appropriate policies to enable the
+application environment to be deployed.
+
+For a simple Flask application, the following policies should suffice
+* AWSCodeCommitFullAccess
+* AWSElasticBeanstalkFullAccess
+* AWSElasticBeanstalkService
+* ElasticLoadBalancingFullAccess
+
+Create a group, say, flask-apps, with the above policies applied and then
+add a specific application user, say, crossword-hints.
+Create an access key pair and store them safely and never store them in the
+appliction files.
+
+## Initialise EB environment
+```bash
+$ eb init
+```
+
+## Create EB instance
+The application file needs to define an application context called Application
+for it to be loadable
+```bash
+$ eb create crossword-hints --envvars WSGIPath=crossword_hints.py
+```
+After the application environment has been created it may well be necessary
+to manually edit the configuration and change the WSGIPath from the default
+value of 'application.py'.
+See https://stackoverflow.com/questions/31169260/your-wsgipath-refers-to-a-file-that-does-not-exist, https://stackoverflow.com/questions/20558747/how-to-deploy-structured-flask-app-on-aws-elastic-beanstalk and http://blog.uptill3.com/2012/08/25/python-on-elastic-beanstalk.html
+for more details if not an authoratative answer. It seems that the WSGIPath
+envvar doesn't work and that the application file should be renamed to
+application.py.
+
+# Jenkins build pipeline
+Use a multibranch pipeline job to prepare, test and deploy the application
+in stages.
+
+## Build
+To build a standalone copy of the application from a git checkout we can
+use virtualenv and make sure all the required libraries are installed
+
+```bash
+virtualenv crossword-hints
+    cd crossword-hints
+    . ./bin/activate
+     pip install -r requirements.txt
+```
+
+The file, requirements.txt, is also used by AWS ElasticBeanstalk to identify
+the application dependencies and install them before starting the environment.
+
+## Unit tests
+
+## Deploy
+Create an archive of the codebase to run the application
+
+```bash
+$ git archive -v -o crossword-hints.zip --format=zip HEAD
+```
+
+If using the EB CLI there is no need to create the archive, code updates can
+be applied directly, but this is still useful when deploying via the console.
 
 # Development
 
 # Updating
+To try out new settings on a particular environment before committing to the
+git repo we can deploy just the candidate files (from git add ...):
+
+```bash
+$ eb deploy --staged crossword-hints-dev
+```
 
 # TODO
-* Investigte WTForms for form validation
+* Investigate WTForms for form validation; perhaps more effort than it's
+  worth; maybe try custom validators for basic checks.
+* Code refactoring; break up into modules
+* Add some authentication and authorization - https://flask-login.readthedocs.io/en/latest/
+* Improve the Jenkins pipeline:
+** deploy to dev, stage and prod environments; align with git-flow
+** exclude the unit tests from dev and prod environments
 
 # References
 Sources of additional information.

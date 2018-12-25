@@ -1,6 +1,9 @@
 __pycache__/
-default_settings.py
 test_settings.py
 templates/errors/__init__.py
-crossword_hints.db
 
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
