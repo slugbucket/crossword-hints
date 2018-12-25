@@ -155,6 +155,23 @@ for it to be loadable
 ```bash
 $ eb create crossword-hints --envvars WSGIPath=crossword_hints.py
 ```
+After the application environment has been created it may well be necessary
+to manually edit the configuration and change the WSGIPath from the default
+value of 'application.py'.
+See https://stackoverflow.com/questions/31169260/your-wsgipath-refers-to-a-file-that-does-not-exist, https://stackoverflow.com/questions/20558747/how-to-deploy-structured-flask-app-on-aws-elastic-beanstalk and http://blog.uptill3.com/2012/08/25/python-on-elastic-beanstalk.html
+for more details if not an authoratative answer. It seems that the WSGIPath
+envvar doesn't work and that the application file should be renamed to
+application.py.
+
+# Jenkins build pipeline
+Use a multibranch pipeline job to prepare, test and deploy the application
+in stages.
+
+## Build
+
+## Unit tests
+
+## Deploy
 
 # Development
 
