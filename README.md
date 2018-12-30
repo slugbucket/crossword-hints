@@ -5,13 +5,27 @@ indication as how the answer can be derived from the clue and
 linked to the setter with a measure of the difficulty level
 associated with their clues.
 
-Python environment
+The project is also intended to help better understand the deployment
+lifecycle using Amazon AWS.
+
+# Amazon Web Services (AWS)
+The application is intended to be provisioned as an ElasticBeanstalk
+instance.
+
+# Python environment
+The application works best with Python 3.6 or later.
 
 ## Python Flask
+The application is written using the lightweight Flask framework.
 
 ## virtualenv
+The virtualenv module can help provide a packageable instance of the whole
+application but is not required when deploying direct to AWS.
 
 ## uwsgi
+Uwsgi provides the middleware layer and provides the integration with an
+http server such as nginx or Apache httpd; Amazon AWS uses nginx for the
+frontend web server.
 
 # Application routes
 Accessing the sections of the application is achieved through a RESTful
@@ -150,18 +164,34 @@ $ eb init
 ```
 
 ## Create EB instance
-The application file needs to define an application context called Application
+The application file needs to define an application context called application
 for it to be loadable
+
 ```bash
-$ eb create crossword-hints --envvars WSGIPath=crossword_hints.py
+$ eb create crossword-hints --envvars SECRET_KEY="MySeCrEtKeY"
 ```
+
+Original development was with an application file called crossword_hints.py
+until deployment was switched to AWS.
 After the application environment has been created it may well be necessary
 to manually edit the configuration and change the WSGIPath from the default
 value of 'application.py'.
 See https://stackoverflow.com/questions/31169260/your-wsgipath-refers-to-a-file-that-does-not-exist, https://stackoverflow.com/questions/20558747/how-to-deploy-structured-flask-app-on-aws-elastic-beanstalk and http://blog.uptill3.com/2012/08/25/python-on-elastic-beanstalk.html
-for more details if not an authoratative answer. It seems that the WSGIPath
-envvar doesn't work and that the application file should be renamed to
-application.py.
+for more details if not an authoratative answer.
+Setting the WSGIPath and SECRET_KEY variables on the instances can be done
+by including a file, say, options.config, in the .ebextensions directory
+
+```bash
+option_settings:
+  aws:elasticbeanstalk:application:environment:
+    SECRET_KEY: ChangeMe
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: crossword_hints.py
+```
+
+Despite changing the application filename from the EB default, the application
+context still needs to be called application (rather than 'app' as used in
+just about all Flask examples).
 
 # Jenkins build pipeline
 Use a multibranch pipeline job to prepare, test and deploy the application
@@ -210,9 +240,11 @@ $ eb deploy --staged crossword-hints-dev
 * Add some authentication and authorization - https://flask-login.readthedocs.io/en/latest/
 * Improve the Jenkins pipeline:
 ** deploy to dev, stage and prod environments; align with git-flow
-** exclude the unit tests from dev and prod environments
+** exclude the unit tests from dev and prod environments (.ebignore)
 
 # References
 Sources of additional information.
 * https://stackoverflow.com/questions/11574850/jsonp-web-service-with-python -
   help describing how to handle JSONP data with JQuery.
+* https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html -
+  ElasticBeanstalk configuration
