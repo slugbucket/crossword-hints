@@ -209,7 +209,7 @@ ORDER BY cs2.solution;
     """, '%{0}%'.format(fdata['cue_word']))
     clueset = []
     for row in rs:
-        clueset.append({"clue": row.clue, "solution": row.solution, "hint": row.solution_hint, "soltype": row.soltype, "setter": row.setter })
+        clueset.append({"clue": row.clue, "solution": row.solution, "hint": row.hint, "soltype": row.soltype, "setter": row.setter })
     return(render_template('views/crossword-hints/index.html', r=request, clues=clueset))
 
 """                                                    """
