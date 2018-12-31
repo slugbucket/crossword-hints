@@ -15,10 +15,10 @@ import datetime
 from datetime import date, timedelta, datetime
 
 # To run the application as standalone,
-# export FLASK_APP=application.py
+# export FLASK_APP=crossword_hints.py
 # flask run
 # or, with uwsgi,
-# uwsgi --ini application.ini
+# uwsgi --ini crossword_hints.ini
 #
 application = Flask(__name__) or create_app('crossword_hints.py')
 try:
@@ -64,6 +64,9 @@ def init_db():
     #    database.execute_sql("drop table " + tbl)
     database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions])
 
+@application.route('/crossword-hints/heartbeat', methods=["GET"])
+def heartbeat():
+    return "OK"
 
 """
 Index listing of known solutions
