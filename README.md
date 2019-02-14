@@ -153,6 +153,17 @@ restricted routes can be disabled by adding the following settings
 LOGIN_DISABLED=True
 ```
 
+# Activity logging
+The format of entries for activity logging are:
+* rowid - auto-assigned unique id for the activity record
+* actor - the name of the user performing the action
+* action - one of login, insert, update, delete or logout,
+* item_type -the table on which the operation has been performed.
+* item_id - the numeric id of the item under operation
+* activity - details of the content that has been changed
+
+For operations where there is no specific user 'system' can be used.
+
 # AWS deployment
 
 ## Install Elastic Beanstalk CLI

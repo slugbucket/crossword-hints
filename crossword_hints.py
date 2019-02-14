@@ -1,6 +1,6 @@
 from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file, url_for
 from werkzeug import Headers
-from flask_login import LoginManager, UserMixin, \
+from flask_login import LoginManager, UserMixin, current_user, \
                                 login_required, login_user, logout_user
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
@@ -110,6 +110,7 @@ def crossword_login():
         except ldap.INVALID_CREDENTIALS:
             flash(
                 'Invalid username or password. Please try again.', 'danger')
+            add_log(username, 'login', 'user', '-1', ('Failed login for %s: invalid username or password.' % username))
             return(render_template('views/login/login.html', u=username, r=request))
         except ldap.SERVER_DOWN:
             flash(
@@ -117,7 +118,11 @@ def crossword_login():
             return(render_template('views/login/login.html', u=username, r=request))
 
         user = users.get(users.username == username)
-        login_user(user)
+        try:
+            login_user(user)
+            add_log(username, 'login', 'user', user.get_id(), ("Login successful for %s" % username))
+        except Exception as e:
+            add_log(username, 'login', 'user', user.get_id(), str(e))
         return redirect(request.args.get("next"))
     else:
         username = 'username'
@@ -203,6 +208,10 @@ def crossword_solutions_new():
                              created_at=datetime.now(),
                              updated_at=datetime.now())
     cs.save()
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+          (fdata['crossword_setter_id'], fdata['clue'], fdata['solution'],
+           fdata['solution_hint'], fdata['solution_type_id']))
+    add_log(users.get_name(current_user), 'insert', 'crossword_solutions', cs.rowid, log)
     flash("Saved new crossword solution, %s" % fdata['solution'])
     return redirect('/crossword-solutions/')
 
@@ -231,6 +240,10 @@ def crossword_solutions_edit(id):
                              solution_type_id=fdata['solution_type_id'],
                              updated_at=datetime.now())
     cs.save()
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+      (fdata['crossword_setter_id'], fdata['clue'], fdata['solution'],
+       fdata['solution_hint'], fdata['solution_type_id']))
+    add_log(users.get_name(current_user), 'update', 'crossword_solutions', id, log)
     flash("Updated crossword solution, %s" % fdata['solution'])
     return(redirect('/crossword-solutions'))
 
@@ -242,7 +255,10 @@ def crossword_solutions_delete(id):
     except DoesNotExist:
         flash("Cannot find solution record for id, %s." % id)
         return(redirect('/crossword-solutions'))
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+      (rs.crossword_setter_id, rs.clue, rs.solution, rs.solution_hint, rs.solution_type_id))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'crossword_solutions', id, log)
     flash("Deleted crossword solution, %s" % rs.solution)
     return(redirect('/crossword-solutions'))
 
@@ -529,6 +545,28 @@ def handle_opertional_error(error):
 """                                                        """
 """  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
 """                                                        """
+
+"""
+Function to add an activity log record
+The format of entries for activity logging are:
+* rowid - auto-assigned unique id for the activity record
+* actor - name of the user performing the operation
+* action - one of login, insert, update, delete or logout,
+* item_type -the table on which the operation has been performed.
+* item_id - the numeric id of the item under operation
+* activity - details of the content that has been changed
+"""
+def add_log(actor, action, item_type, item_id, activity):
+    print("DEBUG: Logging %s action in %s." % (action, item_type))
+    log = activity_logs(actor=actor,
+                        action=action,
+                        item_type=item_type,
+                        item_id=item_id,
+                        act_action=activity,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now())
+    log.save()
+
 """
 Construct an array containing the setter_type rowid and name
 suitable for use in a SELECT form element
@@ -618,11 +656,12 @@ class BaseModel(Model):
 
 class activity_logs(BaseModel):
     rowid            = AutoField()
+    actor            = CharField(max_length=32)
     action           = CharField(max_length=32)
-    item             = CharField(max_length=32)
+    item_type        = CharField(max_length=32)
     item_id          = IntegerField()
-    activity         = TextField()
-    updated_by       = CharField(max_length=32)
+    act_action       = TextField()
+    created_at       = CharField(max_length=32)
     updated_at       = DateTimeField(default=datetime.now())
 
 class setter_types(BaseModel):
