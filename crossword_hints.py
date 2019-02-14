@@ -1,5 +1,7 @@
-from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file
+from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file, url_for
 from werkzeug import Headers
+from flask_login import LoginManager, UserMixin, \
+                                login_required, login_user, logout_user
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
 import sqlite3
@@ -7,12 +9,10 @@ import json
 import os
 import io
 import re
-import tempfile
-import zipfile
-import socket
 from peewee import *
 import datetime
 from datetime import date, timedelta, datetime
+import ldap
 
 # To run the application as standalone,
 # export FLASK_APP=crossword_hints.py
@@ -26,8 +26,13 @@ try:
 except KeyError:
     os.environ['APP_SETTINGS'] = os.path.join(application.root_path, 'default_settings.py')
 
-application.config.from_envvar('APP_SETTINGS')
 # Create an application handle that AWS EB can understand
+application.config.from_envvar('APP_SETTINGS')
+
+# flask-login
+login_manager = LoginManager()
+login_manager.init_app(application)
+login_manager.login_view = "crossword_login"
 
 database = SqliteDatabase(application.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
 database.row_factory = sqlite3.Row
@@ -38,6 +43,7 @@ database.row_factory = sqlite3.Row
 #def _db_connect():
 #    #database.get_conn()
 
+
 # This hook ensures that the connection is closed when we've finished
 # processing the request.
 @application.teardown_request
@@ -45,6 +51,14 @@ def _db_close(exc):
     if not database.is_closed():
         database.close()
 
+def get_ldap_connection():
+    conn = ldap.initialize(application.config['LDAP_PROVIDER_URL'])
+    #conn = ldap.initialize('ldap://localhost:389')
+    return conn
+
+@login_manager.user_loader
+def load_user(id):
+    return users.get(users.rowid == int(id))
 
 """
 Initialise the database - only to be used for testing and database restore
@@ -52,7 +66,9 @@ To bootstrap a database, either empty or with new schema:
 $ python
 >>> import crossword_hints
 >>> from peewee import *
->>> with .application.app_context():
+>>> with .application.app_conte@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))xt():
 ...     crossword_hints.init_db()
 Params:
   None
@@ -64,9 +80,58 @@ def init_db():
     #    database.execute_sql("drop table " + tbl)
     database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions])
 
+
 @application.route('/crossword-hints/heartbeat', methods=["GET"])
 def heartbeat():
     return "OK"
+
+"""
+Site login
+Params:
+  None
+Returns:
+  jinja2 template render of the login form
+"""
+@application.route("/login", methods=['GET', 'POST'])
+def crossword_login():
+    try:
+        if current_user.is_authenticated:
+            flash('You are already logged in.')
+            return redirect(request.path)
+    except:
+        pass
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        try:
+            users.try_login(username, password)
+        except ldap.INVALID_CREDENTIALS:
+            flash(
+                'Invalid username or password. Please try again.', 'danger')
+            return(render_template('views/login/login.html', u=username, r=request))
+        except ldap.SERVER_DOWN:
+            flash(
+                'Cannot contact LDAP server, login not possible.', 'danger')
+            return(render_template('views/login/login.html', u=username, r=request))
+
+        user = users.get(users.username == username)
+        login_user(user)
+        return redirect(request.args.get("next"))
+    else:
+        username = 'username'
+
+    return(render_template('views/login/login.html', u=username, r=request))
+
+# somewhere to logout
+@application.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Logout successful. Please close browser for best security.")
+    return(redirect("/"))
+
 
 """
 Index listing of known solutions
@@ -87,7 +152,9 @@ def crossword_solution_index():
          ORDER BY cs2.solution""")
     return(render_template('views/crossword-solutions/index.html', r=request, solns=rs))
 
-
+"""
+Display an existing solution
+"""
 @application.route("/crossword-solutions/<int:id>", methods=["GET"])
 def crossword_solutions_show(id):
     # Getting the solution id, name and solution_type name should be a simple inner
@@ -115,6 +182,7 @@ def crossword_solutions_show(id):
 Add a new crossowrd solution
 """
 @application.route("/crossword-solutions/new", methods=["GET", "POST"])
+@login_required
 def crossword_solutions_new():
     if request.method == "GET":
         solution={'clue': "Clue to the answer",
@@ -142,6 +210,7 @@ def crossword_solutions_new():
 Edit an existing solution
 """
 @application.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
+@login_required
 def crossword_solutions_edit(id):
     if request.method == "GET":
         try:
@@ -166,6 +235,7 @@ def crossword_solutions_edit(id):
     return(redirect('/crossword-solutions'))
 
 @application.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
+@login_required
 def crossword_solutions_delete(id):
     try:
         rs = crossword_solutions.get(crossword_solutions.rowid == id)
@@ -257,6 +327,7 @@ def crossword_setters_show(id):
 Add a new crossword setter
 """
 @application.route("/crossword-setters/new", methods=["GET", "POST"])
+@login_required
 def crossword_setters_new():
     if request.method == "GET":
         setter={'name': "New setter", 'setter_type_id': 1}
@@ -274,6 +345,7 @@ def crossword_setters_new():
 Edit an existing setter
 """
 @application.route("/crossword-setters/<int:id>/edit", methods=["GET", "POST"])
+@login_required
 def crossword_setters_edit(id):
     if request.method == "GET":
         try:
@@ -299,6 +371,7 @@ def crossword_setters_edit(id):
 Delete an existing setter
 """
 @application.route("/crossword-setters/<int:id>/delete", methods=["GET"])
+@login_required
 def crossword_setters_delete(id):
     try:
         rs = crossword_setters.get(crossword_setters.rowid == id)
@@ -323,6 +396,7 @@ def setter_types_show(id):
     return render_template('views/setter-types/show.html', stype=rs,  r=request)
 
 @application.route("/setter-types/new", methods=["GET", "POST"])
+@login_required
 def setter_types_new():
     if request.method == "GET":
         stype={'name': "New setter type", 'description': 'Brief description of this type of setter'}
@@ -338,6 +412,7 @@ def setter_types_new():
 
 
 @application.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
+@login_required
 def setter_types_edit(id):
     if request.method == "GET":
         try:
@@ -358,6 +433,7 @@ def setter_types_edit(id):
     return(redirect('/setter-types'))
 
 @application.route("/setter-types/<int:id>/delete", methods=["GET"])
+@login_required
 def setter_types_delete(id):
     try:
         rs = setter_types.get(setter_types.rowid == id)
@@ -383,6 +459,7 @@ def solution_types_show(id):
     return render_template('views/solution-types/show.html', stype=rs,  r=request)
 
 @application.route("/solution-types/new", methods=["GET", "POST"])
+@login_required
 def solution_types_new():
     if request.method == "GET":
         stype={'name': "New solution type", 'description': 'Brief description of this type of solution'}
@@ -397,6 +474,7 @@ def solution_types_new():
     return redirect('/solution-types')
 
 @application.route("/solution-types/<int:id>/edit", methods=["GET", "POST"])
+@login_required
 def solution_types_edit(id):
     try:
         stype = solution_types.get(solution_types.rowid == id)
@@ -417,6 +495,7 @@ def solution_types_edit(id):
     return(redirect('/solution-types'))
 
 @application.route("/solution-types/<int:id>/delete", methods=["GET", "POST"])
+@login_required
 def solution_types_delete(id):
     try:
         rs = solution_types.get(solution_types.rowid == id)
@@ -435,10 +514,10 @@ def solution_types_delete(id):
 def handle_database_error(error):
     return(render_template('errors/409.html', errmsg=error), 409)
 @application.errorhandler(409)
-def handle_database_error(error):
+def handle_409_error(error):
     return(render_template('errors/409.html', errmsg=error), 409)
 @application.errorhandler(OperationalError)
-def handle_opertional_error(error):
+def handle_operational_error(error):
     return(render_template('errors/409.html', errmsg=error), 409)
 @application.errorhandler(404)
 def handle_opertional_error(error):
@@ -583,6 +662,38 @@ class cue_words(BaseModel):
     cue_word         = CharField(null=False, max_length=32)
     created_at       = DateTimeField(default=datetime.now())
     updated_at       = DateTimeField(default=datetime.now())
+
+class users(BaseModel):
+    rowid            = AutoField()
+    username         = CharField(null=False, max_length=32, unique=True)
+    created_at       = DateTimeField(default=datetime.now())
+    updated_at       = DateTimeField(default=datetime.now())
+
+    #def __init__(self, username, password):
+    #    self.username = username
+
+    @staticmethod
+    def try_login(username, password):
+        conn = get_ldap_connection()
+        conn.simple_bind_s(
+            'uid=%s,ou=People,dc=my-domain,dc=com' % username, password
+        )
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        conn = get_ldap_connection()
+        return(self.rowid)
+
+    def get_name(self):
+        return(self.username)
 
 """                                             """
 """  E N D   O F   D A T A B A S E   M O D E L  """

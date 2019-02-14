@@ -61,3 +61,11 @@ CREATE TABLE cue_words (
   created_at DATETIME,
   updated_at DATETIME
 );
+
+DROP TABLE IF EXISTS cue_words;
+
+CREATE TABLE users (
+  username VARCHAR(32),
+  created_at DATETIME,
+  updated_at DATETIME
+);

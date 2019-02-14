@@ -131,6 +131,23 @@ To run the tests use,
 ```bash
 APP_SETTINGS='test-settings.py' python crossword-hints-test.py
 ```
+
+# Authentication
+There is a pip module, [Flask-login](https://flask-login.readthedocs.io/en/latest/),
+that provides a simple framework for application authentication.
+Rather than have to maintain a full database of user accounts, passwords and
+privileges it might be easier to use an LDAP service for the authentication.
+
+Setting up a simple directory service and how to get a Flask application to
+authenticate users through it is described at:
+* [LDAP server setup](https://wordpress.com/post/julianrawcliffe.wordpress.com/2283)
+* [Flask LDAP authentication](https://julianrawcliffe.wordpress.com/2019/02/14/configure-python-flask-application-for-ldap-authentication/)
+
+There are questions as to how this would operate in an AWS environment.
+
+There are potentially problems around unit testing of an application that
+requries authentication.
+
 # AWS deployment
 
 ## Install Elastic Beanstalk CLI
@@ -238,6 +255,7 @@ $ eb deploy --staged crossword-hints-dev
   worth; maybe try custom validators for basic checks.
 * Code refactoring; break up into modules
 * Add some authentication and authorization - https://flask-login.readthedocs.io/en/latest/
+  (https://github.com/slugbucket/crossword-hints/issues/8)
 * Improve the Jenkins pipeline:
 ** deploy to dev, stage and prod environments; align with git-flow
 ** exclude the unit tests from dev and prod environments (.ebignore)
