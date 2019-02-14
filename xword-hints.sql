@@ -100,6 +100,7 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("smashed", "anagram indicator", datetime('now'), datetime('now')),
 ("mashed", "anagram indicator", datetime('now'), datetime('now')),
 ("knitted", "anagram indicator", datetime('now'), datetime('now')),
+("perverse", "anagram indicator", datetime('now'), datetime('now')),
 ("intrinsically", "anagram indicator", datetime('now'), datetime('now')),
 ("drunk", "anagram indicator", datetime('now'), datetime('now')),
 ("fixing", "anagram indicator", datetime('now'), datetime('now')),
@@ -320,3 +321,6 @@ INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hi
 ("2", "Initially extraordinary year especailly for unmarried lady who's a beauty", "eyeful", "First letter of each word", "4", datetime('now'), datetime('now')),
 ("2", "Back in Eden nudists were importunate", "dunned", "", "1", datetime('now'), datetime('now')),
 ("2", "Young woman needs answer to be fair", "gala", "GAL = young woman, A = answer", "6", datetime('now'), datetime('now'));
+
+INSERT INTO users(username, created_at, updated_at) VALUES
+('xword', datetime('now'), datetime('now'));
