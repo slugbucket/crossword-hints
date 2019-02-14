@@ -145,8 +145,13 @@ authenticate users through it is described at:
 
 There are questions as to how this would operate in an AWS environment.
 
-There are potentially problems around unit testing of an application that
-requries authentication.
+## Disable login for unit testing
+The Flask-login [protecting views](https://flask-login.readthedocs.io/en/latest/#protecting-views) section states that the login_required decorator applied to
+restricted routes can be disabled by adding the following settings
+
+```python
+LOGIN_DISABLED=True
+```
 
 # AWS deployment
 
