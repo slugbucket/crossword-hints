@@ -28,18 +28,18 @@ APP_SETTINGS='test-settings.py' python crossword-hints-tests.py
 class XwordhintsTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.db_fd, crossword_hints.app.config['DATABASE'] = tempfile.mkstemp()
-        self.app = crossword_hints.app.test_client()
+        self.db_fd, crossword_hints.application.config['DATABASE'] = tempfile.mkstemp()
+        self.app = crossword_hints.application.test_client()
         crossword_hints.init_db()
 
     def tearDown(self):
         #os.close(self.db_fd)
-        os.unlink(crossword_hints.app.config['DATABASE'])
+        os.unlink(crossword_hints.application.config['DATABASE'])
 
     def loadSampleData(self):
         #with crossword_hints.app.app_context():
         for sql in ('setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions'):
-            with crossword_hints.app.open_resource(('tests/%s.sql' % sql), mode='r') as f:
+            with crossword_hints.application.open_resource(('tests/%s.sql' % sql), mode='r') as f:
                 crossword_hints.database.execute_sql(f.read())
 
     def clearSampleData(self):
@@ -47,18 +47,18 @@ class XwordhintsTestCase(unittest.TestCase):
             crossword_hints.database.execute_sql("DELETE FROM %s" % tbl)
 
     def get_request(self, req, follow):
-        with crossword_hints.app.app_context():
+        with crossword_hints.application.app_context():
             rv = self.app.get(req, follow_redirects=True)
             return rv
 
     def post_request(self, req, data, follow):
-        with crossword_hints.app.app_context():
+        with crossword_hints.application.app_context():
             rv = crossword_hints.app.post('/crossword_hints/1/copy', follow_redirects=True)
             return rv
 
     # Doesn't work when application is using the ORM
     def db_count(self, table):
-        with crossword_hints.app.app_context():
+        with crossword_hints.application.app_context():
             rs = crossword_hints.query_db(("SELECT COUNT(rowid) AS count FROM %s" % table), one=True)
             return rs[0]
 
