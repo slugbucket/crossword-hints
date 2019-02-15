@@ -133,9 +133,7 @@ def crossword_login():
 @application.route("/logout")
 @login_required
 def logout():
-    print("DEBUG: Logging out user %s" % current_user)
     u = users.get_name(current_user)
-    print("DEBUG: Logout username: %s" % u)
     add_log(u, 'logout', 'user', users.get_id(current_user), ("Logout user: %s" % u))
     logout_user()
     flash("%s logout successful. Please close browser for best security." % u)
@@ -582,7 +580,6 @@ The format of entries for activity logging are:
 * activity - details of the content that has been changed
 """
 def add_log(actor, action, item_type, item_id, activity):
-    print("DEBUG: Logging %s action in %s." % (action, item_type))
     log = activity_logs(actor=actor,
                         action=action,
                         item_type=item_type,
