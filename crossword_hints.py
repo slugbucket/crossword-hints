@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, current_user, \
                                 login_required, login_user, logout_user
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
+from urllib.parse import urlparse, urljoin
 import sqlite3
 import json
 import os
@@ -120,10 +121,10 @@ def crossword_login():
         user = users.get(users.username == username)
         try:
             login_user(user)
-            add_log(username, 'login', 'user', user.get_id(), ("Login successful for %s" % username))
+            add_log(username, 'login', 'user', user.get_id(), ("Successful login for %s" % username))
         except Exception as e:
             add_log(username, 'login', 'user', user.get_id(), str(e))
-        return redirect(request.args.get("next"))
+        return redirect_back('crossowrd_hints_index')
     else:
         username = 'username'
 
@@ -134,7 +135,7 @@ def crossword_login():
 @login_required
 def logout():
     u = users.get_name(current_user)
-    add_log(u, 'logout', 'user', users.get_id(current_user), ("Logout user: %s" % u))
+    add_log(u, 'logout', 'user', users.get_id(current_user), ("Successful logout for %s" % u))
     logout_user()
     flash("%s logout successful. Please close browser for best security." % u)
     return(redirect("/"))
@@ -568,6 +569,53 @@ def handle_opertional_error(error):
 """                                                        """
 """  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
 """                                                        """
+
+"""
+Function to try to determine if a URL (typically passed as a next parameter
+when logging in) is safe to redirect to.
+Taken from http://flask.pocoo.org/snippets/62/ although the next parameter
+is delivered by the query string rather than hidden form element
+Params:
+  target: string - URL to forward to
+Returns:
+  bool: True is the target is safe to redirect to, False otherwise
+"""
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+"""
+Function to try and determine a suitable referral point that is safe
+to redirect the client back after an action such as login.
+Params:
+
+Returns:
+  string: target URL
+"""
+def get_redirect_target():
+    for target in request.args.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+
+"""
+Function to verify that a submitted forward URL is safe to redirect to or
+use a fallback address instead.
+Params:
+  endpoint: string - name of fallback location if next parameter is not
+            found or is not safe
+  values: list of values associated with the fallback target
+Returns:
+  target to redirect to
+"""
+def redirect_back(endpoint, **values):
+    target = request.args['next']
+    if not target or not is_safe_url(target):
+        target = url_for(endpoint, **values)
+    return redirect(target)
 
 """
 Function to add an activity log record
