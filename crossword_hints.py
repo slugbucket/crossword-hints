@@ -1,6 +1,6 @@
 from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file, url_for
 from werkzeug import Headers
-from flask_login import LoginManager, UserMixin, \
+from flask_login import LoginManager, UserMixin, current_user, \
                                 login_required, login_user, logout_user
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
@@ -110,6 +110,7 @@ def crossword_login():
         except ldap.INVALID_CREDENTIALS:
             flash(
                 'Invalid username or password. Please try again.', 'danger')
+            add_log(username, 'login', 'user', '-1', ('Failed login for %s: invalid username or password.' % username))
             return(render_template('views/login/login.html', u=username, r=request))
         except ldap.SERVER_DOWN:
             flash(
@@ -117,7 +118,11 @@ def crossword_login():
             return(render_template('views/login/login.html', u=username, r=request))
 
         user = users.get(users.username == username)
-        login_user(user)
+        try:
+            login_user(user)
+            add_log(username, 'login', 'user', user.get_id(), ("Login successful for %s" % username))
+        except Exception as e:
+            add_log(username, 'login', 'user', user.get_id(), str(e))
         return redirect(request.args.get("next"))
     else:
         username = 'username'
@@ -128,8 +133,10 @@ def crossword_login():
 @application.route("/logout")
 @login_required
 def logout():
+    u = users.get_name(current_user)
+    add_log(u, 'logout', 'user', users.get_id(current_user), ("Logout user: %s" % u))
     logout_user()
-    flash("Logout successful. Please close browser for best security.")
+    flash("%s logout successful. Please close browser for best security." % u)
     return(redirect("/"))
 
 
@@ -203,6 +210,10 @@ def crossword_solutions_new():
                              created_at=datetime.now(),
                              updated_at=datetime.now())
     cs.save()
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+          (fdata['crossword_setter_id'], fdata['clue'], fdata['solution'],
+           fdata['solution_hint'], fdata['solution_type_id']))
+    add_log(users.get_name(current_user), 'insert', 'crossword_solutions', cs.rowid, log)
     flash("Saved new crossword solution, %s" % fdata['solution'])
     return redirect('/crossword-solutions/')
 
@@ -231,6 +242,10 @@ def crossword_solutions_edit(id):
                              solution_type_id=fdata['solution_type_id'],
                              updated_at=datetime.now())
     cs.save()
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+      (fdata['crossword_setter_id'], fdata['clue'], fdata['solution'],
+       fdata['solution_hint'], fdata['solution_type_id']))
+    add_log(users.get_name(current_user), 'update', 'crossword_solutions', id, log)
     flash("Updated crossword solution, %s" % fdata['solution'])
     return(redirect('/crossword-solutions'))
 
@@ -242,7 +257,10 @@ def crossword_solutions_delete(id):
     except DoesNotExist:
         flash("Cannot find solution record for id, %s." % id)
         return(redirect('/crossword-solutions'))
+    log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
+      (rs.crossword_setter_id, rs.clue, rs.solution, rs.solution_hint, rs.solution_type_id))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'crossword_solutions', id, log)
     flash("Deleted crossword solution, %s" % rs.solution)
     return(redirect('/crossword-solutions'))
 
@@ -336,8 +354,11 @@ def crossword_setters_new():
     if not rc == "":
         flash(rc)
         return(render_template('views/crossword-setters/new.html', setter=fdata, s_types=get_setter_types(), r=request, sbmt=request.form['submit']))
-    st = crossword_setters(name=fdata['name'], setter_type_id=fdata['setter_type_id'], description=fdata['description'])
-    st.save()
+    cs = crossword_setters(name=fdata['name'], setter_type_id=fdata['setter_type_id'], description=fdata['description'])
+    cs.save()
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (fdata['name'], fdata['setter_type_id'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'crossword_setters', cs.rowid, log)
     flash("Saved new crossword setter, %s" % fdata['name'])
     return redirect('/crossword-setters/')
 
@@ -364,6 +385,9 @@ def crossword_setters_edit(id):
                            description=fdata['description'],
                            updated_at=datetime.now())
     cs.save()
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (fdata['name'], fdata['setter_type_id'], fdata['description']))
+    add_log(users.get_name(current_user), 'update', 'crossword_setters', id, log)
     flash("Updated crossword setter, %s" % fdata['name'])
     return(redirect('/crossword-setters'))
 
@@ -378,7 +402,10 @@ def crossword_setters_delete(id):
     except DoesNotExist:
         flash("Cannot find crssword setter record for id, %s." % id)
         return(redirect('/crossword-setters/'))
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (rs.name, rs.setter_type_id, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'crossword_setters', id, log)
     flash("Deleted crossword setter, %s" % rs.name)
     return(redirect('/crossword-setters/'))
 
@@ -407,6 +434,8 @@ def setter_types_new():
         return(render_template('views/setter-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
     st = setter_types(name=fdata['name'], description=fdata['description'])
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'setter_types', st.rowid, log)
     flash("Saved new setter type, %s" % fdata['name'])
     return redirect('/setter-types')
 
@@ -429,6 +458,8 @@ def setter_types_edit(id):
                       description=fdata['description'],
                       updated_at=datetime.now())
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'update]', 'setter_types', id, log)
     flash("Updated setter type, %s" % fdata['name'])
     return(redirect('/setter-types'))
 
@@ -440,7 +471,9 @@ def setter_types_delete(id):
     except DoesNotExist:
         flash("Cannot find setter type record for id, %s." % id)
         return(redirect('/setter-types'))
+    log = ("name: %s\ndescription: %s" % (rs.name, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'setter_types', rs.rowid, log)
     flash("Deleted setter type, %s" % rs.name)
     return(redirect('/setter-types'))
 
@@ -470,6 +503,8 @@ def solution_types_new():
         return(render_template('views/solution-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
     st = solution_types(name=fdata['name'], description=fdata['description'])
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'solution_types', st.rowid, log)
     flash("Saved new solution type, %s" % fdata['name'])
     return redirect('/solution-types')
 
@@ -491,6 +526,8 @@ def solution_types_edit(id):
                       description=fdata['description'],
                       updated_at=datetime.now())
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'update', 'solution_types', id, log)
     flash("Updated solution type, %s" % fdata['name'])
     return(redirect('/solution-types'))
 
@@ -502,7 +539,9 @@ def solution_types_delete(id):
     except DoesNotExist:
         flash("Cannot find solution type record for id, %s." % id)
         return(redirect('/solution-types'))
+    log = ("name: %s\ndescription: %s" % (rs.name, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'solution_types', rs.rowid, log)
     flash("Deleted solution type, %s" % rs.name)
     return(redirect("/solution-types"))
 
@@ -529,6 +568,27 @@ def handle_opertional_error(error):
 """                                                        """
 """  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
 """                                                        """
+
+"""
+Function to add an activity log record
+The format of entries for activity logging are:
+* rowid - auto-assigned unique id for the activity record
+* actor - name of the user performing the operation
+* action - one of login, insert, update, delete or logout,
+* item_type -the table on which the operation has been performed.
+* item_id - the numeric id of the item under operation
+* activity - details of the content that has been changed
+"""
+def add_log(actor, action, item_type, item_id, activity):
+    log = activity_logs(actor=actor,
+                        action=action,
+                        item_type=item_type,
+                        item_id=item_id,
+                        act_action=activity,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now())
+    log.save()
+
 """
 Construct an array containing the setter_type rowid and name
 suitable for use in a SELECT form element
@@ -618,11 +678,12 @@ class BaseModel(Model):
 
 class activity_logs(BaseModel):
     rowid            = AutoField()
+    actor            = CharField(max_length=32)
     action           = CharField(max_length=32)
-    item             = CharField(max_length=32)
+    item_type        = CharField(max_length=32)
     item_id          = IntegerField()
-    activity         = TextField()
-    updated_by       = CharField(max_length=32)
+    act_action       = TextField()
+    created_at       = CharField(max_length=32)
     updated_at       = DateTimeField(default=datetime.now())
 
 class setter_types(BaseModel):

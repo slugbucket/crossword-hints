@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS activity_logs;
 
 CREATE TABLE activity_logs (
+  actor CHAR(32) NOT NULL DEFAULT 'system',
   action CHAR(6) NOT NULL DEFAULT 'update',
   item_type VARCHAR,
   item_id INTEGER NOT NULL,
