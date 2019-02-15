@@ -54,7 +54,6 @@ def _db_close(exc):
 
 def get_ldap_connection():
     conn = ldap.initialize(application.config['LDAP_PROVIDER_URL'])
-    #conn = ldap.initialize('ldap://localhost:389')
     return conn
 
 @login_manager.user_loader
@@ -798,7 +797,6 @@ class users(BaseModel):
         return False
 
     def get_id(self):
-        conn = get_ldap_connection()
         return(self.rowid)
 
     def get_name(self):
