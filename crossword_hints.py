@@ -133,8 +133,12 @@ def crossword_login():
 @application.route("/logout")
 @login_required
 def logout():
+    print("DEBUG: Logging out user %s" % current_user)
+    u = users.get_name(current_user)
+    print("DEBUG: Logout username: %s" % u)
+    add_log(u, 'logout', 'user', users.get_id(current_user), ("Logout user: %s" % u))
     logout_user()
-    flash("Logout successful. Please close browser for best security.")
+    flash("%s logout successful. Please close browser for best security." % u)
     return(redirect("/"))
 
 
@@ -352,8 +356,11 @@ def crossword_setters_new():
     if not rc == "":
         flash(rc)
         return(render_template('views/crossword-setters/new.html', setter=fdata, s_types=get_setter_types(), r=request, sbmt=request.form['submit']))
-    st = crossword_setters(name=fdata['name'], setter_type_id=fdata['setter_type_id'], description=fdata['description'])
-    st.save()
+    cs = crossword_setters(name=fdata['name'], setter_type_id=fdata['setter_type_id'], description=fdata['description'])
+    cs.save()
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (fdata['name'], fdata['setter_type_id'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'crossword_setters', cs.rowid, log)
     flash("Saved new crossword setter, %s" % fdata['name'])
     return redirect('/crossword-setters/')
 
@@ -380,6 +387,9 @@ def crossword_setters_edit(id):
                            description=fdata['description'],
                            updated_at=datetime.now())
     cs.save()
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (fdata['name'], fdata['setter_type_id'], fdata['description']))
+    add_log(users.get_name(current_user), 'update', 'crossword_setters', id, log)
     flash("Updated crossword setter, %s" % fdata['name'])
     return(redirect('/crossword-setters'))
 
@@ -394,7 +404,10 @@ def crossword_setters_delete(id):
     except DoesNotExist:
         flash("Cannot find crssword setter record for id, %s." % id)
         return(redirect('/crossword-setters/'))
+    log = ("name: %s\nsetter_type_id: %s\ndescription: %s" %
+          (rs.name, rs.setter_type_id, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'crossword_setters', id, log)
     flash("Deleted crossword setter, %s" % rs.name)
     return(redirect('/crossword-setters/'))
 
@@ -423,6 +436,8 @@ def setter_types_new():
         return(render_template('views/setter-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
     st = setter_types(name=fdata['name'], description=fdata['description'])
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'setter_types', st.rowid, log)
     flash("Saved new setter type, %s" % fdata['name'])
     return redirect('/setter-types')
 
@@ -445,6 +460,8 @@ def setter_types_edit(id):
                       description=fdata['description'],
                       updated_at=datetime.now())
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'update]', 'setter_types', id, log)
     flash("Updated setter type, %s" % fdata['name'])
     return(redirect('/setter-types'))
 
@@ -456,7 +473,9 @@ def setter_types_delete(id):
     except DoesNotExist:
         flash("Cannot find setter type record for id, %s." % id)
         return(redirect('/setter-types'))
+    log = ("name: %s\ndescription: %s" % (rs.name, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'setter_types', rs.rowid, log)
     flash("Deleted setter type, %s" % rs.name)
     return(redirect('/setter-types'))
 
@@ -486,6 +505,8 @@ def solution_types_new():
         return(render_template('views/solution-types/new.html', stype=fdata, r=request, sbmt=request.form['submit']))
     st = solution_types(name=fdata['name'], description=fdata['description'])
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'insert', 'solution_types', st.rowid, log)
     flash("Saved new solution type, %s" % fdata['name'])
     return redirect('/solution-types')
 
@@ -507,6 +528,8 @@ def solution_types_edit(id):
                       description=fdata['description'],
                       updated_at=datetime.now())
     st.save()
+    log = ("name: %s\ndescription: %s" % (fdata['name'], fdata['description']))
+    add_log(users.get_name(current_user), 'update', 'solution_types', id, log)
     flash("Updated solution type, %s" % fdata['name'])
     return(redirect('/solution-types'))
 
@@ -518,7 +541,9 @@ def solution_types_delete(id):
     except DoesNotExist:
         flash("Cannot find solution type record for id, %s." % id)
         return(redirect('/solution-types'))
+    log = ("name: %s\ndescription: %s" % (rs.name, rs.description))
     rs.delete_instance()
+    add_log(users.get_name(current_user), 'delete', 'solution_types', rs.rowid, log)
     flash("Deleted solution type, %s" % rs.name)
     return(redirect("/solution-types"))
 
