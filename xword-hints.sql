@@ -67,6 +67,8 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("shattered", "anagram indicator", datetime('now'), datetime('now')),
 ("oddball", "anagram indicator", datetime('now'), datetime('now')),
 ("criminal", "anagram indicator", datetime('now'), datetime('now')),
+("outrageous", "anagram indicator", datetime('now'), datetime('now')),
+("rebuilt", "anagram indicator", datetime('now'), datetime('now')),
 ("extreme", "first and/or last letter(s)", datetime('now'), datetime('now')),
 ("extremely", "first and/or last letter(s)", datetime('now'), datetime('now')),
 ("casing", "first and/or last letter(s)", datetime('now'), datetime('now')),
@@ -128,6 +130,7 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("good", "G", datetime('now'), datetime('now')),
 ("cockney", "drop an H", datetime('now'), datetime('now')),
 ("thus", "SO", datetime('now'), datetime('now')),
+("almost", "AL", datetime('now'), datetime('now')),
 ("introducing", "before", datetime('now'), datetime('now')),
 ("old boy", "OB", datetime('now'), datetime('now')),
 ("speed", "MPH", datetime('now'), datetime('now')),
@@ -167,6 +170,9 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("friend", "PAL", datetime('now'), datetime('now')),
 ("mate", "PAL", datetime('now'), datetime('now')),
 ("buddy", "PAL", datetime('now'), datetime('now')),
+("writer", "PEN, I or ME", datetime('now'), datetime('now')),
+("solicitor", "TOUT", datetime('now'), datetime('now')),
+("interrupt", "insert sub-clue solution", datetime('now'), datetime('now')),
 ("say", "homophone indicator", datetime('now'), datetime('now'));
 
 INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
