@@ -327,7 +327,7 @@ Index listing of known setters
 """
 @application.route("/crossword-setters/", methods=["GET"])
 def crossword_setters_index():
-    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid)
+    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid).order_by(fn.Lower(crossword_setters.name))
     return render_template('views/crossword-setters/index.html', setters=rs.dicts(), r=request)
 
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
@@ -414,7 +414,7 @@ def crossword_setters_delete(id):
 """              """
 @application.route("/setter-types/", methods=["GET"])
 def setter_types_index():
-    rs = setter_types.select()
+    rs = setter_types.select().order_by(fn.Lower(setter_types.name))
     return render_template('views/setter-types/index.html', stypes=rs.dicts(), r=request)
 
 @application.route("/setter-types/<int:id>", methods=["GET"])
@@ -483,7 +483,7 @@ def setter_types_delete(id):
 """               """
 @application.route("/solution-types/", methods=["GET"])
 def solution_types_index():
-    rs = solution_types.select()
+    rs = solution_types.select().order_by(fn.Lower(solution_types.name))
     return render_template('views/solution-types/index.html', stypes=rs.dicts(), r=request)
 
 @application.route("/solution-types/<int:id>", methods=["GET"])
@@ -641,7 +641,7 @@ Construct an array containing the setter_type rowid and name
 suitable for use in a SELECT form element
 """
 def get_setter_types():
-    rs=setter_types.select(setter_types.rowid, setter_types.name)
+    rs=setter_types.select(setter_types.rowid, setter_types.name).order_by(fn.Lower(setter_types.name))
     s_types = []
     for row in rs.dicts():
         s_types.append([row['rowid'], row['name']])
@@ -652,7 +652,7 @@ Construct an array containing the crossword setter rowid and name
 suitable for use in a SELECT form element
 """
 def get_crossword_setters():
-    cs=crossword_setters.select(crossword_setters.rowid, crossword_setters.name)
+    cs=crossword_setters.select(crossword_setters.rowid, crossword_setters.name).order_by(fn.Lower(crossword_setters.name))
     setters = []
     for row in cs.dicts():
         setters.append([row['rowid'], row['name']])
@@ -663,7 +663,7 @@ Construct an array containing the solution_type rowid and name
 suitable for use in a SELECT form element
 """
 def get_solution_types():
-    rs=solution_types.select(solution_types.rowid, solution_types.name)
+    rs=solution_types.select(solution_types.rowid, solution_types.name).order_by(fn.Lower(solution_types.name))
     s_types = []
     for row in rs.dicts():
         s_types.append([row['rowid'], row['name']])
