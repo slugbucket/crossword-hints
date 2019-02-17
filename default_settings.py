@@ -7,3 +7,5 @@ except KeyError:
     SECRET_KEY='HJuyjrRtyhy8hhjEDgYujNKUDL2356H'
 TESTING=False
 LDAP_PROVIDER_URL='ldap://localhost:389'
+# Pagination settings
+PER_PAGE = 20

@@ -76,3 +76,38 @@
   <li><a href="{{ url_for(endpoint) }}">{{name}}</a></li>
 {% endif %}
 {% endmacro %}
+
+#
+# pagination
+#
+{% macro render_pagination(pagination) %}
+  <div class=pagination>
+  <ul>
+      {%- if pagination.has_prev -%}
+        <li><a href="{{ url_for_other_page(pagination.page - 1) }}">&laquo; Prev</a></li>
+        {%- else -%}
+          <li><span class="pagination nolink">&laquo; Prev</span></li>
+      {% endif %}
+  {%- for page in pagination.iter_pages() %}
+    {%- if page %}
+      {%- if page != pagination.page -%}
+        <li><a href="{{ url_for_other_page(page) }}">{{ page }}</a></li>
+      {%- else -%}
+        <li><span>{{ page }}</span></li>
+      {%- endif -%}
+    {%- else -%}
+      <li><span class="ellipsis">…</span><li>
+    {%- endif -%}
+  {%- endfor %}
+  {%- if pagination.has_next -%}
+    <li><a href="{{ url_for_other_page(pagination.page + 1) }}">Next &raquo;</a></li>
+  {%- else -%}
+    <li><span class="pagination nolink">Next &raquo;</span></li>
+  {% endif %}
+    <li>&nbsp; | &nbsp;</li>
+    <li><a href="/crossword-solutions/new">New solution</a></li>
+  </ul>
+
+  </div>
+  <br />
+{% endmacro %}

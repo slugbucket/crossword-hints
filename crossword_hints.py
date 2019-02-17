@@ -14,6 +14,8 @@ from peewee import *
 import datetime
 from datetime import date, timedelta, datetime
 import ldap
+# For use with pagination
+from math import ceil
 
 # To run the application as standalone,
 # export FLASK_APP=crossword_hints.py
@@ -147,17 +149,29 @@ Params:
 Returns:
   jinja2 template render of list of active requests
 """
-@application.route("/crossword-solutions/")
-def crossword_solution_index():
-    rs = crossword_solutions.raw("""
+@application.route("/crossword-solutions/", defaults={'page': 1})
+@application.route('/crossword-solutions/page/<int:page>')
+def crossword_solution_index(page):
+    count = crossword_solutions.select(fn.COUNT(crossword_solutions.rowid)).scalar()
+    PER_PAGE=25
+    offset = ((int(page)-1) * PER_PAGE)
+    solutions = crossword_solutions.raw("""
          SELECT cs1.name as setter, cs2.solution AS solution, cs2.rowid AS csid, st1.name AS soltype
          FROM crossword_setters cs1
            INNER JOIN crossword_solutions cs2
              ON cs1.rowid = cs2.crossword_setter_id
            INNER JOIN solution_types st1
              ON cs2.solution_type_id = st1.rowid
-         ORDER BY cs2.solution""")
-    return(render_template('views/crossword-solutions/index.html', r=request, solns=rs))
+         ORDER BY cs2.solution
+         LIMIT %s, %s""" % (offset, PER_PAGE))
+    # Display a 409 not found page for an out of bounds request
+    if not solutions and page != 1:
+        return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
+    pagination = Pagination(page, PER_PAGE, count)
+    return(render_template('views/crossword-solutions/index.html',
+                           r=request,
+                           solns=solutions,
+                           pagination=pagination))
 
 """
 Display an existing solution
@@ -805,3 +819,52 @@ class users(BaseModel):
 """                                             """
 """  E N D   O F   D A T A B A S E   M O D E L  """
 """                                             """
+
+"""                                          """
+"""  P A G I N A T I O N    C L A S S        """
+"""                                          """
+""" From http://flask.pocoo.org/snippets/44/ """
+"""                                          """
+class Pagination(object):
+
+    def __init__(self, page, per_page, total_count):
+        self.page = page
+        self.per_page = per_page
+        self.total_count = total_count
+
+    @property
+    def pages(self):
+        return int(ceil(self.total_count / float(self.per_page)))
+
+    @property
+    def has_prev(self):
+        return self.page > 1
+
+    @property
+    def has_next(self):
+        return self.page < self.pages
+
+    def iter_pages(self, left_edge=2, left_current=2,
+                   right_current=5, right_edge=2):
+        last = 0
+        for num in range(1, self.pages + 1):
+            if num <= left_edge or \
+               (num > self.page - left_current - 1 and \
+                num < self.page + right_current) or \
+               num > self.pages - right_edge:
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+
+""" Pagination view helpers             """
+""" http://flask.pocoo.org/snippets/44/ """
+def url_for_other_page(page):
+    args = request.view_args.copy()
+    args['page'] = page
+    return url_for(request.endpoint, **args)
+application.jinja_env.globals['url_for_other_page'] = url_for_other_page
+
+"""                                                  """
+"""  E N D   O F   P A G I N A T I O N    C L A S S  """
+"""                                                  """
