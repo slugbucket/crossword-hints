@@ -116,6 +116,17 @@ the main application templates.
 * partials - section of page (e.g., navigation bar) frequently used
 * layouts - The whole page layout with placeholders (blocks) for content
 
+## pagination
+The number of entries on the crossword_solutions page mean that some
+pagination arrangement needs to be deployed to keep the index view usable.
+Rather than use the Flask-paginate pip (where stylesheet problems were
+experienced) a simpler method was employed based on a
+[Flask snippet](http://flask.pocoo.org/snippets/44/).
+
+This is further documented at [my blog](https://wordpress.com/post/julianrawcliffe.wordpress.com/2293).
+
+The method could just as easily be applied to other application sections.
+
 # Testing
 One of the goals for developing this project is to get an insight into
 maintaining a test regime as features are developed.
