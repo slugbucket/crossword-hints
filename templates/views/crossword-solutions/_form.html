@@ -5,7 +5,7 @@ Use this form to edit the details of a crossword solution.
     <fieldset id="crossword_solutions">
         <legend>Crossword solutions</legend>
         {{ f.label('clue', 'Clue') }}
-        {{ f.input_tag('clue', value=(soln['clue']|escape)|default('clue'), class="xwordhints") }}
+        {{ f.input_tag('clue', value=(soln['clue']|escape)|default('clue'), class="xwordhints", onfocus="this.select()", tabindex="1") }}
 
         {{ f.label('solution', 'Solution') }}
         {{ f.input_tag('solution', value=(soln['solution']|escape)|default('solution'), class="xwordhints") }}
