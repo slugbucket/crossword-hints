@@ -1,5 +1,5 @@
 {% macro select_tag(name, options, default=None) %}
-<select name='{{name}}' {% for key in kwargs %}{{key}}='{{kwargs[key]|safe}}'{% endfor %} >
+<select name='{{name}}' {% for key in kwargs %} {{key}}='{{kwargs[key]|safe}}'{% endfor %} >
     {% for item in options %}
     <option value='{{item[0]|safe}}' {% if item[0] == default %}selected='selected'{% endif %} >{{item[1] if item[1] is defined else item[0] }}</option>
     {% endfor %}
@@ -33,11 +33,11 @@
 {% endmacro %}
 
 {% macro input_tag(name, type="text") %}
-<input name='{{name}}' type='{{type}}' {% for key in kwargs %}{{key}}='{{kwargs[key]|safe}}'{% endfor %} />
+<input name='{{name}}' type='{{type}}' {% for key in kwargs %} {{key}}='{{kwargs[key]|safe}}'{% endfor %} />
 {% endmacro %}
 
 {% macro textarea_tag(name, value="") %}
-<textarea name='{{name}}' {% for key in kwargs %}{{key}}='{{kwargs[key]|safe}}'{% endfor %} >{{value}}</textarea>
+<textarea name='{{name}}' {% for key in kwargs %} {{key}}='{{kwargs[key]|safe}}'{% endfor %} >{{value}}</textarea>
 {% endmacro %}
 
 {% macro label(for_name, title) %}
@@ -51,7 +51,7 @@
 {% macro select(name, options, default=None) %}
 <div class='group'>
     {{ label(name, kwargs['title']) }}
-    {{ select_tag(name, options, default) }}
+    {{ select_tag(name, options, default, **kwargs) }}
 </div>
 {% endmacro %}
 

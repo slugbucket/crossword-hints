@@ -8,14 +8,14 @@ Use this form to edit the details of a crossword solution.
         {{ f.input_tag('clue', value=(soln['clue']|escape)|default('clue'), class="xwordhints", onfocus="this.select()", tabindex="1") }}
 
         {{ f.label('solution', 'Solution') }}
-        {{ f.input_tag('solution', value=(soln['solution']|escape)|default('solution'), class="xwordhints") }}
+        {{ f.input_tag('solution', value=(soln['solution']|escape)|default('solution'), class="xwordhints", tabindex="2") }}
 
-        {{ f.select('crossword_setter_id', setters, default=soln['crossword_setter_id'], title='Clue setter')}}
+        {{ f.select('crossword_setter_id', setters, default=soln['crossword_setter_id'], class="xwordhints", title='Clue setter', tabindex="3") }}
 
         {{ f.label('solution_hint', 'Hint') }}
-        {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints") }}
+        {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints", tabindex="4") }}
 
-        {{ f.select('solution_type_id', s_types, default=soln['solution_type_id'], title='Solution type')}}
+        {{ f.select('solution_type_id', s_types, default=soln['solution_type_id'], class="xwordhints", title='Solution type', tabindex="5") }}
 
     </fieldset>
 
