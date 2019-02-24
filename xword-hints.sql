@@ -190,6 +190,7 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("say", "homophone indicator", datetime('now'), datetime('now')),
 ("sounded", "homophone indicator", datetime('now'), datetime('now')),
 ("bank", "TIER", datetime('now'), datetime('now')),
+("theatre", "REP", datetime('now'), datetime('now')),
 ("old woman", "WITCH, BAT, HAG", datetime('now'), datetime('now'));
 
 INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
