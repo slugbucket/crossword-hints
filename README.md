@@ -175,6 +175,25 @@ The format of entries for activity logging are:
 
 For operations where there is no specific user 'system' can be used.
 
+# Windows Subsystem for Linux
+
+There is no difference in setting this up from what would be done on a typical Linux
+development system.
+Install [Windows Services for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) an
+install a Ubuntu (or other) image from the Windows store.
+
+```bash
+$ sudo apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev python3-pip python-minimal
+$ pip3 install virtual env
+$ pip3 install -r requirements.txt
+$ cd crossword-hints
+$ python3 -m virtualenv .
+$ source ./bin/activate
+$ FLASK_APP=crossword_hints.py flask run
+```
+
+The service will now be accessible on http://127.0.0.1:5000/
+
 # AWS deployment
 
 ## Install Elastic Beanstalk CLI
