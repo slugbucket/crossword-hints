@@ -80,7 +80,7 @@
 #
 # pagination
 #
-{% macro render_pagination(pagination) %}
+{% macro render_pagination(pagination, page_name, new_link_text) %}
   <div class=pagination>
   <ul>
       {%- if pagination.has_prev -%}
@@ -105,7 +105,7 @@
     <li><span class="pagination nolink">Next &raquo;</span></li>
   {% endif %}
     <li>&nbsp; | &nbsp;</li>
-    <li><a href="/crossword-solutions/new">New solution</a></li>
+    <li><a href="/{{ page_name }}/new">New {{ new_link_text }} </a></li>
   </ul>
 
   </div>

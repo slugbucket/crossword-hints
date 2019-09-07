@@ -495,10 +495,20 @@ def setter_types_delete(id):
 """               """
 """ Solution types """
 """               """
-@application.route("/solution-types/", methods=["GET"])
-def solution_types_index():
+@application.route("/solution-types/", methods=["GET"], defaults={'page': 1})
+@application.route('/solution-types/page/<int:page>')
+def solution_types_index(page):
+    count = solution_types.select(fn.COUNT(solution_types.rowid)).scalar()
+    PER_PAGE=25
+    offset = ((int(page)-1) * PER_PAGE)
     rs = solution_types.select().order_by(fn.Lower(solution_types.name))
-    return render_template('views/solution-types/index.html', stypes=rs.dicts(), r=request)
+    if not rs and page != 1:
+        return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
+    pagination = Pagination(page, PER_PAGE, count)
+    return render_template('views/solution-types/index.html',
+                           stypes=rs.dicts(),
+                           pagination=pagination,
+                           r=request)
 
 @application.route("/solution-types/<int:id>", methods=["GET"])
 def solution_types_show(id):
