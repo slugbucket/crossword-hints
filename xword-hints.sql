@@ -208,7 +208,9 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("police", "COP", datetime('now'), datetime('now')),
 ("monarch", "ER", datetime('now'), datetime('now')),
 ("queen", "ER", datetime('now'), datetime('now')),
-("bishop", "B or RR", datetime('now'), datetime('now'));
+("bishop", "B or RR", datetime('now'), datetime('now')),
+("head", "first letter of previous word", datetime('now'), datetime('now')),
+("eventually", "last letter", datetime('now'), datetime('now'));
 
 INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
 ("2", "Cross off TV cabinet", "dresser", "", "1", datetime('now'), datetime('now')),
