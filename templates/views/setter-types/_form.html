@@ -1,5 +1,5 @@
 <p>
-Use this form to edit the details of a crossword setter. Action is {{ sbmt }}.
+Use this form to edit the details of a crossword setter type.
 </p>
 <form name="setter_types-new" action="{{ r.path }}" method="POST">
     <fieldset id="setter_types">
@@ -13,7 +13,7 @@ Use this form to edit the details of a crossword setter. Action is {{ sbmt }}.
     <p>
     <input type="submit" name="submit" value="{{ sbmt|escape }}">
     <input type="reset" value="Reset">
-    <br /><br />
-    <a href="/setter-types">Back to index</a>
+    <br />
+    <div class="pagination"><ul><li><a href="/setter-types">Back to index</a></li></ul></div>
     </p>
 </form>

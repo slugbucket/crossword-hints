@@ -167,11 +167,10 @@ def crossword_solution_index(page):
     # Display a 409 not found page for an out of bounds request
     if not solutions and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
-    pagination = Pagination(page, PER_PAGE, count)
     return(render_template('views/crossword-solutions/index.html',
                            r=request,
                            solns=solutions,
-                           pagination=pagination))
+                           pagination=Pagination(page, PER_PAGE, count)))
 
 """
 Display an existing solution
@@ -339,10 +338,19 @@ def crossword_cue_search():
 """
 Index listing of known setters
 """
-@application.route("/crossword-setters/", methods=["GET"])
-def crossword_setters_index():
-    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid).order_by(fn.Lower(crossword_setters.name))
-    return render_template('views/crossword-setters/index.html', setters=rs.dicts(), r=request)
+@application.route("/crossword-setters/", methods=["GET"], defaults={'page': 1})
+@application.route('/crossword-setters/page/<int:page>')
+def crossword_setters_index(page):
+    count = crossword_setters.select(fn.COUNT(crossword_setters.rowid)).scalar()
+    PER_PAGE=25
+    offset = ((int(page)-1) * PER_PAGE)
+    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid).limit(PER_PAGE).offset(offset).order_by(fn.Lower(crossword_setters.name))
+    if not rs and page != 1:
+        return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
+    return render_template('views/crossword-setters/index.html',
+                           setters=rs.dicts(),
+                           pagination=Pagination(page, PER_PAGE, count),
+                           r=request)
 
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
 def crossword_setters_show(id):
@@ -426,10 +434,19 @@ def crossword_setters_delete(id):
 """              """
 """ Setter types """
 """              """
-@application.route("/setter-types/", methods=["GET"])
-def setter_types_index():
-    rs = setter_types.select().order_by(fn.Lower(setter_types.name))
-    return render_template('views/setter-types/index.html', stypes=rs.dicts(), r=request)
+@application.route("/setter-types/", methods=["GET"], defaults={'page': 1})
+@application.route('/setter-types/page/<int:page>')
+def setter_types_index(page):
+    count = setter_types.select(fn.COUNT(setter_types.rowid)).scalar()
+    PER_PAGE=25
+    offset = ((int(page)-1) * PER_PAGE)
+    rs = setter_types.select().limit(PER_PAGE).offset(offset).order_by(fn.Lower(setter_types.name))
+    if not rs and page != 1:
+        return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
+    return render_template('views/setter-types/index.html',
+                           stypes=rs.dicts(),
+                           pagination=Pagination(page, PER_PAGE, count),
+                           r=request)
 
 @application.route("/setter-types/<int:id>", methods=["GET"])
 def setter_types_show(id):
@@ -501,13 +518,12 @@ def solution_types_index(page):
     count = solution_types.select(fn.COUNT(solution_types.rowid)).scalar()
     PER_PAGE=25
     offset = ((int(page)-1) * PER_PAGE)
-    rs = solution_types.select().order_by(fn.Lower(solution_types.name))
+    rs = solution_types.select().limit(PER_PAGE).offset(offset).order_by(fn.Lower(solution_types.name))
     if not rs and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
-    pagination = Pagination(page, PER_PAGE, count)
     return render_template('views/solution-types/index.html',
                            stypes=rs.dicts(),
-                           pagination=pagination,
+                           pagination=Pagination(page, PER_PAGE, count),
                            r=request)
 
 @application.route("/solution-types/<int:id>", methods=["GET"])
