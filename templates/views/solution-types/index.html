@@ -5,7 +5,8 @@ Crossword solution types
 
 {%- block page_content -%}
 <p>
-<a href="/solution-types/new">Add new crossword solution type</a><br />
+{{ f.render_pagination(pagination, "solution-types", "crossword solution type") }}
+<br />
 {%- if stypes -%}
 <table cellpadding="0" cellspacing="0" class="indextable">
   <tr class="indextable"><th style="width: 20%">Name</th><th>Description</th><th style="width: 15%">Actions</th></tr>
@@ -20,7 +21,7 @@ No solution types found.
 </table>
 {%- endif -%}
 <br />
-<a href="/solution-types/new">Add new crossword solution type</a><br />
+{{ f.render_pagination(pagination, "solution-types", "crossword solution type") }}
 </p>
 {%- endblock -%}
 {{ super() }}
