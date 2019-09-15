@@ -17,6 +17,12 @@ import ldap
 # For use with pagination
 from math import ceil
 
+# Print all queries to stderr.
+#import logging
+#logger = logging.getLogger('peewee')
+#logger.addHandler(logging.StreamHandler())
+#logger.setLevel(logging.DEBUG)
+
 # To run the application as standalone,
 # export FLASK_APP=crossword_hints.py
 # flask run
@@ -151,26 +157,50 @@ Returns:
 """
 @application.route("/crossword-solutions/", defaults={'page': 1})
 @application.route('/crossword-solutions/page/<int:page>')
+@application.route('/crossword-solutions/search', methods=["POST"], defaults={'page': 1})
 def crossword_solution_index(page):
-    count = crossword_solutions.select(fn.COUNT(crossword_solutions.rowid)).scalar()
     PER_PAGE=25
     offset = ((int(page)-1) * PER_PAGE)
-    solutions = crossword_solutions.raw("""
-         SELECT cs1.name as setter, cs2.solution AS solution, cs2.rowid AS csid, st1.name AS soltype
-         FROM crossword_setters cs1
-           INNER JOIN crossword_solutions cs2
-             ON cs1.rowid = cs2.crossword_setter_id
-           INNER JOIN solution_types st1
-             ON cs2.solution_type_id = st1.rowid
-         ORDER BY cs2.solution
-         LIMIT %s, %s""" % (offset, PER_PAGE))
+    if request.args.get('q'):
+        term = request.args.get('q')
+    else:
+        term = "%"
+    if request.method == "POST":
+        (rc, fdata) = sanitize_input(request.form)
+        term = "%"+fdata["search_box"]+"%"
+        rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
+                                crossword_solutions.solution,
+                                solution_types.name.alias("soltype"),
+                                crossword_setters.name.alias("setter")) \
+                               .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
+                               .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+                          .where(crossword_solutions.solution.contains(term) | \
+                                 crossword_setters.name.contains(term) | \
+                                 solution_types.name.contains(term)) \
+                          .order_by(fn.Lower(crossword_solutions.solution)).dicts()
+        count = len(rs)
+        term = fdata["search_box"]
+    else:
+        rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
+                                crossword_solutions.solution,
+                                solution_types.name.alias("soltype"),
+                                crossword_setters.name.alias("setter")) \
+                               .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
+                               .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+                          .where(crossword_solutions.solution.contains(term) | \
+                                 crossword_setters.name.contains(term) | \
+                                 solution_types.name.contains(term)) \
+                          .order_by(fn.Lower(crossword_solutions.solution)).dicts()
+        count = len(rs)
+        if term == '%':  term = ''
     # Display a 409 not found page for an out of bounds request
+    solutions = rs.paginate(page, PER_PAGE)
     if not solutions and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return(render_template('views/crossword-solutions/index.html',
                            r=request,
                            solns=solutions,
-                           pagination=Pagination(page, PER_PAGE, count)))
+                           pagination=Pagination(page, PER_PAGE, count), search_term=term))
 
 """
 Display an existing solution

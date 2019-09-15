@@ -24,6 +24,51 @@ ul.navbar li a:hover, ul.navbar li a:active {
   height: 1.5em;
 }
 
+/* Title header and search box styles */
+#header {
+  background-image: url('/static/images/xwords-logo.png');
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100px;
+}
+#logo_title {
+  float: left;
+  width: 75%;
+  padding-left: 125px;
+}
+
+/* Over labels */
+/* Place all the styles related to the Phones controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/ */
+div#search_box {
+  position: relative;
+  float: right;
+  margin-right: 3px;
+}
+input#search_box-field
+{
+  border: 1px solid #303030;
+  width: 10em;
+  background-color: #7399cc;
+  border-radius: 5px;
+}
+label.overlabel {
+  color:#999;
+  left: 5px;
+  z-index: 1;
+  color:#111;
+}
+
+label.overlabel-apply {
+  position: absolute;
+  left: 3px;
+  z-index: 1;
+  color:#111;
+}
+/* end of overlabel*/
+/* End of title header styles */
+
 /* table styles */
 table.indextable {
   text-align: left;
@@ -182,7 +227,7 @@ textarea.xwordhints {
   background-color: #7399cc;
   resize: none;
 }
-input.submit {
+input[type=submit] {
   margin: 0.1em;
   border: #000000 1px solid;
   border-radius: 5px;
@@ -311,7 +356,7 @@ input[type=text]{
     //width: 140px;
     font-weight: bold;
     color: #606060;
-    background-color:#dee5f0;
+    background-color: #dee5f0;
     text-align: center;
     padding: 2px 10px 2px 10px;
     text-decoration: none;

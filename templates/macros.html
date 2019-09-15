@@ -80,18 +80,18 @@
 #
 # pagination
 #
-{% macro render_pagination(pagination, page_name, new_link_text) %}
+{% macro render_pagination(pagination, page_name, new_link_text, search_term) %}
   <div class=pagination>
   <ul>
       {%- if pagination.has_prev -%}
-        <li><a href="{{ url_for_other_page(pagination.page - 1) }}">&laquo; Prev</a></li>
+        <li><a href="{{ url_for_other_page(pagination.page - 1) }}?q={{ search_term }}">&laquo; Prev</a></li>
         {%- else -%}
           <li><span class="pagination nolink">&laquo; Prev</span></li>
       {% endif %}
   {%- for page in pagination.iter_pages() %}
     {%- if page %}
       {%- if page != pagination.page -%}
-        <li><a href="{{ url_for_other_page(page) }}">{{ page }}</a></li>
+        <li><a href="{{ url_for_other_page(page) }}?q={{search_term }}">{{ page }}</a></li>
       {%- else -%}
         <li><span>{{ page }}</span></li>
       {%- endif -%}
@@ -100,7 +100,7 @@
     {%- endif -%}
   {%- endfor %}
   {%- if pagination.has_next -%}
-    <li><a href="{{ url_for_other_page(pagination.page + 1) }}">Next &raquo;</a></li>
+    <li><a href="{{ url_for_other_page(pagination.page + 1) }}?q={{ search_term }}">Next &raquo;</a></li>
   {%- else -%}
     <li><span class="pagination nolink">Next &raquo;</span></li>
   {% endif %}

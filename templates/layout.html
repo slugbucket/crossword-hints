@@ -2,17 +2,17 @@
 <html>
 <head>
 <title>Crossword setters and their solutions</title>
-<link rel="stylesheet" type="text/css" href="/static/stylesheets/crossword-hints.css">
-
+<script src="/static/javascript/jquery-3.2.1.min.js"></script>
+<script src="/static/jquery-ui-1.12.1/jquery-ui.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.structure.css">
 <link rel="stylesheet" type="text/css" href="/static/jquery-ui-1.12.1/jquery-ui.theme.css">
-<script src="/static/javascript/jquery-3.2.1.min.js"></script>
-<script src="/static/jquery-ui-1.12.1/jquery-ui.js"></script>
 {%- block jquery_func -%}{%- endblock -%}
+<link rel="stylesheet" type="text/css" href="/static/stylesheets/crossword-hints.css">
 </head>
 
 <body>
+{%- block page_header -%}{%- endblock -%}
 {%- block navmenu -%}{%- endblock -%}
 
 <h1>{% block main_heading %}{% endblock %}</h1>
