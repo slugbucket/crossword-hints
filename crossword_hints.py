@@ -170,6 +170,7 @@ def crossword_solution_index(page):
         term = "%"+fdata["search_box"]+"%"
         rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
                                 crossword_solutions.solution,
+                                crossword_solutions.clue,
                                 solution_types.name.alias("soltype"),
                                 crossword_setters.name.alias("setter")) \
                                .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
@@ -183,6 +184,7 @@ def crossword_solution_index(page):
     else:
         rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
                                 crossword_solutions.solution,
+                                crossword_solutions.clue,
                                 solution_types.name.alias("soltype"),
                                 crossword_setters.name.alias("setter")) \
                                .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
