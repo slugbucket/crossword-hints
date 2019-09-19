@@ -210,7 +210,25 @@ INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("queen", "ER", datetime('now'), datetime('now')),
 ("bishop", "B or RR", datetime('now'), datetime('now')),
 ("head", "first letter of previous word", datetime('now'), datetime('now')),
-("eventually", "last letter", datetime('now'), datetime('now'));
+("eventually", "last letter", datetime('now'), datetime('now')),
+("airily", "In the manner of s song", datetime('now'), datetime('now')),
+("distant", "FAR", datetime('now'), datetime('now')),
+("formerly", "EX", datetime('now'), datetime('now')),
+("youngsters", "FRY", datetime('now'), datetime('now')),
+("gathering round", "letter(s) from one sub-clue inserted into solution to previous sub-clue", datetime('now'), datetime('now')),
+("heading (off)", "first letter (removed)", datetime('now'), datetime('now')),
+("con", "CHEAT", datetime('now'), datetime('now')),
+("cheat", "CON", datetime('now'), datetime('now')),
+("upheld", "reverse order of letters", datetime('now'), datetime('now')),
+("last month", "DEC", datetime('now'), datetime('now')),
+("account", "AC", datetime('now'), datetime('now')),
+("one", "I", datetime('now'), datetime('now')),
+("forget", "remove letter(s)", datetime('now'), datetime('now')),
+("forgetting", "remove letter(s)", datetime('now'), datetime('now')),
+("dislodged", "anagram", datetime('now'), datetime('now')),
+("equipment", "KIT", datetime('now'), datetime('now')),
+("unknown", "X or Y", datetime('now'), datetime('now')),
+("mystery", "X or Y", datetime('now'), datetime('now'));
 
 INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hint, solution_type_id, created_at, updated_at) VALUES
 ("2", "Cross off TV cabinet", "dresser", "", "1", datetime('now'), datetime('now')),

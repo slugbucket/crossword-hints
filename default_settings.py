@@ -8,4 +8,4 @@ except KeyError:
 TESTING=False
 LDAP_PROVIDER_URL='ldap://localhost:389'
 # Pagination settings
-PER_PAGE=20
+PER_PAGE=25

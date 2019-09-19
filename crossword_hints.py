@@ -159,50 +159,38 @@ Returns:
 @application.route('/crossword-solutions/page/<int:page>')
 @application.route('/crossword-solutions/search', methods=["POST"], defaults={'page': 1})
 def crossword_solution_index(page):
-    PER_PAGE=25
-    offset = ((int(page)-1) * PER_PAGE)
-    if request.args.get('q'):
-        term = request.args.get('q')
-    else:
-        term = "%"
+    offset = ((int(page)-1) * application.config['PER_PAGE'])
+    term = ''
+    qtrm = '%'
     if request.method == "POST":
         (rc, fdata) = sanitize_input(request.form)
-        term = "%"+fdata["search_box"]+"%"
-        rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
-                                crossword_solutions.solution,
-                                crossword_solutions.clue,
-                                solution_types.name.alias("soltype"),
-                                crossword_setters.name.alias("setter")) \
-                               .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
-                               .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
-                          .where(crossword_solutions.solution.contains(term) | \
-                                 crossword_setters.name.contains(term) | \
-                                 solution_types.name.contains(term)) \
-                          .order_by(fn.Lower(crossword_solutions.solution)).dicts()
-        count = len(rs)
         term = fdata["search_box"]
+        qtrm = "%" + term + "%"
     else:
-        rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
-                                crossword_solutions.solution,
-                                crossword_solutions.clue,
-                                solution_types.name.alias("soltype"),
-                                crossword_setters.name.alias("setter")) \
-                               .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
-                               .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+        if request.args.get('q'):
+            term = request.args.get('q')
+            qtrm = "%" + term + "%"
+
+    rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
+                           crossword_solutions.solution,
+                           crossword_solutions.clue,
+                           solution_types.name.alias("soltype"),
+                           crossword_setters.name.alias("setter")) \
+                          .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
+                          .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
                           .where(crossword_solutions.solution.contains(term) | \
                                  crossword_setters.name.contains(term) | \
                                  solution_types.name.contains(term)) \
                           .order_by(fn.Lower(crossword_solutions.solution)).dicts()
-        count = len(rs)
-        if term == '%':  term = ''
+    count = len(rs)
+    solutions = rs.paginate(page, application.config['PER_PAGE'])
     # Display a 409 not found page for an out of bounds request
-    solutions = rs.paginate(page, PER_PAGE)
     if not solutions and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return(render_template('views/crossword-solutions/index.html',
                            r=request,
                            solns=solutions,
-                           pagination=Pagination(page, PER_PAGE, count), search_term=term))
+                           pagination=Pagination(page, application.config['PER_PAGE'], count), search_term=term))
 
 """
 Display an existing solution
@@ -374,14 +362,13 @@ Index listing of known setters
 @application.route('/crossword-setters/page/<int:page>')
 def crossword_setters_index(page):
     count = crossword_setters.select(fn.COUNT(crossword_setters.rowid)).scalar()
-    PER_PAGE=25
-    offset = ((int(page)-1) * PER_PAGE)
-    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid).limit(PER_PAGE).offset(offset).order_by(fn.Lower(crossword_setters.name))
+    offset = ((int(page)-1) * application.config['PER_PAGE'])
+    rs = crossword_setters.select(crossword_setters.rowid, crossword_setters.name, crossword_setters.description, setter_types.name.alias('setter_type_name')).join(setter_types).where(crossword_setters.setter_type_id == setter_types.rowid).limit(application.config['PER_PAGE']).offset(offset).order_by(fn.Lower(crossword_setters.name))
     if not rs and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return render_template('views/crossword-setters/index.html',
                            setters=rs.dicts(),
-                           pagination=Pagination(page, PER_PAGE, count),
+                           pagination=Pagination(page, application.config['PER_PAGE'], count),
                            r=request)
 
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
@@ -470,14 +457,13 @@ def crossword_setters_delete(id):
 @application.route('/setter-types/page/<int:page>')
 def setter_types_index(page):
     count = setter_types.select(fn.COUNT(setter_types.rowid)).scalar()
-    PER_PAGE=25
-    offset = ((int(page)-1) * PER_PAGE)
-    rs = setter_types.select().limit(PER_PAGE).offset(offset).order_by(fn.Lower(setter_types.name))
+    offset = ((int(page)-1) * application.config['PER_PAGE'])
+    rs = setter_types.select().limit(application.config['PER_PAGE']).offset(offset).order_by(fn.Lower(setter_types.name))
     if not rs and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return render_template('views/setter-types/index.html',
                            stypes=rs.dicts(),
-                           pagination=Pagination(page, PER_PAGE, count),
+                           pagination=Pagination(page, application.config['PER_PAGE'], count),
                            r=request)
 
 @application.route("/setter-types/<int:id>", methods=["GET"])
@@ -548,14 +534,13 @@ def setter_types_delete(id):
 @application.route('/solution-types/page/<int:page>')
 def solution_types_index(page):
     count = solution_types.select(fn.COUNT(solution_types.rowid)).scalar()
-    PER_PAGE=25
-    offset = ((int(page)-1) * PER_PAGE)
-    rs = solution_types.select().limit(PER_PAGE).offset(offset).order_by(fn.Lower(solution_types.name))
+    offset = ((int(page)-1) * application.config['PER_PAGE'])
+    rs = solution_types.select().limit(application.config['PER_PAGE']).offset(offset).order_by(fn.Lower(solution_types.name))
     if not rs and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return render_template('views/solution-types/index.html',
                            stypes=rs.dicts(),
-                           pagination=Pagination(page, PER_PAGE, count),
+                           pagination=Pagination(page, application.config['PER_PAGE'], count),
                            r=request)
 
 @application.route("/solution-types/<int:id>", methods=["GET"])
