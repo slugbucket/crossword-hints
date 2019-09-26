@@ -73,7 +73,7 @@ class XwordhintsTestCase(unittest.TestCase):
     def test_0001_initial_data(self):
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
-        assert nr == 151
+        assert nr == 760
         self.clearSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 0
@@ -194,7 +194,7 @@ class XwordhintsTestCase(unittest.TestCase):
     def test_300_count_crossword_solutions(self):
         self.loadSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
-        assert nr == 151
+        assert nr == 760
 
     def test_301_list_crossword_solutions(self):
         rv = self.app.get('/crossword-solutions/')
@@ -213,7 +213,7 @@ class XwordhintsTestCase(unittest.TestCase):
         rv = self.app.post('/crossword-solutions/new', data=new_solution, follow_redirects=True)
         assert b'Saved new crossword solution, ' in rv.data
         nr = crossword_hints.crossword_solutions.select().count()
-        assert nr == 152
+        assert nr == 761
 
     def test_303_edit_crossword_solution(self):
         csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Klingsor").scalar()
@@ -238,6 +238,16 @@ class XwordhintsTestCase(unittest.TestCase):
         assert b'Deleted crossword solution, islands' in rv.data
         nr = crossword_hints.crossword_solutions.select().count()
         assert nr == 151
+
+    """ Pagination tests
+    """
+
+    """ Search tests
+    """
+    def test_306_search_solution(self):
+        word = {"search_box": "CINEMA"}
+        rv = self.app.post(('/crossword-solutions/'), data=word, follow_redirects=True)
+        assert b'At home in church with mother where Rebecca and Arthur might be seen' in rv.data
 
     def test_399_clear_data(self):
         self.clearSampleData()
