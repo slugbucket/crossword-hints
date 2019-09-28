@@ -6,43 +6,67 @@ VALUES
 ('Hard', 'No obvious match between clues and solutions', datetime('now'), datetime('now')),
 ("Don't bother", 'No need to waste time trying to decipher', datetime('now'), datetime('now'));
 
+-- .output crossword_setters.sql
+-- SELECT '("' || name || '", "' || setter_type_id || '", "' || description || '", datetime("now"), datetime("now")),' FROM crossword_setters;
+-- .output stdout
 INSERT INTO crossword_setters(name, setter_type_id, description, created_at, updated_at)
 VALUES
-('Anarche', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
-('Crosophile', '3', 'Solvable and more enjoyable then many', datetime('now'), datetime('now')),
-('Dac', '4', 'A rewarding blend and occasionally solvable', datetime('now'), datetime('now')),
-('Eimi', '2', 'Sometimes solvable; worth an hour or so', datetime('now'), datetime('now')),
-('Glow-worm', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
-('Hypnos', '4', 'Worth a peek if you can find a way in', datetime('now'), datetime('now')),
-('Klingsor', '5', 'A few clues perhaps', datetime('now'), datetime('now')),
-('Monk', '4', 'Not even solvable with the solutions', datetime('now'), datetime('now')),
-('Mordred', '4', 'Is that the washing-up that needs doing?', datetime('now'), datetime('now')),
-('Morph', '4', 'Unrewarding and easily distracted elsewhere', datetime('now'), datetime('now')),
-('Nestor', '5', 'A couple of hours of your life you''re never getting back', datetime('now'), datetime('now')),
-('Phi', '1', 'Anagrammatic joy', datetime('now'), datetime('now')),
-('Poins', '4', 'And you wanted something to pass the time on a long journey', datetime('now'), datetime('now')),
-('Punk', '5', 'For hardcore wordplay fans. Avoid', datetime('now'), datetime('now')),
-('Quixote', '2', 'A relaxing way to unwind at the end of the day', datetime('now'), datetime('now')),
-('Radian', '4', 'Rewarding if you can crack the theme', datetime('now'), datetime('now')),
-('Raich', '4', 'The theme is usually out of reach', datetime('now'), datetime('now')),
-('Scorpion', '5', 'For hardcore wordplay fans. Avoid', datetime('now'), datetime('now')),
-('Tees', '5', 'An opportunity for some doodling practice.', datetime('now'), datetime('now')),
-('eXternal', '5', 'A fair bit of wordplay', datetime('now'), datetime('now')),
-('Hieroglyph', '5', 'Sometimes gently themed puzzles', datetime('now'), datetime('now'));
+("Anarche", "4", "Unrewarding and easily distracted elsewhere. Too much word ply", datetime("now"), datetime("now")),
+("Crosophile", "3", "Solvable and more enjoyable then many", datetime("now"), datetime("now")),
+("Dac", "1", "The master. A rewarding blend of clues and occasionally solvable. Never wantonly obscure.", datetime("now"), datetime("now")),
+("Eimi", "2", "Sometimes solvable; worth an hour or so", datetime("now"), datetime("now")),
+("Glow-worm", "4", "Unrewarding and easily distracted elsewhere", datetime("now"), datetime("now")),
+("Hypnos", "4", "Worth a peek if you can find a way in", datetime("now"), datetime("now")),
+("Klingsor", "5", "A few clues perhaps", datetime("now"), datetime("now")),
+("Monk", "4", "Not even solvable with the solutions", datetime("now"), datetime("now")),
+("Mordred", "4", "Is that the washing-up that needs doing?", datetime("now"), datetime("now")),
+("Morph", "4", "Unrewarding and easily distracted elsewhere", datetime("now"), datetime("now")),
+("Nestor", "5", "A couple of hours of your life you're never getting back", datetime("now"), datetime("now")),
+("Phi", "1", "Anagrammatic joy", datetime("now"), datetime("now")),
+("Poins", "4", "And you wanted something to pass the time on a long journey", datetime("now"), datetime("now")),
+("Punk", "5", "For hardcore wordplay fans. Avoid", datetime("now"), datetime("now")),
+("Quixote", "2", "A relaxing way to unwind at the end of the day", datetime("now"), datetime("now")),
+("Radian", "4", "Rewarding if you can crack the theme", datetime("now"), datetime("now")),
+("Raich", "4", "The theme is usually out of reach", datetime("now"), datetime("now")),
+("Scorpion", "5", "For hardcore wordplay fans. Avoid", datetime("now"), datetime("now")),
+("Tees", "5", "An opportunity for some doodling practice. Lots of literary references.", datetime("now"), datetime("now")),
+("Tyrus", "5", "Tyrus puzzles are hard to solve even when you have the answers", datetime("now"), datetime("now")),
+("Hieroglyph", "1", "Sometimes gently themed puzzles", datetime("now"), datetime("now")),
+("eXternal", "2", "A fair bit of wordplay", datetime("now"), datetime("now")),
+("Hob", "5", "A lot of double wordplay and misdirection. For crossword buffs only.", datetime("now"), datetime("now")),
+("Alchemi", "4", "A lot of wordplay", datetime("now"), datetime("now")),
+("Anax", "5", "A lot of wordplay, frequently no full anagrams and often clues that don't scan. Best avoided.", datetime("now"), datetime("now")),
+("Rorschach", "4", "Lots of mind games, misdirection and word play", datetime("now"), datetime("now")),
+("Donk", "4", "Too much word play", datetime("now"), datetime("now")),
+("Daedalus", "1", "An infrequent visitor to these shores", datetime("now"), datetime("now")),
+("Knut", "4", "A right knut", datetime("now"), datetime("now")),
+("Kairos", "1", "", datetime("now"), datetime("now")),
+("Nimrod", "1", "An infrequent visitor to these shores", datetime("now"), datetime("now")),
+("Nitsy", "1", "", datetime("now"), datetime("now"));
 
+-- .output solution_types.sql
+-- SELECT '("' || name || '", "' || description || '", datetime("now"), datetime("now")),' FROM solution_types;
+-- .output stdout
 INSERT INTO solution_types (name, description, created_at, updated_at)
 VALUES
-('Unknown', 'Unable to determine connection between clue and solution', datetime('now'), datetime('now')),
-('Anagram', 'Letter rearrangement', datetime('now'), datetime('now')),
-('Double straight', 'Solution is possible synonym for the (often 2) clue words', datetime('now'), datetime('now')),
-('Letter splice', 'Either odd, even or regularly spaced letters from word sequence to form solution', datetime('now'), datetime('now')),
-('Partial', 'Partial anagrams requiring subclues', datetime('now'), datetime('now')),
-('Double meaning', 'Mis-direction clue word used in wrong context, e.g., flow-er = river', datetime('now'), datetime('now')),
-('Sub-words', 'Solution (literally in the clue) found from the end of one clue word and the start of the one following', datetime('now'), datetime('now')),
-('Word exchange', 'Solution found from solving mutliple sub clues', datetime('now'), datetime('now')),
-('Lucky guess', 'Solution matches one word in the clue, but nothing else', datetime('now'), datetime('now')),
-('Word insertion', 'Insert one answer to a sub-clue into another.', datetime('now'), datetime('now')),
-('Homophone', 'Sounds like', datetime('now'), datetime('now'));
+("Unknown", "Unable to determine connection between clue and solution", datetime("now"), datetime("now")),
+("Anagram", "Letter rearrangement", datetime("now"), datetime("now")),
+("Double straight", "Solution is possible synonym for the (often 2) clue words", datetime("now"), datetime("now")),
+("Odd or even letter splice", "Either odd, even or regularly spaced letters from word sequence to form solution", datetime("now"), datetime("now")),
+("Partial", "Partial anagrams requiring subclues", datetime("now"), datetime("now")),
+("Double meaning", "Mis-direction clue word used in wrong context, e.g., flow-er = river", datetime("now"), datetime("now")),
+("Sub-words", "Solution (literally in the clue) found from the end of one clue word and the start of the one following", datetime("now"), datetime("now")),
+("Word exchange", "Solution found from solving mutliple sub clues", datetime("now"), datetime("now")),
+("Lucky synonym", "Solution matches one word in the clue, but nothing else", datetime("now"), datetime("now")),
+("Subtraction", "Cue word indicates letters to remove from sub-clue", datetime("now"), datetime("now")),
+("Letter insertion", "Insert the answer (or sequence of letters) of a sub-clue into another.", datetime("now"), datetime("now")),
+("Homophone", "Sounds like a word that has a different spelling", datetime("now"), datetime("now")),
+("Initial letters", "Take the first letter from a word sequence to form the solution. Trigger words include: leaders, initially, primarily, etc.", datetime("now"), datetime("now")),
+("Play on words", "Pun type clue usually with a question mark at the end as the cue", datetime("now"), datetime("now")),
+("Letter shift", "Move one or more letters from the start to the end, or the other way round", datetime("now"), datetime("now")),
+("Hidden in plain sight", "The solution is literally in the clue and the letters are taken from the end of one clue and the start of another.", datetime("now"), datetime("now")),
+("Multiple", "Combination of different clue types", datetime("now"), datetime("now")),
+("Letter reversal", "Read a word, or group of letters backwards in the clue to reveal the solution", datetime("now"), datetime("now"));
 
 INSERT INTO cue_words(cue_word, meaning, created_at, updated_at) values
 ("primarily", "Take the first letter(s) of surrounding word(s)", datetime('now'), datetime('now')),
@@ -975,7 +999,7 @@ INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hi
 ("10", "South east wind's rising assaults", "STRAFES", "S(outh) E(ast) FARTS (winds)", "7", datetime("now"), datetime("now")),
 ("10", "Bloody small crag?", "SCARLET", "", "14", datetime("now"), datetime("now")),
 ("10", "Crass, uppity fellow supporter", "NAFF", "F(ellow) FAN (supporter)", "7", datetime("now"), datetime("now")),
-("10", ""Get up, sunshine!" I heard", "RAISE", "RAYS (sunshine)", "12", datetime("now"), datetime("now")),
+("10", """Get up, sunshine!"" I heard", "RAISE", "RAYS (sunshine)", "12", datetime("now"), datetime("now")),
 ("10", "When climbing, get scrape dropping off Red Pike", "FISH", "?", "1", datetime("now"), datetime("now")),
 ("13", "Brave flees as bear eventually becomes distressed", "FEARLESS", "Anagram of FLEESAS +(bea)R (eventually)", "5", datetime("now"), datetime("now")),
 ("13", "Rout engineered by Tottenham's head coach", "TUTOR", "Anagram of ROUT + T(ottenham - head)", "5", datetime("now"), datetime("now")),

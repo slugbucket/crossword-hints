@@ -740,7 +740,7 @@ INSERT INTO crossword_solutions(crossword_setter_id, clue, solution, solution_hi
 ("10", "South east wind's rising assaults", "STRAFES", "S(outh) E(ast) FARTS (winds)", "7", datetime("now"), datetime("now")),
 ("10", "Bloody small crag?", "SCARLET", "", "14", datetime("now"), datetime("now")),
 ("10", "Crass, uppity fellow supporter", "NAFF", "F(ellow) FAN (supporter)", "7", datetime("now"), datetime("now")),
-("10", ""Get up, sunshine!" I heard", "RAISE", "RAYS (sunshine)", "12", datetime("now"), datetime("now")),
+("10", """Get up, sunshine!"" I heard", "RAISE", "RAYS (sunshine)", "12", datetime("now"), datetime("now")),
 ("10", "When climbing, get scrape dropping off Red Pike", "FISH", "?", "1", datetime("now"), datetime("now")),
 ("13", "Brave flees as bear eventually becomes distressed", "FEARLESS", "Anagram of FLEESAS +(bea)R (eventually)", "5", datetime("now"), datetime("now")),
 ("13", "Rout engineered by Tottenham's head coach", "TUTOR", "Anagram of ROUT + T(ottenham - head)", "5", datetime("now"), datetime("now")),

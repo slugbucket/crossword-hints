@@ -86,8 +86,7 @@ Returns:
 def init_db():
     #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
     #    database.execute_sql("drop table " + tbl)
-    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions])
-
+    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words, users])
 
 @application.route('/crossword-hints/heartbeat', methods=["GET"])
 def heartbeat():
