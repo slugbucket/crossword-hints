@@ -140,7 +140,7 @@ form submission, including responses to bad input.
 To run the tests use,
 
 ```bash
-APP_SETTINGS='test-settings.py' python crossword-hints-test.py
+APP_SETTINGS='test-settings.py' python3 crossword-hints-tests.py
 ```
 
 # Authentication
