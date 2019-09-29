@@ -290,6 +290,15 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(b'<span class="pagination nolink">Next &raquo;</span>', rv.data, "Cannot find greyed out next box")
         self.assertIn(b'<a href="/crossword-solutions/page/30?q=">&laquo; Prev</a>', rv.data, "Cannot find prev link")
 
+    def test_403_more_items_per_page(self):
+        oldpp = crossword_hints.application.config['PER_PAGE']
+        crossword_hints.application.config['PER_PAGE'] = 60
+        rv = self.app.get('/crossword-solutions/', follow_redirects=True)
+        self.assertIn(b'<a href="/crossword-solutions/page/13?q=">13</a>', rv.data, "Cannot find link to last page")
+        rv = self.app.get('/crossword-solutions/page/13', follow_redirects=True)
+        self.assertIn(b'<span class="pagination nolink">Next &raquo;</span>', rv.data, "Cannot find greyed out next box")
+        crossword_hints.application.config['PER_PAGE'] = oldpp
+
     def test_499_clear_data(self):
         self.clearSampleData()
         nr = crossword_hints.crossword_solutions.select().count()
@@ -310,6 +319,19 @@ class XwordhintsTestCase(unittest.TestCase):
             self.assertIn(res, rv.data, "Cannot find expected solution %s in search results" % str(res))
         self.assertIn(b'<span class="pagination nolink">Next &raquo;</span>', rv.data, "Cannot find greyed out next box")
         self.assertIn(b'<span class="pagination nolink">&laquo; Prev</span>', rv.data, "Cannot find greyed out prev box")
+
+    def test_502_search_solution_pages(self):
+        word = {"search_box": "dac"}
+        rv = self.app.post('/crossword-solutions/search', data=word, follow_redirects=True)
+        for res in [b'AIGRETTE', b'ALAN SHEARER', b'INVENTOR', b'JACKS']:
+            self.assertIn(res, rv.data, "Cannot find expected solution %s in search results" % str(res))
+        self.assertIn(b'<span class="pagination nolink">&laquo; Prev</span>', rv.data, "Cannot find greyed out prev box")
+        self.assertIn((b'<a href="/crossword-solutions/page/2?q=%s">Next &raquo;</a>' % str.encode(word['search_box'])), rv.data, "Cannot find next link")
+        rv = self.app.get(('/crossword-solutions/page/2?q=%s' % word['search_box']), follow_redirects=True)
+        for res in [b'JOSEPH', b'LAWSON', b'STERNE', b'SUPERVISION']:
+            self.assertIn(res, rv.data, "Cannot find expected solution %s in search results" % str(res))
+        self.assertIn((b'<a href="/crossword-solutions/page/3?q=%s">Next &raquo;</a>' % str.encode(word['search_box'])), rv.data, "Cannot find prev link")
+        self.assertIn((b'<a href="/crossword-solutions/?q=%s">&laquo; Prev</a>' % str.encode(word['search_box'])), rv.data, "Cannot find next link")
 
     def test_599_clear_data(self):
         self.clearSampleData()
