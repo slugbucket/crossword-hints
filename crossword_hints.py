@@ -196,23 +196,16 @@ Display an existing solution
 """
 @application.route("/crossword-solutions/<int:id>", methods=["GET"])
 def crossword_solutions_show(id):
-    # Getting the solution id, name and solution_type name should be a simple inner
-    # join across the tables but Peewee makes a complete mess of it so it's
-    # easier to do raw SQL instead.
-    #rs = crossword_solutions.get(crossword_solutions.rowid, crossword_solutions.name, solution_types.name.alias('solution_type_name')).join(solution_types, JOIN.INNER).where((crossword_solutions.solution_type_id == solution_types.rowid) & (crossword_solutions.rowid == id))
-    rs = crossword_solutions.raw("""
-         SELECT cs1.name as setter,
-                cs2.solution AS solution,
-                cs2.clue AS clue,
-                cs2.solution_hint AS hint,
-                cs2.rowid AS csid,
-                st1.name AS soltype
-         FROM crossword_setters cs1
-           INNER JOIN crossword_solutions cs2
-             ON cs1.rowid = cs2.crossword_setter_id
-           INNER JOIN solution_types st1
-             ON cs2.solution_type_id = st1.rowid
-         WHERE cs2.rowid = ?""", id).tuples()
+    rs = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
+                           crossword_solutions.solution,
+                           crossword_solutions.clue,
+                           crossword_solutions.solution_hint.alias("hint"),
+                           solution_types.name.alias("soltype"),
+                           crossword_setters.name.alias("setter")) \
+                          .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
+                          .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+                          .where(crossword_solutions.rowid == id) \
+                          .order_by(fn.Lower(crossword_solutions.solution)).tuples()
     for setter, solution, clue, hint, csid, soltype in rs:
         xsol = {"csid": csid, "setter": setter, "solution": solution, "clue": clue, "hint": hint, "soltype": soltype}
     return render_template('views/crossword-solutions/show.html', soln=xsol,  r=request)
@@ -308,31 +301,17 @@ def crossowrd_hints_index(path):
     if not rc == "":
         flash(rc)
         return(render_template('views/crossword-hints/index.html', r=request, sbmt=request.form['submit']))
-    # Ideally, peewee would allow the selection of the columns from the joined
-    # tables but it doesn't seem to recognise them despite what might be in the
-    # documentation. So we have to perform separate lookups for the solution
-    # type and setter
-    #rs = crossword_solutions.select(crossword_solutions.clue, crossword_solutions.solution, crossword_solutions.solution_hint, solution_types.name.alias("soltype"), crossword_setters.name.alias("setter")) \
-    #                          .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
-    #                          .switch(crossword_solutions) \
-    #                          .join(crossword_setters, JOIN.INNER, on=(crossword_solutions.crossword_setter_id == crossword_setters.rowid)) \
-    #                          .where(crossword_solutions.clue.contains(fdata['cue_word']))
-    #rs = crossword_solutions.select().where(crossword_solutions.clue.contains(fdata['cue_word']))
-    # A raw query gives it all in one
-    rs = crossword_solutions.raw("""
-SELECT cs1.name as setter, cs2.solution AS solution, cs2.clue AS clue,
-       cs2.solution_hint AS hint, cs2.rowid AS csid, st1.name AS soltype
-         FROM crossword_setters cs1
-           INNER JOIN crossword_solutions cs2
-             ON cs1.rowid = cs2.crossword_setter_id
-           INNER JOIN solution_types st1
-             ON cs2.solution_type_id = st1.rowid
-WHERE cs2.clue LIKE ?
-ORDER BY cs2.solution;
-    """, '%{0}%'.format(fdata['cue_word']))
-    clueset = []
-    for row in rs:
-        clueset.append({"clue": row.clue, "solution": row.solution, "hint": row.hint, "soltype": row.soltype, "setter": row.setter })
+
+    clueset = crossword_setters.select(crossword_solutions.rowid.alias("csid"),
+                           crossword_solutions.solution,
+                           crossword_solutions.clue,
+                           crossword_solutions.solution_hint.alias("hint"),
+                           solution_types.name.alias("soltype"),
+                           crossword_setters.name.alias("setter")) \
+                          .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
+                          .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
+                          .where(crossword_solutions.clue.contains(format(fdata['cue_word']))) \
+                          .order_by(fn.Lower(crossword_solutions.solution)).dicts()
     return(render_template('views/crossword-hints/index.html', r=request, clues=clueset))
 
 """                                                    """
@@ -373,13 +352,17 @@ def crossword_setters_index(page):
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
 def crossword_setters_show(id):
     # Getting the setter id, name and setter_type name should be a simple inner
-    # join across the tables but Peewee makes a complete mess of it so it's
-    # easier to do raw SQL instead.
-    #rs = crossword_setters.get(crossword_setters.rowid, crossword_setters.name, setter_types.name.alias('setter_type_name')).join(setter_types, JOIN.INNER).where((crossword_setters.setter_type_id == setter_types.rowid) & (crossword_setters.rowid == id))
-    rs = crossword_setters.raw('SELECT t1.name, t1.description, t2.name AS setter_type_name FROM crossword_setters t1 INNER JOIN setter_types t2 ON t1.setter_type_id = t2.rowid  AND t1.rowid = ?', id).tuples()
-    for sname, descrip, stname in rs:
-        stype = {"rowid": id, "name": sname, "description": descrip, "setter_type_name": stname}
-    return render_template('views/crossword-setters/show.html', stype=stype,  r=request)
+    # join across the tables but Peewee makes a complete mess of it by using get() which doesn't
+    # seem to recognise aliases or joins.
+    rs = crossword_setters.select(crossword_setters.rowid,
+                            crossword_setters.name,
+                            crossword_setters.description,
+                            setter_types.name.alias('setter_type_name')) \
+                        .join(setter_types, JOIN.INNER, on=(crossword_setters.setter_type_id == setter_types.rowid)) \
+                        .where(crossword_setters.rowid == id).tuples()
+    for id, sname, descrip, stname in rs:
+        setter = {"rowid": id, "name": sname, "description": descrip, "setter_type_name": stname}
+    return render_template('views/crossword-setters/show.html', setter=setter,  r=request)
 
 """
 Add a new crossword setter

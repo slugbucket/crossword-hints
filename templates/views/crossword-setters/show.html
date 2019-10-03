@@ -2,17 +2,17 @@
 
 {%- block page_content -%}
 {{ super() }}
-<h2>Crossword setter - {{ stype['name']}}</h2>
+<h2>Crossword setter - {{ setter.name}}</h2>
 
 <p>
-<strong>Setter type</strong>: {{ stype['setter_type_name']|safe }}
+<strong>Setter type</strong>: {{ setter.setter_type_name|safe }}
 </p>
 
-{%- if stype['description'] -%}
+{%- if setter['description'] -%}
 <p>
-<strong>Description</strong>: {{ stype['description']|safe }}
+<strong>Description</strong>: {{ setter.description|safe }}
 </p>
 {%- endif -%}
 <br />
-<a href="/crossword-setters/{{ stype['rowid'] }}/edit">Edit</a> | <a href="/crossword-setters">Back to index</a>
+<a href="/crossword-setters/{{ setter.rowid }}/edit">Edit</a> | <a href="/crossword-setters">Back to index</a>
 {% endblock %}
