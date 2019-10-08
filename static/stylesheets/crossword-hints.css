@@ -36,7 +36,46 @@ ul.navbar li a:hover, ul.navbar li a:active {
   width: 75%;
   padding-left: 125px;
 }
-
+.xword_form {
+  display: inline;
+}
+#cue_word_set {
+  float: left;
+  color: #000;
+  width: 25%;
+}
+#cue_word_set fieldset {
+  background-color: #90b9a7;
+  width: 75%;
+}
+#cue_word_set fieldset>label {
+  color: #051b12;
+  font-size: 0.75em;
+  padding-top: 7px;
+  text-align: center;
+  font-weight: bolder;
+}
+#cue_word_set input {
+  background-color: #6b8ebb;
+  color: #000;
+  font-size: 0.75em;
+}
+#new_solution {
+  float: left;
+  background-color: #ffffff;
+  color: #000;
+  width: 65%;
+}
+#cue_word_flash {
+  position: relative;
+  border: 1px #0c4da1 solid;
+  vertical-align: middle;
+  padding-top:0.1em;
+  font-size: 0.75em;
+  color: #086b29;
+  visibility: hidden;
+}
+/* End of solutions form specific styles */
 /* Over labels */
 /* Place all the styles related to the Phones controller here.
 // They will automatically be included in application.css.
@@ -181,16 +220,14 @@ table.indextable a {
 
 .fsetrow .monthrow{
   /* border: #ff0000 solid 0.1em; */
-  float: left;
-  width: 100%;
   display: inline;
 }
 fieldset {
-  padding: 1em;
+  padding: 0.75em;
   font:80%/1 sans-serif;
   border: #000000 1px solid;
   border-radius: 5px;
-  width: 50%;
+  width: 80%;
 }
 .conf_fieldset {
   padding: 1em;
@@ -212,18 +249,18 @@ fieldset {
 }
 fieldset input, fieldset select, fieldset select option {
   margin: 0.1em;
-  width: 39%;
+  width: 50%;
   border: #000000 1px solid;
   border-radius: 5px;
-  padding-left: 0.25em;
+  padding-left: 0.1em;
   background-color: #7399cc;
 }
 textarea.xwordhints {
   margin: 0.1em;
-  width: 39%;
+  width: 50%;
   border: #000000 1px solid;
   border-radius: 5px;
-  padding-left: 0.25em;
+  padding-left: 0.1em;
   background-color: #7399cc;
   resize: none;
 }
@@ -234,18 +271,14 @@ input[type=submit] {
   padding-left: 0.1em;
 }
 label {
-  float:left;
-  width:50%;
-  margin-right:0.5em;
-  padding-top:0.2em;
-  text-align:right;
-  font-weight:bold;
+  float: left;
+  width: 25%;
+  margin-right: 0.5em;
+  padding-top: 0.2em;
+  text-align: right;
+  font-weight: bold;
 }
-.remove_xword_solution {
-  /* border: 1px #000 solid; */
-  vertical-align: middle;
-  padding-top:0.2em;
-}
+
 /* Reset the float */
 .cleaner {
   clear: both;

@@ -74,9 +74,9 @@ To bootstrap a database, either empty or with new schema:
 $ python
 >>> import crossword_hints
 >>> from peewee import *
->>> with .application.app_conte@login_manager.user_loader
+>>> with .application.app_context()@login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))xt():
+    return User.query.get(int(id)):
 ...     crossword_hints.init_db()
 Params:
   None
@@ -332,6 +332,24 @@ def crossword_cue_search():
         ary[row.rowid] = row.cue_word
     ret = '{0}({1})'.format(callback, json.dumps(ary))
     return(Response(ret, mimetype="text/json"))
+
+"""
+Submit a new cue word to the database
+"""
+@application.route("/cue-words/new", methods=["GET", "POST"])
+@login_required
+def crossword_cue_new():
+    if request.method == "GET":
+        cue={'cue_word': "Cue word",
+                  'meaning': 'Cue meaning'}
+        return render_template('views/cuse-words/new.html', cue=cue, r=request, sbmt='Save new cue word')
+    (rc, fdata) = sanitize_input(request.form)
+    if not rc == "":
+        flash(rc)
+        return(render_template('views/cuse-words/new.html', cue=fdata, r=request, sbmt=request.form['submit']))
+    cw = cue_words(cue_word=fdata['cue_word'], meaning=fdata['meaning'])
+    cw.save()
+    return(redirect('/crossword-hints'))
 
 """
 Index listing of known setters

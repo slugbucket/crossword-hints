@@ -1,4 +1,28 @@
 var ready = function() {
+  var max_fields = 10;
+  var wrapper = $("#cue_word_set"); //Input fields wrapper
+  var save_cue = $("#save_cue_word"); // Add cuw word class or ID
+
+  $("#save_cue_word").click(function(e) {
+    e.preventDefault();
+    var cword = $("#cue_word").val(); 
+    var cmean = $("#cue_meaning").val();
+    var dataString = 'cue_word='+cword+'&meaning='+cmean;
+    $.ajax({
+      type:'POST',
+      data:dataString,
+      url:'/cue-words/new',
+      success:function(data) {
+        //alert(data);
+        $("#cue_word_flash").css("visibility", "visible");
+        $("#cue_word_flash").html("Saved new cue word: "+cword);
+        // Reset the form fields to allow another submission
+        $("#cue_word").val('');
+        $("#cue_meaning").val('');
+      }
+    });
+  });
+
   setTimeout(initOverLabels, 50);
   initOverLabels();
 }; // Used with var ready = function() 

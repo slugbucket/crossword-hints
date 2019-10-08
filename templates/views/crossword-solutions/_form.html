@@ -1,7 +1,12 @@
 <p>
 Use this form to edit the details of a crossword solution.
+<br />
+Use the box on the right hand side of the form
+to save cue words present in the clue with a brief description of how it can be interpreted.
 </p>
-<form name="crossword_solutions" action="{{ r.path }}" method="POST">
+<div class="xword_form">
+  <div id="new_solution">
+    <form name="crossword_solutions" action="{{ r.path }}" method="POST">
     <fieldset id="crossword_solutions">
         <legend>Crossword solutions</legend>
         {{ f.label('clue', 'Clue') }}
@@ -16,13 +21,15 @@ Use this form to edit the details of a crossword solution.
         {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints", tabindex="4") }}
 
         {{ f.select('solution_type_id', s_types, default=soln['solution_type_id'], class="xwordhints", title='Solution type', tabindex="5") }}
-
     </fieldset>
-
     <p>
-    <input type="submit" name="submit" value="{{ sbmt|escape }}" />
-    <input type="reset" value="Reset" />
-    <br /><br />
-    <div class="pagination"><ul><li><a href="/crossword-solutions">Back to index</a></li></ul></div>
+        <input type="submit" name="submit" value="{{ sbmt|escape }}" />
+        <input type="reset" value="Reset" />
     </p>
-</form>
+    </form>
+  </div><!-- new_solution -->
+    {%- include "views/partials/_cue_words.html" -%}
+</div><!-- class="xword_form" -->
+<div class="cleaner"></div>
+<div class="pagination"><ul><li><a href="/crossword-solutions">Back to index</a></li></ul></div>
+
