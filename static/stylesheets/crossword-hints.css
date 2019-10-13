@@ -75,11 +75,95 @@ ul.navbar li a:hover, ul.navbar li a:active {
   color: #086b29;
   visibility: hidden;
 }
+.helpbutton {
+  vertical-align: middle;
+}
 /* End of solutions form specific styles */
 /* Over labels */
-/* Place all the styles related to the Phones controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: http://sass-lang.com/ */
+/* Modal popup styling lifted from:
+   https://www.w3schools.com/howto/howto_css_modals.asp
+ */
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.solution-types-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 15px;
+  width: 50%; /* Could be more or less, depending on screen size */
+  text-align: center;
+  font-size: 0.75em;
+  text-align: left;
+}
+/*
+ * Use these styles if processing a JSON return for the AJAX request
+ * Mostly taken from https://www.w3schools.com/howto/howto_css_modals.asp
+ */
+table.solution-types-table {
+  text-align: left;
+  width: 75%;
+  border-collapse: collapse;
+  border-width: 0px 0px 1px 1px;
+  border-color: #000000;
+  border-style: solid;
+  margin-left: 2em;
+}
+table.solution-types-table tr>th {
+  font-size: 1.0em;
+  font-weight: bold;
+  padding: 0.25em 1.0em 0.25em 0.5em;
+  background-color: #909090;
+  color: #fff;
+  border-width: 1px 1px 0px 0px;
+  border-color: #000000;
+  border-style: solid;
+}
+table.solution-types-table tr>td {
+  font-size: 0.85em;
+  padding: 0.2em 1.0em 0.1em 0.5em;
+  color: #000000;
+  border-width: 1px 1px 0px 0px;
+  border-color: #000000;
+  border-style: solid;
+}
+table.solution-types-table tr.ma_row_light {
+    text-decoration: none;
+    background-color: #FFF;
+    color: #0020d7;
+}
+table.solution-types-table tr.ma_row_dark td {
+  text-decoration: none;
+  background-color: #CCC;
+}
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* End of modal styling */
 div#search_box {
   position: relative;
   float: right;
@@ -111,7 +195,7 @@ label.overlabel-apply {
 /* table styles */
 table.indextable {
   text-align: left;
-  width: 60%;
+  width: 75%;
   border-left: 1px #000000 solid;
   border-bottom: 1px #000000 solid;
   margin-left: 2em;
@@ -502,4 +586,8 @@ input[type=text]{
     border-width: 1px;
     border-color: #6aa6ed;
     color: #105cb6;
+}
+
+.nobr {
+  white-space:nowrap;
 }

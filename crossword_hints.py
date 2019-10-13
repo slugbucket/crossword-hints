@@ -543,6 +543,28 @@ def solution_types_index(page):
                            pagination=Pagination(page, application.config['PER_PAGE'], count),
                            r=request)
 
+"""
+Route for direct rendering of the solution-types table in response to an AJAX request
+"""
+@application.route("/solution-types/index.ajax.html", methods=["GET"])
+def solution_types_index_ajax():
+    rs = solution_types.select().order_by(fn.Lower(solution_types.name))
+    return render_template('views/solution-types/_index.ajax.html', stypes=rs.dicts())
+
+"""
+Solution types JSON route for AJAX requests
+"""
+@application.route("/solution-types/index.json", methods=["GET"])
+def solution_types_index_json():
+    rs = solution_types.select().order_by(fn.Lower(solution_types.name)).dicts()
+    if not rs:
+        return(Response('{"result": "error"}', mimetype="text/json", status_code=400))
+    res = []
+    for row in rs:
+        res.append(dict(row))
+    return(jsonify(res))
+
+
 @application.route("/solution-types/<int:id>", methods=["GET"])
 def solution_types_show(id):
     rs = solution_types.get(solution_types.rowid == id)
