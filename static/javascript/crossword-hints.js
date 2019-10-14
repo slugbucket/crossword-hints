@@ -22,7 +22,44 @@ var ready = function() {
       }
     });
   });
-
+  $("#soltypehints").click(function() {
+    // Modal dialog from https://www.w3schools.com/howto/howto_css_modals.asp
+    // Get the modal
+    var modal = document.getElementById("solution-types");
+    // Get the button that opens the modal
+    var btn = document.getElementById("soltypehints");
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];   
+    $.ajax({
+      type:'GET',
+      url:'/solution-types/index.json',
+      //url:'/solution-types/index.ajax.html',
+      success:function(data) {
+        var content="The table below describes the meaning of each solution type.<br /><table class='solution-types-table'>\n<tr class='solution-types-table'><th>Name</th><th>Description</th>\n";
+        for (var i=0; i<data.length; i++) {
+          rcls="ma_row_dark";
+          if(i % 2 == 1) {rcls="ma_row_light"; }
+          content=content+"<tr class='"+rcls+"'><td>"+data[i].name+"</td><td>"+data[i].description+"</td></tr>";
+        }
+        content=content+"</table>";
+        $("#solution-types-table").html(content);
+        // Direct render of HTML table to avoid constructing it from AJAX request to JSON list
+        //$("#solution-types-table").html(data);
+      }
+    });
+    // When the user clicks on the button, open the modal
+    modal.style.display = "block";
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    } 
+  });
   setTimeout(initOverLabels, 50);
   initOverLabels();
 }; // Used with var ready = function() 
