@@ -104,10 +104,10 @@ ul.navbar li a:hover, ul.navbar li a:active {
   padding: 20px;
   border: 1px solid #888;
   border-radius: 15px;
-  width: 50%; /* Could be more or less, depending on screen size */
+  width: 45%; /* Could be more or less, depending on screen size */
   text-align: center;
   font-size: 0.75em;
-  text-align: left;
+  text-align: center;
 }
 /*
  * Use these styles if processing a JSON return for the AJAX request
@@ -115,7 +115,7 @@ ul.navbar li a:hover, ul.navbar li a:active {
  */
 table.solution-types-table {
   text-align: left;
-  width: 75%;
+  width: 90%;
   border-collapse: collapse;
   border-width: 0px 0px 1px 1px;
   border-color: #000000;

@@ -564,12 +564,17 @@ def solution_types_index_json():
         res.append(dict(row))
     return(jsonify(res))
 
-
+"""
+Render a template of the detail of a spefic solution type
+"""
 @application.route("/solution-types/<int:id>", methods=["GET"])
 def solution_types_show(id):
     rs = solution_types.get(solution_types.rowid == id)
     return render_template('views/solution-types/show.html', stype=rs,  r=request)
 
+"""
+Display a form requesting the details of a new solution type
+"""
 @application.route("/solution-types/new", methods=["GET", "POST"])
 @login_required
 def solution_types_new():
@@ -587,6 +592,9 @@ def solution_types_new():
     flash("Saved new solution type, %s" % fdata['name'])
     return redirect('/solution-types')
 
+"""
+Display a form to edit the details of an existing solution type
+"""
 @application.route("/solution-types/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def solution_types_edit(id):
@@ -610,6 +618,9 @@ def solution_types_edit(id):
     flash("Updated solution type, %s" % fdata['name'])
     return(redirect('/solution-types'))
 
+"""
+Delete an existing solution type
+"""
 @application.route("/solution-types/<int:id>/delete", methods=["GET", "POST"])
 @login_required
 def solution_types_delete(id):
