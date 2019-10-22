@@ -1,0 +1,8 @@
+{%- extends "error_layout.html" -%}
+{%- block fivezerozero -%}
+<p>
+Server error: {{ errmsg }}
+</p>
+<p>Back to <a href="/">cue search</a>.
+{%- endblock -%}
+{{ super() }}

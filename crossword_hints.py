@@ -10,12 +10,10 @@ import json
 import os
 import io
 import re
-from peewee import *
+# from peewee import *
 import datetime
 from datetime import date, timedelta, datetime
 import ldap
-# For use with pagination
-from math import ceil
 
 # Print all queries to stderr.
 #import logging
@@ -38,10 +36,10 @@ except KeyError:
 # Create an application handle that AWS EB can understand
 application.config.from_envvar('APP_SETTINGS')
 
-# flask-login
-login_manager = LoginManager()
-login_manager.init_app(application)
-login_manager.login_view = "crossword_login"
+## flask-login
+#login_manager = LoginManager()
+#login_manager.init_app(application)
+#login_manager.login_view = "crossword_login"
 
 database = SqliteDatabase(application.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
 database.row_factory = sqlite3.Row

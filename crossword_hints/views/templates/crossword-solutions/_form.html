@@ -1,0 +1,49 @@
+<p>
+Use this form to edit the details of a crossword solution.
+<br />
+Use the box on the right hand side of the form
+to save cue words present in the clue with a brief description of how it can be interpreted.
+</p>
+<div class="xword_form">
+  <div id="new_solution">
+
+    <!-- Trigger/Open The Modal from https://www.w3schools.com/howto/howto_css_modals.asp-->
+    <!-- The Modal -->
+    <div id="solution-types" class="modal">
+      <!-- Modal content -->
+      <div class="solution-types-content">
+        <span class="close">&times;</span>
+        <br />
+        <p id="solution-types-table"></p>
+      </div>
+    </div> <!-- id="solution-types" -->
+
+    <form name="crossword_solutions" action="{{ r.path }}" method="POST">
+    <fieldset id="crossword_solutions">
+        <legend>Crossword solutions</legend>
+        {{ f.label('clue', 'Clue') }}
+        {{ f.input_tag('clue', value=(soln['clue']|escape)|default('clue'), class="xwordhints", onfocus="this.select()", tabindex="1") }}
+
+        {{ f.label('solution', 'Solution') }}
+        {{ f.input_tag('solution', value=(soln['solution']|escape)|default('solution'), class="xwordhints", tabindex="2") }}
+
+        {{ f.label('crossword_setter_id', 'Setter') }}
+        {{ f.select_tag('crossword_setter_id', setters, default=soln['crossword_setter_id'], class="xwordhints", title='Clue setter', tabindex="3") }}
+
+        {{ f.label('solution_hint', 'Hint') }}
+        {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints", tabindex="4") }}
+
+        {{ f.label('solution-type', 'Solution type') }}
+        <span class="nobr">{{ f.select_tag('solution-type', s_types, default=soln['solution_type_id'], class="xwordhints", title='Solution type', tabindex="5") }}<img src="/static/images/why.png" class="helpbutton" id="soltypehints" /></span>
+    </fieldset>
+    <p>
+        <input type="submit" name="submit" value="{{ sbmt|escape }}" />
+        <input type="reset" value="Reset" />
+    </p>
+    </form>
+  </div><!-- new_solution -->
+    {%- include "partials/_cue_words.html" -%}
+</div><!-- class="xword_form" -->
+<div class="cleaner"></div>
+<div class="pagination"><ul><li><a href="/crossword-solutions">Back to index</a></li></ul></div>
+

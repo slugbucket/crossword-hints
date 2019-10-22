@@ -1,0 +1,26 @@
+{%- extends "layouts/crossword-hints.html" %}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>Solution: {{ soln['solution']}}</h2>
+
+<p>
+<strong>Clue</strong>: {{ soln['clue']|safe }}
+</p>
+
+{%- if soln['hint']: -%}
+<p>
+<strong>Hint</strong>: {{ soln['hint'] }}
+</p>
+{%- endif -%}
+<p>
+<strong>Setter</strong>: {{ soln['setter'] }}
+</p>
+
+<p>
+<strong>Type</strong>: {{ soln['soltype'] }}
+</p>
+
+<br />
+<a href="/crossword-solutions/{{ soln['csid'] }}/edit">Edit</a> | <a href="{{ r.referrer }}">Back to index</a>
+{% endblock %}
