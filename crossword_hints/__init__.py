@@ -26,7 +26,7 @@ application = Flask(__name__, template_folder="views/templates") or create_app('
 try:
     os.environ['APP_SETTINGS']
 except KeyError:
-    os.environ['APP_SETTINGS'] = os.path.join(application.root_path, '../default_settings.py')
+    os.environ['APP_SETTINGS'] = os.path.join(application.root_path, 'default_settings.py')
 
 # Create an application handle that AWS EB can understand
 application.config.from_envvar('APP_SETTINGS')
@@ -45,7 +45,7 @@ from crossword_hints.controllers import setter_types, crossword_setters, solutio
 def init_db():
     #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
     #    database.execute_sql("drop table " + tbl)
-    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words, users])
+    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words])
 
 application.jinja_env.globals['url_for_other_page'] = url_for_other_page
 

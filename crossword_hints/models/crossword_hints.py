@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from peewee import *
 from datetime import date, timedelta, datetime
-__all__ = ["activity_logs", "setter_types", "crossword_setters", "solution_types", "crossword_solutions", "cue_words"]
-
 from peewee import *
 from crossword_hints import application
 from crossword_hints import database
+
+__all__ = ["activity_logs", "setter_types", "crossword_setters", "solution_types", "crossword_solutions", "cue_words"]
 
 """                                                        """
 """  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """
@@ -72,30 +72,7 @@ class users(BaseModel):
     created_at       = DateTimeField(default=datetime.now())
     updated_at       = DateTimeField(default=datetime.now())
 
-    #def __init__(self, username, password):
-    #    self.username = username
 
-    @staticmethod
-    def try_login(username, password):
-        conn = get_ldap_connection()
-        conn.simple_bind_s(
-            'uid=%s,ou=People,dc=my-domain,dc=com' % username, password
-        )
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return(self.rowid)
-
-    def get_name(self):
-        return(self.username)
 
 """                                             """
 """  E N D   O F   D A T A B A S E   M O D E L  """

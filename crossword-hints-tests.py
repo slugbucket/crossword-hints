@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 import sys
 import unittest
@@ -16,6 +18,8 @@ from peewee import *
 from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file
 import datetime
 import crossword_hints
+from jur_ldap_login.models import users
+
 """                                           """
 """ http://flask.pocoo.org/docs/0.12/testing/ """
 """                                           """

@@ -33,8 +33,8 @@ to save cue words present in the clue with a brief description of how it can be 
         {{ f.label('solution_hint', 'Hint') }}
         {{ f.input_tag('solution_hint', value=(soln['solution_hint']|escape)|default('solution hint'), class="xwordhints", tabindex="4") }}
 
-        {{ f.label('solution-type', 'Solution type') }}
-        <span class="nobr">{{ f.select_tag('solution-type', s_types, default=soln['solution_type_id'], class="xwordhints", title='Solution type', tabindex="5") }}<img src="/static/images/why.png" class="helpbutton" id="soltypehints" /></span>
+        {{ f.label('solution_type_id', 'Solution type') }}
+        <span class="nobr">{{ f.select_tag('solution_type_id', s_types, default=soln['solution_type_id'], class="xwordhints", title='Solution type', tabindex="5") }}<img src="/static/images/why.png" class="helpbutton" id="soltypehints" /></span>
     </fieldset>
     <p>
         <input type="submit" name="submit" value="{{ sbmt|escape }}" />

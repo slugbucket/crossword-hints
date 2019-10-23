@@ -7,7 +7,7 @@ from crossword_hints import application
 #from jur_ldap_login import *
 
 # To run the application as standalone,
-# export FLASK_APP=crossword_hints.py
+# export FLASK_APP=runserver.py
 # flask run
 # or, with uwsgi,
 # uwsgi --ini crossword_hints.ini

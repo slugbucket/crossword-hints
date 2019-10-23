@@ -24,9 +24,6 @@ class users(BaseModel):
     created_at       = DateTimeField(default=datetime.now())
     updated_at       = DateTimeField(default=datetime.now())
 
-    #def __init__(self, username, password):
-    #    self.username = username
-
     @staticmethod
     def try_login(username, password):
         conn = get_ldap_connection()
