@@ -45,7 +45,9 @@ from crossword_hints.controllers import setter_types, crossword_setters, solutio
 def init_db():
     #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
     #    database.execute_sql("drop table " + tbl)
-    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words])
+    #database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words])
+    for tbl in [crossword_hints.models.setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words]:
+        tbl.create_table()
 
 application.jinja_env.globals['url_for_other_page'] = url_for_other_page
 

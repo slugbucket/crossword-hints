@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from peewee import *
 from datetime import date, timedelta, datetime
-from peewee import *
 from crossword_hints import application
 from crossword_hints import database
 
