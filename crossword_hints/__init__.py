@@ -19,7 +19,7 @@ from math import ceil
 
 # Based on https://github.com/salimane/flask-mvc/blob/master/project/__init__.py
 __version__ = '1.0.25'
-__all__ = ["models", "views", "controllers"]
+__all__ = ["models", "views", "controllers", "init_db"]
 
 application = Flask(__name__, template_folder="views/templates") or create_app('runserver.py', template_folder="views")
 
@@ -42,12 +42,12 @@ database.row_factory = sqlite3.Row
 from crossword_hints.views.crossword_hints import *
 from crossword_hints.controllers import setter_types, crossword_setters, solution_types, crossword_solutions, crossword_hints, cue_words
 
-def init_db():
-    #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
-    #    database.execute_sql("drop table " + tbl)
-    #database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words])
-    for tbl in [crossword_hints.models.setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words]:
-        tbl.create_table()
+#def init_db():
+#    for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
+#    database.execute_sql("drop table " + tbl)
+#        #database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words])
+#    for tbl in [crossword_hints.models.setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words]:
+#        tbl.create_table()
 
 application.jinja_env.globals['url_for_other_page'] = url_for_other_page
 

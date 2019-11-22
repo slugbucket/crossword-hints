@@ -15,9 +15,10 @@ import re
 import zipfile
 import socket
 from peewee import *
-from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file
+from flask import Flask, request, flash, redirect, render_template, g, jsonify, Response, send_file, current_app
 import datetime
-import crossword_hints
+from crossword_hints import application
+from crossword_hints.models import crossword_hints as xwordmodel
 from jur_ldap_login.models import users
 
 """                                           """
@@ -51,45 +52,63 @@ To run the tests,
 APP_SETTINGS='test-settings.py' python3 crossword-hints-tests.py
 """
 class XwordhintsTestCase(unittest.TestCase):
+    # initialization logic for the test suite declared in the test module
+    # code that is executed before all tests in one test run
+    @classmethod
+    def setUpClass(cls):
+        application.login_manager.init_app(application)
+        xwordmodel.init_db()
+        application.login_manager.anonymous_user = MyAnonymousUser
+
+    @classmethod
+    def tearDownClass(cls):
+        try: 
+            os.close(application.config['DB_FD'])
+        except:
+            print("Error closing database %s" % application.config['DATABASE'])
+        os.unlink(application.config['DATABASE'])
+
     def setUp(self):
-        crossword_hints.application.login_manager.init_app(crossword_hints.application)
-        self.db_fd, crossword_hints.application.config['DATABASE'] = tempfile.mkstemp()
-        self.app = crossword_hints.application.test_client()
-        crossword_hints.init_db()
-        crossword_hints.login_manager.anonymous_user = MyAnonymousUser
-        self.numx  = crossword_hints.application.config['NUM_SOLUTION_ROWS']
-        self.numst = crossword_hints.application.config['NUM_SOLUTION_TYPES']
-        self.numcs = crossword_hints.application.config['NUM_CROSSWORD_SETTERS']
-        self.numsy = crossword_hints.application.config['NUM_SETTER_TYPES']
+        self.app = application.test_client()
+        self.numx  = application.config['NUM_SOLUTION_ROWS']
+        self.numst = application.config['NUM_SOLUTION_TYPES']
+        self.numcs = application.config['NUM_CROSSWORD_SETTERS']
+        self.numsy = application.config['NUM_SETTER_TYPES']
 
     def tearDown(self):
-        os.close(self.db_fd)
-        os.unlink(crossword_hints.application.config['DATABASE'])
+        pass
 
     def loadSampleData(self):
-        #with crossword_hints.app.app_context():
-        for sql in ('setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions', 'users'):
-            with crossword_hints.application.open_resource(('tests/%s.sql' % sql), mode='r') as f:
-                crossword_hints.database.execute_sql(f.read())
+        with application.app_context():
+            for sql in ('setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions', 'users'):
+                with current_app.open_resource(('tests/%s.sql' % sql), mode='r') as f:
+                    try:
+                        xwordmodel.database.execute_sql(f.read())
+                    except(OSError):
+                        print("Error executing SQL for %s" % sql)
 
     def clearSampleData(self):
-        for tbl in ('crossword_solutions', 'solution_types', 'crossword_setters', 'setter_types' ):
-            crossword_hints.database.execute_sql("DELETE FROM %s" % tbl)
+        with application.app_context():
+            for tbl in ('crossword_solutions', 'solution_types', 'crossword_setters', 'setter_types' ):
+                try:
+                    xwordmodel.database.execute_sql("DELETE FROM %s" % tbl)
+                except(sqlite3.OperationalError) as e:
+                    print("clearSampleData failed for %s" % tbl)
 
     def get_request(self, req, follow):
-        with crossword_hints.application.app_context():
+        with application.app_context():
             rv = self.app.get(req, follow_redirects=True)
             return rv
 
     def post_request(self, req, data, follow):
-        with crossword_hints.application.app_context():
+        with application.app_context():
             rv = crossword_hints.app.post('/crossword_hints/1/copy', follow_redirects=True)
             return rv
 
     # Doesn't work when application is using the ORM
     def db_count(self, table):
-        with crossword_hints.application.app_context():
-            rs = crossword_hints.query_db(("SELECT COUNT(rowid) AS count FROM %s" % table), one=True)
+        with application.app_context():
+            rs = application.query_db(("SELECT COUNT(rowid) AS count FROM %s" % table), one=True)
             return rs[0]
 
 
@@ -100,20 +119,21 @@ class XwordhintsTestCase(unittest.TestCase):
         rv = self.app.get('/')
         self.assertIn(b'Cryptic cue search', rv.data, "Cannot find front page heading text")
 
+
     def test_0001_initial_data(self):
         self.loadSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, self.numx, "Unexpected number of solutions, %s rather than %s" % (nr, self.numx))
         self.clearSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
 
-    """        S E T T E R   T Y P E S         """
-
+#    """        S E T T E R   T Y P E S         """
+#
     def test_000_count_setter_types(self):
         self.loadSampleData()
-        nr = crossword_hints.setter_types.select().count()
+        nr = xwordmodel.setter_types.select().count()
         self.assertEqual(nr, self.numsy, "Unexpected number of setter types, %s rather than %s" % (nr, self.numsy))
 
     def test_001_list_setter_types(self):
@@ -125,7 +145,7 @@ class XwordhintsTestCase(unittest.TestCase):
                            "description": "Seriously devious and mindbending clues"}
         rv = self.app.post('/setter-types/new', data=new_setter_type, follow_redirects=True)
         self.assertIn(b'Saved new setter type, ',  rv.data, "New setter type save failed")
-        nr = crossword_hints.setter_types.select().count()
+        nr = xwordmodel.setter_types.select().count()
         self.assertEqual(nr, self.numsy+1, "New setter type failed, expected %s rather than %s" % (self.numsy+1, nr))
 
     def test_003_edit_setter_type(self):
@@ -137,18 +157,18 @@ class XwordhintsTestCase(unittest.TestCase):
     def test_004_delete_setter_type(self):
         rv = self.app.get('/setter-types/6/delete', follow_redirects=True)
         self.assertIn(b'Deleted setter type, Fiendish', rv.data, "Cannot find deleted setter type message")
-        nr = crossword_hints.setter_types.select().count()
+        nr = xwordmodel.setter_types.select().count()
         self.assertEqual( nr, self.numsy, "Delete setter type failed, expected %s rather than %s" % (self.numsy, nr))
 
     def test_099_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.setter_types.select().count()
+        nr = xwordmodel.setter_types.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
     """    C R O S S W O R D   S E T T E R S   """
     def test_101_count_crossword_setters(self):
         self.loadSampleData()
-        nr = crossword_hints.crossword_setters.select().count()
+        nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(nr, self.numcs, "Unexpected number of setters, %s rather than %s" % (nr, self.numcs))
 
     def test_101_list_crossword_setters(self):
@@ -161,11 +181,11 @@ class XwordhintsTestCase(unittest.TestCase):
                         "description": "On the sly side"}
         rv = self.app.post('/crossword-setters/new', data=new_x_setter, follow_redirects=True)
         self.assertIn(b'Saved new crossword setter, ',  rv.data, "New crossword setter failed for %s" % new_x_setter['name'])
-        nr = crossword_hints.crossword_setters.select().count()
+        nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(nr, self.numcs+1, "New crossword setter failed, expected %s, found %s" % (self.numcs+1, nr))
 
     def test_103_edit_crossword_setter(self):
-        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slideshow").scalar()
+        csid = xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid).where(xwordmodel.crossword_setters.name == "Slideshow").scalar()
         upd_x_setter = {"name": "Slydeshow",
                         "setter_type_id": 3,
                         "description": "On the sly side"}
@@ -173,22 +193,22 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(b'Updated crossword setter, Slydeshow', rv.data, "crossword setter update failed")
 
     def test_104_delete_crossword_setter(self):
-        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Slydeshow").scalar()
+        csid = xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid).where(xwordmodel.crossword_setters.name == "Slydeshow").scalar()
         rv = self.app.get(('/crossword-setters/%s/delete' % csid), follow_redirects=True)
         self.assertIn(b'Deleted crossword setter, Slydeshow', rv.data, "Crossword setter deletion failed to display message")
-        nr = crossword_hints.crossword_setters.select().count()
+        nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(nr, self.numcs, "Crossword setter deletion failed, found %s rather than %s" % (nr, self.numcs))
 
     def test_199_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.crossword_setters.select().count()
+        nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
 
     """        S O L U T I O N   T Y P E S     """
     def test_200_count_solution_types(self):
         self.loadSampleData()
-        nr = crossword_hints.solution_types.select().count()
+        nr = xwordmodel.solution_types.select().count()
         self.assertEqual(nr, self.numst, "Expected %s solution types, but found %s" % (self.numst, nr))
 
     def test_201_list_solution_types(self):
@@ -200,32 +220,32 @@ class XwordhintsTestCase(unittest.TestCase):
                            "description": "Splice reading backwards across two words"}
         rv = self.app.post('/solution-types/new', data=new_solution_type, follow_redirects=True)
         assert b'Saved new solution type, ' in rv.data
-        nr = crossword_hints.solution_types.select().count()
+        nr = xwordmodel.solution_types.select().count()
         self.assertEqual(nr, self.numst+1, "New solution type failed: (expectecd %s, found %s)" % (self.numst+1, nr))
 
     def test_203_edit_solution_type(self):
-        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Reverse split").scalar()
+        stid = xwordmodel.solution_types.select(xwordmodel.solution_types.rowid).where(xwordmodel.solution_types.name == "Reverse split").scalar()
         upd_solution_type = {"name": "Reverse splice",
                            "description": "Splice reading backwards across two words"}
         rv = self.app.post(('/solution-types/%s/edit' % stid), data=upd_solution_type, follow_redirects=True)
         self.assertIn(b'Updated solution type, Reverse splice', rv.data, "Cannot find updated solution_type")
 
     def test_204_delete_solution_type(self):
-        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Reverse splice").scalar()
+        stid = xwordmodel.solution_types.select(xwordmodel.solution_types.rowid).where(xwordmodel.solution_types.name == "Reverse splice").scalar()
         rv = self.app.get(('/solution-types/%s/delete' % stid), follow_redirects=True)
         assert b'Deleted solution type, Reverse splice' in rv.data
-        nr = crossword_hints.solution_types.select().count()
+        nr = xwordmodel.solution_types.select().count()
         self.assertEqual(nr, self.numst, "Delete solution type failed: (expected %s, found %s.)" % (self.numst, nr))
 
     def test_299_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.solution_types.select().count()
+        nr = xwordmodel.solution_types.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
     """             S O L U T I O N S          """
     def test_300_count_crossword_solutions(self):
         self.loadSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, self.numx, "AssertionError(300): Expected %s rows, but found %s." % (self.numx, nr))
 
     def test_301_list_crossword_solutions(self):
@@ -233,8 +253,8 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(b'New crossword solution', rv.data, "AssertionError(301): Add solution failed: Received data of %s" % rv.data)
 
     def test_302_new_crossword_solution(self):
-        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Hypnos").scalar()
-        stid = crossword_hints.solution_types.select(crossword_hints.solution_types.rowid).where(crossword_hints.solution_types.name == "Double meaning").scalar()
+        csid = xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid).where(xwordmodel.crossword_setters.name == "Hypnos").scalar()
+        stid = xwordmodel.solution_types.select(xwordmodel.solution_types.rowid).where(xwordmodel.solution_types.name == "Double meaning").scalar()
         new_solution = {"crossword_setter_id": csid,
                         "clue": "One son comes down for Christmas and Easter, perhaps",
                         "solution": "Islands",
@@ -244,12 +264,12 @@ class XwordhintsTestCase(unittest.TestCase):
                         "updated_at": datetime.datetime.now()}
         rv = self.app.post('/crossword-solutions/new', data=new_solution, follow_redirects=True)
         self.assertIn(b'Saved new crossword solution, ', rv.data)
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, self.numx+1, "New solution failed (expected %s, found %s)" % (self.numx, nr))
 
     def test_303_edit_crossword_solution(self):
-        csid = crossword_hints.crossword_setters.select(crossword_hints.crossword_setters.rowid).where(crossword_hints.crossword_setters.name == "Klingsor").scalar()
-        stid = crossword_hints.crossword_solutions.select(crossword_hints.crossword_solutions.solution_type_id).where(crossword_hints.crossword_solutions.solution == "Islands").scalar()
+        csid = xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid).where(xwordmodel.crossword_setters.name == "Klingsor").scalar()
+        stid = xwordmodel.crossword_solutions.select(xwordmodel.crossword_solutions.solution_type_id).where(xwordmodel.crossword_solutions.solution == "Islands").scalar()
         upd_solution = {"crossword_setter_id": csid,
                         "clue": "One son comes down for Christmas and Easter, perhaps",
                         "solution": "islands",
@@ -260,20 +280,20 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(b'Updated crossword solution, islands', rv.data, "Crossword solution update failed for %s" % upd_solution['solution'])
 
     def test_304_show_crosword_solution(self):
-        soln = crossword_hints.crossword_solutions.get(crossword_hints.crossword_solutions.solution == "islands")
+        soln = xwordmodel.crossword_solutions.get(xwordmodel.crossword_solutions.solution == "islands")
         rv = self.app.get('/crossword-solutions/%s' % soln)
         self.assertIn(b'One son comes down for Christmas and Easter, perhaps', rv.data, "Cannot find updated solution on listing")
 
     def test_305_delete_crossword_solution(self):
-        csid = crossword_hints.crossword_solutions.get(crossword_hints.crossword_solutions.solution == "islands")
+        csid = xwordmodel.crossword_solutions.get(xwordmodel.crossword_solutions.solution == "islands")
         rv = self.app.get(('/crossword-solutions/%s/delete' % csid), follow_redirects=True)
         self.assertIn(b'Deleted crossword solution, islands', rv.data, "Solution deletion failed")
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, self.numx, "Solution deletion failed (expected %s, found %s)" % (self.numx, nr))
 
     def test_399_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
     """ Pagination tests
@@ -295,17 +315,17 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(b'<a href="/crossword-solutions/page/30?q=">&laquo; Prev</a>', rv.data, "Cannot find prev link")
 
     def test_403_more_items_per_page(self):
-        oldpp = crossword_hints.application.config['PER_PAGE']
-        crossword_hints.application.config['PER_PAGE'] = 60
+        oldpp = application.config['PER_PAGE']
+        application.config['PER_PAGE'] = 60
         rv = self.app.get('/crossword-solutions/', follow_redirects=True)
         self.assertIn(b'<a href="/crossword-solutions/page/13?q=">13</a>', rv.data, "Cannot find link to last page")
         rv = self.app.get('/crossword-solutions/page/13', follow_redirects=True)
         self.assertIn(b'<span class="pagination nolink">Next &raquo;</span>', rv.data, "Cannot find greyed out next box")
-        crossword_hints.application.config['PER_PAGE'] = oldpp
+        application.config['PER_PAGE'] = oldpp
 
     def test_499_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
     """ Search tests
@@ -339,7 +359,7 @@ class XwordhintsTestCase(unittest.TestCase):
 
     def test_599_clear_data(self):
         self.clearSampleData()
-        nr = crossword_hints.crossword_solutions.select().count()
+        nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
 __unittest = True

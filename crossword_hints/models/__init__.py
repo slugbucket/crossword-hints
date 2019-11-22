@@ -2,8 +2,7 @@
 import os
 import glob
 
-#__all__ = [os.path.basename(f)[:-3] for f in glob.glob(os.path.dirname(__file__) + "/*.py")]
-__all__ = ["activity_logs", "crossword_setters", "crossword_solutions", "cue_words", "setter_types", "solution_types"]
+__all__ = [os.path.basename(f)[:-3] for f in glob.glob(os.path.dirname(__file__) + "/*.py")]
 
 from peewee import *
 from crossword_hints import application

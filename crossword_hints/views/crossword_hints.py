@@ -4,7 +4,9 @@
 """                                                        """
 from flask import request, url_for
 from crossword_hints import application
-from crossword_hints.models.crossword_hints import crossword_setters, setter_types, activity_logs, solution_types
+from crossword_hints import database
+#from crossword_hints.models.crossword_hints import *
+from crossword_hints.models import crossword_hints as xwordmodel
 from peewee import *
 import re
 from datetime import date, timedelta, datetime
@@ -69,7 +71,7 @@ The format of entries for activity logging are:
 * activity - details of the content that has been changed
 """
 def add_log(actor, action, item_type, item_id, activity):
-    log = activity_logs(actor=actor,
+    log = xwordmodel.activity_logs(actor=actor,
                         action=action,
                         item_type=item_type,
                         item_id=item_id,
@@ -83,7 +85,7 @@ Construct an array containing the setter_type rowid and name
 suitable for use in a SELECT form element
 """
 def get_setter_types():
-    rs=setter_types.select(setter_types.rowid, setter_types.name).order_by(fn.Lower(setter_types.name))
+    rs=xwordmodel.setter_types.select(xwordmodel.setter_types.rowid, xwordmodel.setter_types.name).order_by(fn.Lower(xwordmodel.setter_types.name))
     s_types = []
     for row in rs.dicts():
         s_types.append([row['rowid'], row['name']])
@@ -94,7 +96,7 @@ Construct an array containing the crossword setter rowid and name
 suitable for use in a SELECT form element
 """
 def get_crossword_setters():
-    cs=crossword_setters.select(crossword_setters.rowid, crossword_setters.name).order_by(fn.Lower(crossword_setters.name))
+    cs=xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid, xwordmodel.crossword_setters.name).order_by(fn.Lower(xwordmodel.crossword_setters.name))
     setters = []
     for row in cs.dicts():
         setters.append([row['rowid'], row['name']])
@@ -105,7 +107,7 @@ Construct an array containing the solution_type rowid and name
 suitable for use in a SELECT form element
 """
 def get_solution_types():
-    rs=solution_types.select(solution_types.rowid, solution_types.name).order_by(fn.Lower(solution_types.name))
+    rs=xwordmodel.solution_types.select(xwordmodel.solution_types.rowid, xwordmodel.solution_types.name).order_by(fn.Lower(xwordmodel.solution_types.name))
     s_types = []
     for row in rs.dicts():
         s_types.append([row['rowid'], row['name']])

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from crossword_hints import application
-from crossword_hints.models.crossword_hints import crossword_setters, setter_types, crossword_solutions
+from crossword_hints.models.crossword_hints import crossword_setters, setter_types, crossword_solutions, solution_types
 from jur_ldap_login.models.users import users
 from jur_ldap_login.controllers.login import load_user
 from flask import request, flash, redirect, render_template

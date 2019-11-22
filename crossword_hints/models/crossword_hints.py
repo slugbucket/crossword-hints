@@ -1,10 +1,28 @@
 # -*- coding: utf-8 -*-
+import sqlite3
 from peewee import *
 from datetime import date, timedelta, datetime
 from crossword_hints import application
-from crossword_hints import database
+#from crossword_hints import database
 
-__all__ = ["activity_logs", "setter_types", "crossword_setters", "solution_types", "crossword_solutions", "cue_words"]
+__all__ = ["database", "init_db"]
+
+
+database = SqliteDatabase(application.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
+database.row_factory = sqlite3.Row
+"""
+Initialise the database - only to be used for testing and database restore
+To bootstrap a database, either empty or with new schema:
+Params:
+  None
+Returns:
+  None
+"""
+def init_db():
+    #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
+    #    database.execute_sql("drop table " + tbl)
+    database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words, users])
+
 
 """                                                        """
 """  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """
