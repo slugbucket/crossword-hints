@@ -1,0 +1,12 @@
+{%- extends "layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword solutions
+{%- endblock -%}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>New crossword solution</h2>
+
+{% include "crossword-solutions/_form.html" %}
+
+{% endblock %}
