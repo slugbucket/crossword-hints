@@ -4,8 +4,6 @@
 """                                                        """
 from flask import request, url_for
 from crossword_hints import application
-from crossword_hints import database
-#from crossword_hints.models.crossword_hints import *
 from crossword_hints.models import crossword_hints as xwordmodel
 from peewee import *
 import re

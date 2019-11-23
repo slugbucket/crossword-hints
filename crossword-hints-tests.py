@@ -129,8 +129,8 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
 
-#    """        S E T T E R   T Y P E S         """
-#
+    """        S E T T E R   T Y P E S         """
+
     def test_000_count_setter_types(self):
         self.loadSampleData()
         nr = xwordmodel.setter_types.select().count()
@@ -366,5 +366,3 @@ __unittest = True
 
 if __name__ == '__main__':
     unittest.main(exit=True)
-
-os.unlink(crossword_hints.application.config['DATABASE'])

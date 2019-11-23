@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+import sqlite3
 from peewee import *
-from crossword_hints import application
-from crossword_hints import database
 from datetime import date, timedelta, datetime
+from crossword_hints import application
+
+__all__ = ["database"]
+
+
+database = SqliteDatabase(application.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
+database.row_factory = sqlite3.Row
 
 """                                                        """
 """  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """

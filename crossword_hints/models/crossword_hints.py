@@ -3,7 +3,6 @@ import sqlite3
 from peewee import *
 from datetime import date, timedelta, datetime
 from crossword_hints import application
-#from crossword_hints import database
 
 __all__ = ["database", "init_db"]
 
@@ -19,8 +18,6 @@ Returns:
   None
 """
 def init_db():
-    #for tbl in ['setter_types', 'crossword_setters', 'solution_types', 'crossword_solutions']:
-    #    database.execute_sql("drop table " + tbl)
     database.create_tables([setter_types, crossword_setters, solution_types, crossword_solutions, activity_logs, cue_words, users])
 
 
