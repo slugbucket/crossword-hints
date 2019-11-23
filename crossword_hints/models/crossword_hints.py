@@ -77,6 +77,7 @@ class crossword_solutions(BaseModel):
 class cue_words(BaseModel):
     rowid            = AutoField()
     cue_word         = CharField(null=False, max_length=32)
+    meaning          = CharField(null=False, max_length=128)
     created_at       = DateTimeField(default=datetime.now())
     updated_at       = DateTimeField(default=datetime.now())
 
