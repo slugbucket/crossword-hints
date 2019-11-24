@@ -55,11 +55,13 @@ for typical clues and their solutions.
 
 <p>
 {%- if clues -%}
+Showing clues mentioning <span class='highlight-cue'>{{ cue_word }}</span> as a cue or solution trigger.
+<br />
 <table cellspacing="0" cellpadding="0" class="indextable">
   <tr><th>Clue</th><th>Setter</th><th>Type</th><th>Hint</th><th>Solution</th></tr>
   {%- for clue in clues -%}
   <tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
-      <td>{{ clue.clue }}</td><td>{{ clue.setter }}</td><td>{{ clue.soltype }}</td><td>{{ clue.hint }}</td><td>{{ clue.solution }}</td>
+      <td>{{ clue.clue|replace(cue_word,"<span class='highlight-cue'>"+cue_word+"</span>")|safe }}</td><td>{{ clue.setter }}</td><td><div class="tooltip">{{ clue.soltype }}<span class="tooltiptext">{{ clue.soltypedesc }}</span></div></td><td>{{ clue.hint }}</td><td>{{ clue.solution }}</td>
   </tr>
   {%- endfor -%}
 </table>

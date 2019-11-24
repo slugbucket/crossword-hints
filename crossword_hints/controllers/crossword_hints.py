@@ -26,9 +26,10 @@ def crossowrd_hints_index(path):
                            crossword_solutions.clue,
                            crossword_solutions.solution_hint.alias("hint"),
                            solution_types.name.alias("soltype"),
+                           solution_types.description.alias("soltypedesc"),
                            crossword_setters.name.alias("setter")) \
                           .join(crossword_solutions, JOIN.INNER, on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id)) \
                           .join(solution_types, JOIN.INNER, on=(crossword_solutions.solution_type_id == solution_types.rowid)) \
                           .where(crossword_solutions.clue.contains(format(fdata['cue_word']))) \
                           .order_by(fn.Lower(crossword_solutions.solution)).dicts()
-    return(render_template('crossword-hints/index.html', r=request, clues=clueset))
+    return(render_template('crossword-hints/index.html', r=request, clues=clueset, cue_word=format(fdata['cue_word'])))
