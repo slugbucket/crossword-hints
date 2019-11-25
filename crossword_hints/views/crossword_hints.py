@@ -27,6 +27,28 @@ class HTMLStripper(HTMLParser):
         return ''.join(self.fed)
 
 """
+Custom template filter to highlight a given word in a piece of text
+regardless of case. This can be used instead of the replace filter
+which is case-sensitive.
+
+replace(cue_word,"<span class='highlight-cue'>"+cue_word|upper+"</span>")
+Params:
+  text: string containing word to highlight
+  word: string: the word to highlight
+  cls: string: the CSS class used for the highlighting
+Returns:
+  string: HTML in the form: Text before the <span class='cls'>Word</span> to be highlighted
+"""
+def highlight_text(text, word, cls):
+    p = re.compile(word, re.IGNORECASE)
+    m = p.search(text)
+    if m:
+        hstr = ("<span class='%s'>%s</span>" % (cls, m.group()))
+        return(p.sub(hstr, text))
+    else:
+        return(text)
+
+"""
 Function to try to determine if a URL (typically passed as a next parameter
 when logging in) is safe to redirect to.
 Taken from http://flask.pocoo.org/snippets/62/ although the next parameter

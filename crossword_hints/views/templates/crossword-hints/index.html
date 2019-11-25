@@ -46,7 +46,7 @@ for typical clues and their solutions.
 
 <form name="crossword-hints" action="{{ request.path }}" method="post">
     <div class="ui-widget" style="margin-top:2em; font-family:Arial">
-    <input name="cue_word" type="text" id="cuewords">
+    <input name="cue_word" type="text" id="cuewords" value="{{ cue_word }}">
     <!-- div id="log" style="height: 200px; width: 300px; overflow: auto;" class="ui-widget-content"></div -->
     </div>
     <input type="submit" value="Find clues" name="submit">
@@ -61,7 +61,7 @@ Showing clues mentioning <span class='highlight-cue'>{{ cue_word }}</span> as a 
   <tr><th>Clue</th><th>Setter</th><th>Type</th><th>Hint</th><th>Solution</th></tr>
   {%- for clue in clues -%}
   <tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
-      <td>{{ clue.clue|replace(cue_word,"<span class='highlight-cue'>"+cue_word+"</span>")|safe }}</td><td>{{ clue.setter }}</td><td><div class="tooltip">{{ clue.soltype }}<span class="tooltiptext">{{ clue.soltypedesc }}</span></div></td><td>{{ clue.hint }}</td><td>{{ clue.solution }}</td>
+      <td>{{ clue.clue|highlight_text(cue_word, 'highlight-cue')|safe }}</td><td>{{ clue.setter }}</td><td><div class="tooltip">{{ clue.soltype }}<span class="tooltiptext">{{ clue.soltypedesc }}</span></div></td><td>{{ clue.hint }}</td><td>{{ clue.solution }}</td>
   </tr>
   {%- endfor -%}
 </table>
