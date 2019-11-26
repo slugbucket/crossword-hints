@@ -10,6 +10,43 @@ import re
 from datetime import date, timedelta, datetime
 # For use with pagination
 from math import ceil
+# For input (and output) sanitization. Taken from:
+# https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
+from html.parser import HTMLParser
+
+class HTMLStripper(HTMLParser):
+    convert_charrefs=True
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def handle_entityref(self, name):
+        self.fed.append('&%s;' % name)
+    def get_data(self):
+        return ''.join(self.fed)
+
+"""
+Custom template filter to highlight a given word in a piece of text
+regardless of case. This can be used instead of the replace filter
+which is case-sensitive.
+
+replace(cue_word,"<span class='highlight-cue'>"+cue_word|upper+"</span>")
+Params:
+  text: string containing word to highlight
+  word: string: the word to highlight
+  cls: string: the CSS class used for the highlighting
+Returns:
+  string: HTML in the form: Text before the <span class='cls'>Word</span> to be highlighted
+"""
+def highlight_text(text, word, cls):
+    p = re.compile(word, re.IGNORECASE)
+    m = p.search(text)
+    if m:
+        hstr = ("<span class='%s'>%s</span>" % (cls, m.group()))
+        return(p.sub(hstr, text))
+    else:
+        return(text)
 
 """
 Function to try to determine if a URL (typically passed as a next parameter
@@ -113,8 +150,8 @@ def get_solution_types():
 
 """
 Basic attempt to sanitize submitted form data
-Attempt to validate all elements in the form data but if ny one element
-is bd make sure the whole form is invalidated.
+Attempt to validate all elements in the form data but if any one element
+is bad make sure the whole form is invalidated.
 """
 def sanitize_input(form):
     data = {}
@@ -135,8 +172,18 @@ def validate_name(str):
         return("Invalid characters in name field: Only allowed a-zA-Z0-9-_. '", re.sub('[^a-zA-Z0-9-_\'. ]', "", str))
     return("", str)
 
+'''
+Initial attempt at stripping any unwanted HTML from the input so that it can be displayed on an output page.
+Uses the HTMLStripper to subclass HTMLParser
+Params:
+  str: string submitted via an HTTP request
+Returns:
+  (error-msg, sanitized-string)
+'''
 def validate_text(str):
-    return("", str)
+    s = HTMLStripper()
+    s.feed(str)
+    return("", s.get_data())
 
 """
 We expect submitted id values to be numeric
@@ -152,7 +199,7 @@ def validate_id(str):
 Need to calculate the next rowid value for a table - not used with SQLite3
 """
 def nextId(tbl):
-    return(database.execute_sql("SELECT MAX(rowid)+1 FROM %s" % tbl),scalar())
+    return(xwordmodel.database.execute_sql("SELECT MAX(rowid)+1 FROM %s" % tbl),scalar())
 
 
 """                                          """

@@ -26,6 +26,7 @@ from crossword_hints.views.crossword_hints import *
 from crossword_hints.controllers import setter_types, crossword_setters, solution_types, crossword_solutions, crossword_hints, cue_words
 
 application.jinja_env.globals['url_for_other_page'] = url_for_other_page
+application.jinja_env.filters['highlight_text'] = highlight_text
 
 """                                                        """
 """  E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G   """
