@@ -2,7 +2,7 @@
 """                                                        """
 """  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
 """                                                        """
-from flask import request, url_for
+from flask import request, url_for, redirect
 from crossword_hints import application
 from crossword_hints.models import crossword_hints as xwordmodel
 from peewee import *
@@ -13,6 +13,7 @@ from math import ceil
 # For input (and output) sanitization. Taken from:
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
 from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
 
 class HTMLStripper(HTMLParser):
     convert_charrefs=True

@@ -24,6 +24,7 @@ application.config.from_envvar('APP_SETTINGS')
 
 from crossword_hints.views.crossword_hints import *
 from crossword_hints.controllers import setter_types, crossword_setters, solution_types, crossword_solutions, crossword_hints, cue_words
+from jur_ldap_login.controllers import login
 
 application.jinja_env.globals['url_for_other_page'] = url_for_other_page
 application.jinja_env.filters['highlight_text'] = highlight_text

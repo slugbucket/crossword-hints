@@ -3,7 +3,7 @@ from crossword_hints import application
 from crossword_hints.models.crossword_hints import crossword_setters, setter_types, crossword_solutions, solution_types
 from jur_ldap_login.models.users import users
 from jur_ldap_login.controllers.login import load_user
-from flask import request, flash, redirect, render_template
+from flask import request, flash, redirect, render_template, session
 from flask_login import login_required, current_user
 from peewee import *
 from crossword_hints.views.crossword_hints import *
@@ -47,10 +47,10 @@ def crossword_solution_index(page):
     # Display a 409 not found page for an out of bounds request
     if not solutions and page != 1:
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
-    return(render_template('crossword-solutions/index.html',
+    return render_template('crossword-solutions/index.html',
                            r=request,
                            solns=solutions,
-                           pagination=Pagination(page, application.config['PER_PAGE'], count), search_term=term))
+                           pagination=Pagination(page, application.config['PER_PAGE'], count), search_term=term)
 
 """
 Display an existing solution
@@ -78,16 +78,17 @@ Add a new crossowrd solution
 @login_required
 def crossword_solutions_new():
     if request.method == "GET":
+        setter_id = 1 if 'setter_id' not in session else session['setter_id']
         solution={'clue': "Clue to the answer",
                   'solution': 'Thesolution',
                   'solution_hint': 'New solution hint',
-                  'crossword_setter_id': 1,
+                  'crossword_setter_id': setter_id,
                   'solution_type_id': 1}
         return render_template('crossword-solutions/new.html', soln=solution, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt='Save new crossword solution')
     (rc, fdata) = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
-        return(render_template('crossword-solutions/new.html', soln=fdata, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt=request.form['submit']))
+        return render_template('crossword-solutions/new.html', soln=fdata, s_types=get_solution_types(), setters=get_crossword_setters(), r=request, sbmt=request.form['submit'])
     cs = crossword_solutions(crossword_setter_id=fdata['crossword_setter_id'],
                              clue=fdata['clue'],
                              solution=fdata['solution'],
@@ -96,6 +97,7 @@ def crossword_solutions_new():
                              created_at=datetime.now(),
                              updated_at=datetime.now())
     cs.save()
+    session['setter_id'] = fdata['crossword_setter_id']
     log = ("crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s" %
           (fdata['crossword_setter_id'], fdata['clue'], fdata['solution'],
            fdata['solution_hint'], fdata['solution_type_id']))

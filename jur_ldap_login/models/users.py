@@ -2,6 +2,7 @@
 import sqlite3
 from peewee import *
 from datetime import date, timedelta, datetime
+import ldap
 from crossword_hints import application
 
 __all__ = ["database"]
@@ -10,6 +11,9 @@ __all__ = ["database"]
 database = SqliteDatabase(application.config['DATABASE'], pragmas=(("foreign_keys", "on"),))
 database.row_factory = sqlite3.Row
 
+def get_ldap_connection():
+    conn = ldap.initialize(application.config['LDAP_PROVIDER_URL'])
+    return conn
 """                                                        """
 """  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """
 """                                                        """
