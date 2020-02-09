@@ -1,6 +1,8 @@
 __pycache__/
 test_settings.py
 templates/errors/__init__.py
+gitflow/
+legacy/
 
 
 # Elastic Beanstalk Files
