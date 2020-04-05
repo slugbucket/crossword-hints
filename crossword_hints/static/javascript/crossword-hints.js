@@ -58,7 +58,13 @@ var ready = function() {
       if (event.target == modal) {
         modal.style.display = "none";
       }
-    } 
+    }
+    // Press the ESC key to exit the dialog
+    window.onkeydown = function(event) {
+      if (event.which == 27) {
+        modal.style.display = "none";
+      }
+    }
   });
   setTimeout(initOverLabels, 50);
   initOverLabels();
