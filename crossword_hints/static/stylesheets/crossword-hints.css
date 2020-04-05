@@ -198,8 +198,10 @@ table.solution-types-table tr.ma_row_dark td {
 /* End of modal styling */
 div#search_box {
   position: relative;
+  margin-bottom: 1px;
   float: right;
   margin-right: 3px;
+  border: 1px #fff solid;
 }
 input#search_box-field
 {
@@ -209,7 +211,7 @@ input#search_box-field
   border-radius: 5px;
 }
 label.overlabel {
-  color:#999;
+  background-color:#999;
   left: 5px;
   z-index: 1;
   color:#111;
@@ -223,6 +225,15 @@ label.overlabel-apply {
 }
 /* end of overlabel*/
 /* End of title header styles */
+
+/* Hints index page */
+div#hintsindex {
+  text-align: left;
+  width: 75%;
+  margin-left: 2em;
+}
+/* End of hints index page */
+
 
 /* table styles */
 table.indextable {

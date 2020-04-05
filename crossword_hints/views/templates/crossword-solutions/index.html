@@ -1,10 +1,9 @@
 {%- extends "layouts/crossword-hints.html" %}
-{%- block page_heading -%}
-Crossword solutions
-{%- endblock -%}
-
+{% block main_heading %}Crossword solutions{% endblock %}
 {%- block page_content -%}
 <p>
+Create, update or delete crossword solutions and add new trigger words.
+<br />
 {%- if solns -%}
 {{ f.render_pagination(pagination, "crossword-solutions", "crossword solution", search_term) }}
 <br />

@@ -1,5 +1,6 @@
 {%- extends "layouts/crossword-hints.html" %}
-{%- block jquery_func -%}
+{%- block jquery_func %}
+<script src="/static/javascript/crossword-hints.js"></script>
 <style>
   .ui-autocomplete-loading {
     background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
@@ -33,13 +34,9 @@ $( function() {
 } );
 </script>
 {%- endblock -%}
-{%- block page_heading -%}
-Cryptic crossword hints
-{%- endblock -%}
-
+{% block main_heading %}Cryptic cue search{% endblock %}
 {%- block page_content -%}
-
-<h1>Cryptic cue search</h1>
+<div id="hintsindex">
 <p>
 Start typing a cue word and select from the autocomplete list to search
 for typical clues and their solutions.
@@ -67,5 +64,6 @@ Showing clues mentioning <span class='highlight-cue'>{{ cue_word }}</span> as a 
 </table>
 {%- endif -%}
 </p>
+</div> <!-- hintsidx -->
 {%- endblock -%}
 {{ super() }}

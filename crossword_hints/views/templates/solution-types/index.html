@@ -1,10 +1,9 @@
 {%- extends "layouts/crossword-hints.html" %}
-{%- block page_heading -%}
-Crossword solution types
-{%- endblock -%}
+{% block main_heading %}Cryptic crossword solution types{% endblock %}
 
 {%- block page_content -%}
 <p>
+Create, update and delete crossword solution types
 {{ f.render_pagination(pagination, "solution-types", "crossword solution type") }}
 <br />
 {%- if stypes -%}

@@ -1,10 +1,9 @@
 {%- extends "layouts/crossword-hints.html" %}
-{%- block page_heading -%}
-Crossword Setter types
-{%- endblock -%}
-
+{% block main_heading %}Cryptic crossword setter types{% endblock %}
 {%- block page_content -%}
 <p>
+Create, update and delete the different types of crossword setters.
+<br />
 {{ f.render_pagination(pagination, "setter-types", "setter type") }}<br />
 {%- if stypes -%}
 <table cellpadding="0" cellspacing="0" class="indextable">
