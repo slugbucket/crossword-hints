@@ -42,11 +42,12 @@ ul.navbar li a:hover, ul.navbar li a:active {
 #cue_word_set {
   float: left;
   color: #000;
-  width: 25%;
+  border-color: #0c4da1;
+  width: 20%;
 }
 #cue_word_set fieldset {
   background-color: #90b9a7;
-  width: 75%;
+  width: 90%;
 }
 #cue_word_set fieldset>label {
   color: #051b12;
@@ -100,10 +101,11 @@ ul.navbar li a:hover, ul.navbar li a:active {
   position: relative;
   border: 1px #0c4da1 solid;
   vertical-align: middle;
-  padding-top:0.1em;
+  margin-bottom: 0.2em;
   font-size: 0.75em;
   color: #086b29;
   visibility: hidden;
+  width: 100%;
 }
 .helpbutton {
   vertical-align: middle;
