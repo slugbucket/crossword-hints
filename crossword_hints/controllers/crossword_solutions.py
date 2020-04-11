@@ -19,13 +19,19 @@ Returns:
 @application.route('/crossword-solutions/page/<int:page>')
 @application.route('/crossword-solutions/search', methods=["POST"], defaults={'page': 1})
 def crossword_solution_index(page):
-    offset = ((int(page)-1) * application.config['PER_PAGE'])
+    if 'solutions_page' not in session:
+        session['solutions_page'] = page
+    elif page != 1:
+        session['solutions_page'] = page
+    page_num = int(session['solutions_page'])
+
     term = ''
     qtrm = '%'
     if request.method == "POST":
         (rc, fdata) = sanitize_input(request.form)
         term = fdata["search_box"]
         qtrm = "%" + term + "%"
+        page_num = 1
     else:
         if request.args.get('q'):
             term = request.args.get('q')
@@ -43,14 +49,16 @@ def crossword_solution_index(page):
                                  solution_types.name.contains(term)) \
                           .order_by(fn.Lower(crossword_solutions.solution)).dicts()
     count = len(rs)
-    solutions = rs.paginate(page, application.config['PER_PAGE'])
+    offset = (page_num-1) * application.config['PER_PAGE']
+    solutions = rs.paginate(page_num, application.config['PER_PAGE'])
     # Display a 409 not found page for an out of bounds request
-    if not solutions and page != 1:
+    if not solutions:
+        session.pop('solutions_page')
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return render_template('crossword-solutions/index.html',
                            r=request,
                            solns=solutions,
-                           pagination=Pagination(page, application.config['PER_PAGE'], count), search_term=term)
+                           pagination=Pagination(page_num, application.config['PER_PAGE'], count), search_term=term)
 
 """
 Display an existing solution
