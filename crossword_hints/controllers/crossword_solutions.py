@@ -50,9 +50,10 @@ def crossword_solution_index(page):
                           .order_by(fn.Lower(crossword_solutions.solution)).dicts()
     count = len(rs)
     offset = (page_num-1) * application.config['PER_PAGE']
-    solutions = rs.paginate(page_num, application.config['PER_PAGE'])
-    # Display a 409 not found page for an out of bounds request
-    if not solutions:
+    # Display a 409 not found page for an out of bounds request, but don't error for emmpty result set
+    try:
+        solutions = rs.paginate(page_num, application.config['PER_PAGE'])
+    except:
         session.pop('solutions_page')
         return(render_template('errors/409.html', errmsg="Requested page out of bounds"), 409 )
     return render_template('crossword-solutions/index.html',

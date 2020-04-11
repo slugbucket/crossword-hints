@@ -16,10 +16,10 @@ Create, update or delete crossword solutions and add new trigger words.
     <td><a href="/crossword-solutions/{{ sln['csid'] }}/edit" title="Edit {{ sln['solution'] }}"><img src="/static/images/edit-icon.png"</a>&nbsp;
         <a onclick="return(confirm('Delete {{ sln['solution'] }}?'));" href="/crossword-solutions/{{ sln['csid'] }}/delete" title="Delete {{ sln['solution'] }}"><img src="/static/images/delete-icon.png" /></a></td>
 </tr>
-{%- else -%}
-No crossword solutions found.
 {%- endfor -%}
 </table>
+{%- else -%}
+No crossword solutions found.
 {%- endif -%}
 <br />
 {{ f.render_pagination(pagination, "crossword-solutions", "crossword solution", search_term) }}
