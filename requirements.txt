@@ -10,7 +10,7 @@ pylint>=3.1.0
 requests>=2.31.0
 urllib3>=2.2.1
 uwsgi>=2.0
-werkzeug>=0.15.3
+werkzeug>=3.0.3
 wrapt==1.16.0
 
 flask_login==0.6.3
