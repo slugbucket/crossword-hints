@@ -1,0 +1,410 @@
+# -*- coding: utf-8 -*-
+
+import re
+import logging
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlparse
+
+
+bloggers = ["bertandjoyce", "john", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
+
+logger = logging.getLogger(__name__)
+
+
+class HTMLStripper(HTMLParser):
+    convert_charrefs=True
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def handle_entityref(self, name):
+        self.fed.append('&%s;' % name)
+    def get_data(self):
+        return ''.join(self.fed)
+
+
+def indy_quirister(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 2 blank lines
+    * clue# linelist[2]
+    * solution linelist[3]
+    * blank line
+    * clue (n) linelist[5]
+    * 3 blank lines
+    * parse (repeat until blank line; start of next clue) linelist[10+]
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    # print(f"Using HTMLStripper on {html_doc}")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    p = ""  # Empty string for possible multiline parsing
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'ACROSS', line):
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'DOWN', line):
+            in_the_clues = True
+            lct = 0
+            linelist = []
+            continue
+        if in_the_clues:
+            if lct > 9 and not re.search(r'^$', line):  # Multiline parse
+                p = p + linelist[lct-1]
+            if lct > 9 and re.search(r'^$', line):  # Start of next clue block
+                p = p + linelist[lct-1]
+                c = re.sub(r' \([\d,-]+\)$', '', linelist[5])
+                clue_list.append({"clue": c, "solution": linelist[3], "parse": p})
+                linelist = []
+                lct = 0
+                p = ""
+            linelist.append(line)
+            lct = lct + 1
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_john(html_doc: str) -> list:
+    """
+    The clues are in the format:
+
+    ACROSS
+
+
+    8
+    SHEARS
+    Son tries topiary tool (6)
+
+
+
+    s hears
+
+
+    9
+    ECO-LABEL
+    Company brought in the French package, backing green marketing (3-5)
+
+
+
+    co. in (le bale)rev.
+
+
+    ...
+
+
+    DOWN
+
+
+    1
+    WHEE
+    Go by bike, covering length – yay! (4)
+
+
+
+    whee{l}
+
+
+    2
+    ...
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    # print(f"Using HTMLStripper on {html_doc}")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'ACROSS', line):
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            continue
+        if re.search(r'DOWN', line):
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            continue
+        if in_the_clues:
+            linelist.append(line)
+            lct = lct + 1
+            if lct == 9:  # We can process the clue struct from here
+                lct = 0
+                c = re.sub(r' \([\d,-]+\)$', '', linelist[4])
+                clue_list.append({"clue": c, "solution": linelist[3], "parse": linelist[8]})
+                linelist = []
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_bertandjoyce(html_doc: str) -> list:
+    """
+    The clues are in the format:
+
+    ACROSS
+
+    1 Means to rescue European snake trapped by elevators (9)
+    LIFEBOATS
+
+    E (European) BOA (snake) in or ‘trapped by’ LIFTS (elevators)
+
+    6 Italian from Ancona boxes (5)
+    ROMAN
+
+    Hidden in or ‘boxed by’ fROM ANcona
+    ...
+
+
+    DOWN
+
+    1 Liberal drinks, loses head and uses borrowed money to pay for company (9)
+    LEVERAGES
+
+    L (Liberal) bEVERAGES (drinks) without the first letter or ‘head’
+
+    2 Fool losing heart over total wager ( 7)
+    FLUTTER
+
+    FooL (without the middle letters or ‘heart’) UTTER (total)
+    ...
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    # print(f"Using HTMLStripper on {html_doc}")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # print(s.get_data())
+    bct = 0  # blank line count
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if in_the_clues and lct < 5:
+            # print(f"read line {lct+1} of five")
+            linelist.append(line)
+            lct = lct + 1
+            if in_the_clues and lct == 5:
+                linelist.pop(0)
+                linelist.pop(2)
+                c = re.sub(r'\([\d,-]+\)$', '', linelist[0])
+                clue_list.append({"clue": c, "solution": linelist[1], "parse": linelist[2]})
+                linelist = []
+                lct = 0
+                bct = 0
+        if re.search(r'ACROSS', line):
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            bct = 0
+            continue
+        if re.search(r'DOWN', line):
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            bct = 0
+            continue
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            # print(f"No more clues with {bct}")
+            break
+        if re.search(r'^$', line):
+            bct = bct + 1
+            if bct > 2:
+                in_the_clues = False
+                linelist = []
+        # else:
+        #     bct = 0  # reset the blank line counter
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_nealh(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 2 blank lines
+    * clue# linelist[2]
+    * solution linelist[3]
+    * clue (n) linelist[4]
+    * 4 blank lines
+    * parse (repeat until blank line; start of next clue) linelist[9+]
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    print(f"Using HTMLStripper on nealh post")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    p = ""  # Empty string for possible multiline parsing
+    for line in s.get_data().splitlines():
+        # if not re.search(r'^$', line):
+        #    print(f"DEBUG: Checking line {line}.")
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'Across', line):
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'Down', line):
+            in_the_clues = True
+            lct = 0
+            linelist = []
+            continue
+        if in_the_clues:
+            if lct > 9 and not re.search(r'^$', line):  # Multiline parse
+                p = p + linelist[lct-1]
+            if lct > 9 and re.search(r'^$', line):  # Start of next clue block
+                p = p + linelist[lct-1]
+                c = re.sub(r' \([\d,-]+\)$', '', linelist[4])
+                clue_list.append({"clue": c, "solution": linelist[3], "parse": p})
+                linelist = []
+                lct = 0
+                p = ""
+            linelist.append(line)
+            lct = lct + 1
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_ratkojariku(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 7 blank lines (+2 under the Acroos and Down markers)
+    * clue# linelist[0]
+    * solution linelist[1]
+    * clue linelist[2]
+    * parse (repeat until blank line; start of next clue) linelist[9+]
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    print(f"Using HTMLStripper on ratkojariku post")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    p = ""  # Empty string for possible multiline parsing
+    chdr = 0  # counter to skip extra lines at the start of the section marker
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            chdr = 2
+            break
+        if re.search(r'Across', line):
+            in_the_clues = True
+            lct = 0
+            chdr = 2
+            continue
+        if re.search(r'Down', line):
+            in_the_clues = True
+            lct = 0
+            # linelist = []
+            continue
+        if chdr > 0:  # Skip two lines 
+            chdr = chdr - 1
+            continue
+        if re.search(r'^$', line):
+            # print(f"Ignoring blank line")
+            continue
+        if re.search(r'^[0-9][0-9]$', line):
+            lct = 1
+            linelist = []
+            continue
+        if in_the_clues and lct > 0:
+            if lct > 3:  # solution , clue and parse have been collected
+                clue_list.append({"clue": linelist[1], "solution": linelist[0], "parse": linelist[2]})
+                linelist = []
+                lct = 0
+                continue
+            linelist.append(line)
+            lct = lct + 1
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_mc_rapper67(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 2 blank lines
+    * clue# [0-9][0-9] linelist[0]
+    * solution linelist[1]
+    * clue linelist[2]
+    * definition linelist[3]
+    * parse linelist[4]
+    The table starts with 5 column headers in plan text that don't trigger
+    because the first line doesn't start with 2 digits
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'Across', line):
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'Down', line):
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'^$', line) and lct == 0:
+            continue
+        if re.search(r'^[0-9]+[AD]$', line):
+            lct = 1
+            linelist = []
+            continue
+        if in_the_clues and lct > 0:
+            if lct > 4:  # solution , clue and parse have been collected
+                c = re.sub(r' \([\d,-]+\)$', '', linelist[1])
+                clue_list.append({"clue": c, "solution": linelist[0], "parse": linelist[3]})
+                linelist = []
+                lct = 0
+                continue
+            linelist.append(line)
+            lct = lct + 1
+    print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
