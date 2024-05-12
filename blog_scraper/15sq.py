@@ -10,20 +10,32 @@ import sys
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 from arg_parse import parse_args
+import sqlite3
 from os import environ
 from grid_bloggers import grid_bloggers
 
 # Get the list of bloggers and setters from teh database
-setters = ["crosophile", "filbert", "monk", "phi", "tees"]
+setters = ["crosophile", "filbert", "harold", "kairos", "monk", "phi", "tees"]
 
 logger = logging.getLogger(__name__)
+
+def get_setter_id(conn: object, setter: str) -> int:
+    curs = conn.cursor()
+    try:
+        sid, = curs.execute("SELECT rowid FROM crossword_setters WHERE name LIKE ?", (setter,),).fetchone()
+        return sid
+    except:
+        logger.error(f"Cannot get id for crossword setter, {setter}")
+        return None
 
 
 def main(args: object) -> None:
     if args.blogger not in grid_bloggers.bloggers:
         logger.error(f"Blogger {args.blogger} cannot be found")
         sys.exit(1)
-    if args.setter not in setters:
+    conn = sqlite3.connect("../crossword_hints.db")
+    sid = get_setter_id(conn, args.setter)
+    if not sid:
         logger.error(f"Setter {args.setter} cannot be found")
         sys.exit(1)
     # resp = requests.get("https://www.fifteensquared.net/2020/05/05/independent-10471-by-vigo/")
