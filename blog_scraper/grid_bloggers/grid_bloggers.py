@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
 
-bloggers = ["bertandjoyce", "john", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
+bloggers = ["bertandjoyce", "john", "kitty", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,7 @@ def indy_nealh(html_doc: str) -> list:
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    # print(s.get_data())
+    print(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
@@ -271,11 +271,12 @@ def indy_nealh(html_doc: str) -> list:
         if re.search(r'^Categories .*', line):  # No more clues after this line
             in_the_clues = False
             break
-        if re.search(r'Across', line):
+        if re.search(r'Across|ACROSS', line):
+            logger.debug(f"Found start of the acroos clues")
             in_the_clues = True
             lct = 0
             continue
-        if re.search(r'Down', line):
+        if re.search(r'Down|DOWN', line):
             in_the_clues = True
             lct = 0
             linelist = []
@@ -407,4 +408,72 @@ def indy_mc_rapper67(html_doc: str) -> list:
             linelist.append(line)
             lct = lct + 1
     print(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_kitty(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    Across
+8a    Teacher pinching student’s rear creates excitement (4)
+ STIR
+SIR (teacher) containing (pinching) the last letter (rear) of studenT
+9a    Oddly overlooked untemptable state (5)
+ NEPAL
+With odd letters removed (oddly overlooked), uNtEmPtAbLe
+    * clue# [0-9]+[ad][\w]+clue linelist[0]
+    * solution linelist[1]
+    * parse linelist[2]
+    * Sometimes a blank line
+    The table starts with 5 column headers in plan text that don't trigger
+    because the first line doesn't start with 2 digits
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of lists: [ ['', clue, solution, '', parsing], [...]]
+    """
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # print(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'ACROSS|Across', line):
+            logger.debug("Found start of the down clues")
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'DOWN|Down', line):
+            logger.debug("Found start of the down clues")
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'^$', line) and lct == 0:
+            continue
+        # if re.search(r'^[0-9]+[ad][\w]+$', line):
+        if re.search(r'^[0-9]+[ad][ ]+', line):
+            logger.debug(f"Found a clue block for {line}")
+            lct = 1
+            linelist.append(line)
+            continue
+        if in_the_clues and lct > 0:
+            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
+            linelist.append(line)
+            lct = lct + 1
+            if lct > 2:  # solution , clue and parse have been collected
+                logger.debug(f"On line {lct} save the solution and parsing")
+                c = re.sub(r'^[0-9]+[ad][ ]+', '', linelist[0])
+                c = re.sub(r' \([\d,-]+\)', '', c)
+                s = re.sub(r'^[ ]+', '', linelist[1])
+                clue_list.append({"clue": c, "solution": s, "parse": linelist[2]})
+                logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
+                linelist = []
+                lct = 0
+                continue
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
