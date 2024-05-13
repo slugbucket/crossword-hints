@@ -37,13 +37,13 @@ def indy_quirister(html_doc: str) -> list:
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     # print(f"Using HTMLStripper on {html_doc}")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
@@ -73,88 +73,72 @@ def indy_quirister(html_doc: str) -> list:
                 p = ""
             linelist.append(line)
             lct = lct + 1
-    print(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
 def indy_john(html_doc: str) -> list:
     """
     The clues are in the format:
-
-    ACROSS
-
-
-    8
-    SHEARS
-    Son tries topiary tool (6)
-
-
-
-    s hears
-
-
-    9
-    ECO-LABEL
-    Company brought in the French package, backing green marketing (3-5)
-
-
-
-    co. in (le bale)rev.
-
-
-    ...
-
-
-    DOWN
-
-
-    1
-    WHEE
-    Go by bike, covering length – yay! (4)
-
-
-
-    whee{l}
-
-
-    2
-    ...
+    * 2 blank lines
+    * clue# linelist[0]
+    * solution linelist[1]
+    * clue (solution length) linelist[2]
+    * 4 blank lines
+    * parsing linelist[3]
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     # print(f"Using HTMLStripper on {html_doc}")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
     for line in s.get_data().splitlines():
         if re.search(r'^Categories .*', line):  # No more clues after this line
+            logger.debug(f"Reached the end of the clues")
             in_the_clues = False
             break
         if re.search(r'ACROSS', line):
+            logger.debug(f"Found the start of the across clues")
             in_the_clues = True
             linelist = []
             lct = 0
             continue
         if re.search(r'DOWN', line):
+            logger.debug(f"Found the start of the down clues")
             in_the_clues = True
             linelist = []
             lct = 0
             continue
-        if in_the_clues:
+        if re.search(r'^$', line) and lct == 0:
+            continue
+        if re.search(r'^[0-9]+$', line):
+            logger.debug(f"Found a clue block for {line}")
+            lct = 1
+            linelist.append(line)
+            continue
+        if in_the_clues and lct > 0:
+            # There are blank lines in the clue block to be ignored
+            if re.search(r'^$', line):
+                continue
+            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
             linelist.append(line)
             lct = lct + 1
-            if lct == 9:  # We can process the clue struct from here
-                lct = 0
-                c = re.sub(r' \([\d,-]+\)$', '', linelist[4])
-                clue_list.append({"clue": c, "solution": linelist[3], "parse": linelist[8]})
+            if lct > 3:  # solution , clue and parse have been collected
+                logger.debug(f"On line {lct} save the solution and parsing")
+                c = re.sub(r' \([\d,-]+\)', '', linelist[2])
+                clue_list.append({"clue": c, "solution": linelist[1], "parse": linelist[3]})
+                logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
                 linelist = []
-    print(f"The are {len(clue_list)} clues in the grid.")
+                lct = 0
+                continue
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
@@ -191,20 +175,18 @@ def indy_bertandjoyce(html_doc: str) -> list:
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
-    # print(f"Using HTMLStripper on {html_doc}")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    # print(s.get_data())
+    logger.debug(s.get_data())
     bct = 0  # blank line count
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
     for line in s.get_data().splitlines():
         if in_the_clues and lct < 5:
-            # print(f"read line {lct+1} of five")
             linelist.append(line)
             lct = lct + 1
             if in_the_clues and lct == 5:
@@ -236,9 +218,7 @@ def indy_bertandjoyce(html_doc: str) -> list:
             if bct > 2:
                 in_the_clues = False
                 linelist = []
-        # else:
-        #     bct = 0  # reset the blank line counter
-    print(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
@@ -254,25 +234,23 @@ def indy_nealh(html_doc: str) -> list:
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     print(f"Using HTMLStripper on nealh post")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
     p = ""  # Empty string for possible multiline parsing
     for line in s.get_data().splitlines():
-        # if not re.search(r'^$', line):
-        #    print(f"DEBUG: Checking line {line}.")
         if re.search(r'^Categories .*', line):  # No more clues after this line
             in_the_clues = False
             break
         if re.search(r'Across|ACROSS', line):
-            logger.debug(f"Found start of the acroos clues")
+            logger.debug(f"Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
@@ -293,7 +271,7 @@ def indy_nealh(html_doc: str) -> list:
                 p = ""
             linelist.append(line)
             lct = lct + 1
-    print(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
@@ -308,13 +286,13 @@ def indy_ratkojariku(html_doc: str) -> list:
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     print(f"Using HTMLStripper on ratkojariku post")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    # print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
@@ -333,13 +311,11 @@ def indy_ratkojariku(html_doc: str) -> list:
         if re.search(r'Down', line):
             in_the_clues = True
             lct = 0
-            # linelist = []
             continue
         if chdr > 0:  # Skip two lines 
             chdr = chdr - 1
             continue
         if re.search(r'^$', line):
-            # print(f"Ignoring blank line")
             continue
         if re.search(r'^[0-9][0-9]$', line):
             lct = 1
@@ -353,7 +329,7 @@ def indy_ratkojariku(html_doc: str) -> list:
                 continue
             linelist.append(line)
             lct = lct + 1
-    print(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
@@ -371,12 +347,12 @@ def indy_mc_rapper67(html_doc: str) -> list:
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    # print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
@@ -407,21 +383,14 @@ def indy_mc_rapper67(html_doc: str) -> list:
                 continue
             linelist.append(line)
             lct = lct + 1
-    print(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
 
 
 def indy_kitty(html_doc: str) -> list:
     """
     The clues are in the format:
-    Across
-8a    Teacher pinching student’s rear creates excitement (4)
- STIR
-SIR (teacher) containing (pinching) the last letter (rear) of studenT
-9a    Oddly overlooked untemptable state (5)
- NEPAL
-With odd letters removed (oddly overlooked), uNtEmPtAbLe
-    * clue# [0-9]+[ad][\w]+clue linelist[0]
+    * clue# clue (solution length) linelist[0]
     * solution linelist[1]
     * parse linelist[2]
     * Sometimes a blank line
@@ -430,12 +399,12 @@ With odd letters removed (oddly overlooked), uNtEmPtAbLe
     Params:
         html_doc: str containing the full HTML document
     Returns:
-        list of lists: [ ['', clue, solution, '', parsing], [...]]
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
-    # print(s.get_data())
+    logger.debug(s.get_data())
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
@@ -455,7 +424,6 @@ With odd letters removed (oddly overlooked), uNtEmPtAbLe
             continue
         if re.search(r'^$', line) and lct == 0:
             continue
-        # if re.search(r'^[0-9]+[ad][\w]+$', line):
         if re.search(r'^[0-9]+[ad][ ]+', line):
             logger.debug(f"Found a clue block for {line}")
             lct = 1
