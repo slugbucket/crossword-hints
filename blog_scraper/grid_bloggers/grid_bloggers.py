@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
 
-bloggers = ["bertandjoyce", "john", "kitty", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
+bloggers = ["beermagnet", "bertandjoyce", "john", "john2", "kitty", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +53,12 @@ def indy_quirister(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'ACROSS', line):
+            logger.debug(f"Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
         if re.search(r'DOWN', line):
+            logger.debug(f"Found start of the down clues")
             in_the_clues = True
             lct = 0
             linelist = []
@@ -104,13 +106,13 @@ def indy_john(html_doc: str) -> list:
             logger.debug(f"Reached the end of the clues")
             in_the_clues = False
             break
-        if re.search(r'ACROSS', line):
+        if re.search(r'ACROSS|Across', line):
             logger.debug(f"Found the start of the across clues")
             in_the_clues = True
             linelist = []
             lct = 0
             continue
-        if re.search(r'DOWN', line):
+        if re.search(r'DOWN|Down', line):
             logger.debug(f"Found the start of the down clues")
             in_the_clues = True
             linelist = []
@@ -135,6 +137,69 @@ def indy_john(html_doc: str) -> list:
                 c = re.sub(r' \([\d,-]+\)', '', linelist[2])
                 clue_list.append({"clue": c, "solution": linelist[1], "parse": linelist[3]})
                 logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
+                linelist = []
+                lct = 0
+                continue
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_john2(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 2 blank lines
+    * clue# clue - SOLUTION (e.g. 1 Comic writer’s unhappiness about Dutch Royal family — WODEHOUSE) linelist[0]
+    * parsing linelist[1]
+    From:
+    * https://www.fifteensquared.net/2020/06/19/141494/
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
+    """
+    # print(f"Using HTMLStripper on {html_doc}")
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    # logger.debug(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            logger.debug(f"Reached the end of the clues")
+            in_the_clues = False
+            break
+        if re.search(r'ACROSS|Across', line):
+            logger.debug(f"Found the start of the across clues")
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            continue
+        if re.search(r'DOWN|Down', line):
+            logger.debug(f"Found the start of the down clues")
+            in_the_clues = True
+            linelist = []
+            lct = 0
+            continue
+        if re.search(r'^$', line) and lct == 0:
+            continue
+        if re.search(r'^[0-9]+', line) and in_the_clues:
+            logger.debug(f"Found a clue block for {line}")
+            lct = 1
+            linelist.append(line)
+            continue
+        if in_the_clues and lct > 0:
+            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
+            linelist.append(line)
+            lct = lct + 1
+            if lct > 1:  # solution , clue and parse have been collected
+                ncs = re.match(r'^(\d+) (.*) ([A-Z ]+)$', linelist[0])
+                if ncs:
+                    clue_list.append({"clue": ncs[2], "solution": ncs[3], "parse": linelist[1]})
+                    logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
+                else:
+                    logger.error(f"Could not process clue from {linelist[0]}")
                 linelist = []
                 lct = 0
                 continue
@@ -255,6 +320,7 @@ def indy_nealh(html_doc: str) -> list:
             lct = 0
             continue
         if re.search(r'Down|DOWN', line):
+            logger.debug(f"Found start of the down clues")
             in_the_clues = True
             lct = 0
             linelist = []
@@ -361,10 +427,12 @@ def indy_mc_rapper67(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'Across', line):
+            logger.debug(f"Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
         if re.search(r'Down', line):
+            logger.debug(f"Found start of the down clues")
             in_the_clues = True
             lct = 0
             continue
@@ -413,7 +481,7 @@ def indy_kitty(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'ACROSS|Across', line):
-            logger.debug("Found start of the down clues")
+            logger.debug("Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
@@ -443,5 +511,67 @@ def indy_kitty(html_doc: str) -> list:
                 linelist = []
                 lct = 0
                 continue
+    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    return clue_list
+
+
+def indy_beermagnet(html_doc: str) -> list:
+    """
+    The clues are in the format:
+    * 2 blank lines
+    * clue# linelist[0]
+    * solution (x,y) linelist[1]
+    * parse linelist[2]
+
+    Across
+
+
+1
+SLEEPING PARTNER 
+He’ll go to bed with you, but his involvement is strictly financial (8,7) 
+A Double Def. combining a literal and a figurative meaning into a suggestive scene.  First one in.
+    From:
+    * https://www.fifteensquared.net/2020/05/16/independent-10481-sat-16-may-2020-by-morph/
+    Params:
+        html_doc: str containing the full HTML document
+    Returns:
+        list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
+    """
+    s = HTMLStripper()
+    s.feed(html_doc)
+    in_the_clues = False
+    logger.debug(s.get_data())
+    lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
+    clue_list = []
+    linelist = []
+    for line in s.get_data().splitlines():
+        if re.search(r'^Categories .*', line):  # No more clues after this line
+            in_the_clues = False
+            break
+        if re.search(r'ACROSS|Across', line):
+            logger.debug("Found start of the across clues")
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'DOWN|Down', line):
+            logger.debug("Found start of the down clues")
+            in_the_clues = True
+            lct = 0
+            continue
+        if re.search(r'^$', line) and lct == 0:
+            continue
+        if re.search(r'^[0-9]+$', line):
+            lct = 1
+            linelist = []
+            continue
+        if in_the_clues and lct > 0:
+            if lct > 3:  # solution , clue and parse have been collected
+                c = re.sub(r' \([\d,-]+\)[ ]?$', '', linelist[1])
+                clue_list.append({"clue": c, "solution": linelist[0], "parse": linelist[2]})
+                linelist = []
+                lct = 0
+                continue
+            linelist.append(line)
+            lct = lct + 1
     logger.debug(f"The are {len(clue_list)} clues in the grid.")
     return clue_list
