@@ -1,26 +1,55 @@
 # -*- coding: utf-8 -*-
+"""Scraping crossword grid clues and solutions
 
-import re
+This script defines functions that attempt to take an HTML page from an external blog
+and scrape the crossword clues, solutions and parsing after stripping any HTML tags.
+
+The function names correspond to the names of blog post authers.
+
+The file is intended to be imported as a module
+"""
 import logging
+import re
 from html.parser import HTMLParser
-from urllib.parse import urljoin, urlparse
 
 
-bloggers = ["beermagnet", "bertandjoyce", "john", "john2", "kitty", "nealh", "quirister", "ratkojariku", "mc_rapper67"]
+bloggers = [
+    "beermagnet",
+    "bertandjoyce",
+    "john",
+    "john2",
+    "kitty",
+    "nealh",
+    "quirister",
+    "ratkojariku",
+    "mc_rapper67",
+]
 
 logger = logging.getLogger(__name__)
 
 
 class HTMLStripper(HTMLParser):
+    """HTML Stripper class
+    Defines class methods and variables used for handling HTML entities and data
+    """
     convert_charrefs=True
     def __init__(self):
+        """ Class constructor
+        """
+        super().__init__()
         self.reset()
         self.fed = []
-    def handle_data(self, d):
-        self.fed.append(d)
+    def handle_data(self, data):
+        """ Class method to handle data
+        """
+        self.fed.append(data)
     def handle_entityref(self, name):
-        self.fed.append('&%s;' % name)
+        """ Class method for handling entity refs
+        """
+        self.fed.append(f"&{name};")
     def get_data(self):
+        """ Class method to return data as a string
+        """
         return ''.join(self.fed)
 
 
@@ -53,12 +82,12 @@ def indy_quirister(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'ACROSS', line):
-            logger.debug(f"Found start of the across clues")
+            logger.debug("Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
         if re.search(r'DOWN', line):
-            logger.debug(f"Found start of the down clues")
+            logger.debug("Found start of the down clues")
             in_the_clues = True
             lct = 0
             linelist = []
@@ -103,17 +132,17 @@ def indy_john(html_doc: str) -> list:
     linelist = []
     for line in s.get_data().splitlines():
         if re.search(r'^Categories .*', line):  # No more clues after this line
-            logger.debug(f"Reached the end of the clues")
+            logger.debug("Reached the end of the clues")
             in_the_clues = False
             break
         if re.search(r'ACROSS|Across', line):
-            logger.debug(f"Found the start of the across clues")
+            logger.debug("Found the start of the across clues")
             in_the_clues = True
             linelist = []
             lct = 0
             continue
         if re.search(r'DOWN|Down', line):
-            logger.debug(f"Found the start of the down clues")
+            logger.debug("Found the start of the down clues")
             in_the_clues = True
             linelist = []
             lct = 0
@@ -148,7 +177,8 @@ def indy_john2(html_doc: str) -> list:
     """
     The clues are in the format:
     * 2 blank lines
-    * clue# clue - SOLUTION (e.g. 1 Comic writer’s unhappiness about Dutch Royal family — WODEHOUSE) linelist[0]
+    * clue# clue - SOLUTION
+      (e.g. 1 Comic writer’s unhappiness about Dutch Royal family — WODEHOUSE) linelist[0]
     * parsing linelist[1]
     From:
     * https://www.fifteensquared.net/2020/06/19/141494/
@@ -167,17 +197,17 @@ def indy_john2(html_doc: str) -> list:
     linelist = []
     for line in s.get_data().splitlines():
         if re.search(r'^Categories .*', line):  # No more clues after this line
-            logger.debug(f"Reached the end of the clues")
+            logger.debug("Reached the end of the clues")
             in_the_clues = False
             break
         if re.search(r'ACROSS|Across', line):
-            logger.debug(f"Found the start of the across clues")
+            logger.debug("Found the start of the across clues")
             in_the_clues = True
             linelist = []
             lct = 0
             continue
         if re.search(r'DOWN|Down', line):
-            logger.debug(f"Found the start of the down clues")
+            logger.debug("Found the start of the down clues")
             in_the_clues = True
             linelist = []
             lct = 0
@@ -197,7 +227,6 @@ def indy_john2(html_doc: str) -> list:
                 ncs = re.match(r'^(\d+) (.*) ([A-Z ]+)$', linelist[0])
                 if ncs:
                     clue_list.append({"clue": ncs[2], "solution": ncs[3], "parse": linelist[1]})
-                    logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
                 else:
                     logger.error(f"Could not process clue from {linelist[0]}")
                 linelist = []
@@ -262,13 +291,13 @@ def indy_bertandjoyce(html_doc: str) -> list:
                 linelist = []
                 lct = 0
                 bct = 0
-        if re.search(r'ACROSS', line):
+        if re.search(r'Across|ACROSS', line):
             in_the_clues = True
             linelist = []
             lct = 0
             bct = 0
             continue
-        if re.search(r'DOWN', line):
+        if re.search(r'Down|DOWN', line):
             in_the_clues = True
             linelist = []
             lct = 0
@@ -301,7 +330,6 @@ def indy_nealh(html_doc: str) -> list:
     Returns:
         list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
-    print(f"Using HTMLStripper on nealh post")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
@@ -315,12 +343,12 @@ def indy_nealh(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'Across|ACROSS', line):
-            logger.debug(f"Found start of the across clues")
+            logger.debug("Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
         if re.search(r'Down|DOWN', line):
-            logger.debug(f"Found start of the down clues")
+            logger.debug("Found start of the down clues")
             in_the_clues = True
             lct = 0
             linelist = []
@@ -349,12 +377,13 @@ def indy_ratkojariku(html_doc: str) -> list:
     * solution linelist[1]
     * clue linelist[2]
     * parse (repeat until blank line; start of next clue) linelist[9+]
+    Example posts:
+    * https://www.fifteensquared.net/2020/06/17/independent-10508-tees/
     Params:
         html_doc: str containing the full HTML document
     Returns:
         list of dicts: [ {"clue": .., "solution": .., "parse": ..}, {...}]
     """
-    print(f"Using HTMLStripper on ratkojariku post")
     s = HTMLStripper()
     s.feed(html_doc)
     in_the_clues = False
@@ -362,7 +391,6 @@ def indy_ratkojariku(html_doc: str) -> list:
     lct = 0  # in-clue line count; clue, solution and parsing spread over 5 lines
     clue_list = []
     linelist = []
-    p = ""  # Empty string for possible multiline parsing
     chdr = 0  # counter to skip extra lines at the start of the section marker
     for line in s.get_data().splitlines():
         if re.search(r'^Categories .*', line):  # No more clues after this line
@@ -378,7 +406,7 @@ def indy_ratkojariku(html_doc: str) -> list:
             in_the_clues = True
             lct = 0
             continue
-        if chdr > 0:  # Skip two lines 
+        if chdr > 0:  # Skip two lines
             chdr = chdr - 1
             continue
         if re.search(r'^$', line):
@@ -389,7 +417,9 @@ def indy_ratkojariku(html_doc: str) -> list:
             continue
         if in_the_clues and lct > 0:
             if lct > 3:  # solution , clue and parse have been collected
-                clue_list.append({"clue": linelist[1], "solution": linelist[0], "parse": linelist[2]})
+                clue_list.append(
+                    {"clue": linelist[1], "solution": linelist[0], "parse": linelist[2]}
+                )
                 linelist = []
                 lct = 0
                 continue
@@ -427,12 +457,12 @@ def indy_mc_rapper67(html_doc: str) -> list:
             in_the_clues = False
             break
         if re.search(r'Across', line):
-            logger.debug(f"Found start of the across clues")
+            logger.debug("Found start of the across clues")
             in_the_clues = True
             lct = 0
             continue
         if re.search(r'Down', line):
-            logger.debug(f"Found start of the down clues")
+            logger.debug("Found start of the down clues")
             in_the_clues = True
             lct = 0
             continue

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
+"""Argument parser
+
+"""
 from __future__ import annotations
 
-import re
-from html.parser import HTMLParser
-from urllib.parse import urljoin, urlparse
 import argparse
-import logging
-
-logger = logging.getLogger(__name__)
 
 def parse_args():
+    """Argument parser
+
+    Processes the recognised command options
+    """
     parser = argparse.ArgumentParser(
-        description = "Script to retrieve clues, solutions and parsing for a particular crossword puzzle"
+        description = "Retrieve clues, solutions and parsing for a particular crossword puzzle"
     )
     parser.add_argument(
         "-b",
