@@ -23,13 +23,13 @@ setters = ["crosophile", "filbert", "harold", "kairos", "monk", "phi", "tees"]
 
 logger = logging.getLogger(__name__)
 
+
 def get_setter_id(conn: object, setter: str) -> int:
-    """Get the database id of a clue setter
-    
-    """
+    """Get the database id of a clue setter"""
     curs = conn.cursor()
-    sid, = curs.execute(
-        "SELECT rowid FROM crossword_setters WHERE name LIKE ?", (setter,),
+    (sid,) = curs.execute(
+        "SELECT rowid FROM crossword_setters WHERE name LIKE ?",
+        (setter,),
     ).fetchone()
     return sid
 
@@ -48,20 +48,21 @@ def main(opts):
         sys.exit(1)
     resp = requests.get(
         "https://www.fifteensquared.net/2020/05/05/independent-10471-by-vigo/",
-        timeout=30
+        timeout=30,
     )
     html_doc = resp.text
     with open(opts.url, "r", encoding="utf-8") as f:
         html_doc = f.read()
-    solve =  getattr(grid_bloggers, 'indy_' + opts.blogger)
+    solve = getattr(grid_bloggers, "indy_" + opts.blogger)
     clues = solve(html_doc)
     for clue in clues:
-        print(f'clue: {clue["clue"]}, solution: {clue["solution"]}, parse: {clue["parse"]}')
+        print(
+            f'clue: {clue["clue"]}, solution: {clue["solution"]}, parse: {clue["parse"]}'
+        )
 
 
 def config_logger(dbg: bool) -> None:
-    """Configure logger
-    """
+    """Configure logger"""
     # logger = logging.getLogger()
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
@@ -71,6 +72,7 @@ def config_logger(dbg: bool) -> None:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
+
 
 if __name__ == "__main__":
     args = parse_args()
