@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword setters
+"""
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import crossword_setters, setter_types
 from jur_ldap_login.models.users import users
@@ -9,14 +12,13 @@ from datetime import date, timedelta, datetime
 from peewee import *
 from crossword_hints.views.crossword_hints import *
 
-"""
-Index listing of known setters
-"""
-
 
 @application.route("/crossword-setters/", methods=["GET"], defaults={"page": 1})
 @application.route("/crossword-setters/page/<int:page>")
 def crossword_setters_index(page):
+    """
+    Index listing of known setters
+    """
     count = crossword_setters.select(fn.COUNT(crossword_setters.rowid)).scalar()
     offset = (int(page) - 1) * application.config["PER_PAGE"]
     rs = (
@@ -48,6 +50,9 @@ def crossword_setters_index(page):
 
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
 def crossword_setters_show(id):
+    """
+    Show a new crossword setter
+    """
     # Getting the setter id, name and setter_type name should be a simple inner
     # join across the tables but Peewee makes a complete mess of it by using get() which doesn't
     # seem to recognise aliases or joins.
@@ -76,14 +81,12 @@ def crossword_setters_show(id):
     return render_template("crossword-setters/show.html", setter=setter, r=request)
 
 
-"""
-Add a new crossword setter
-"""
-
-
 @application.route("/crossword-setters/new", methods=["GET", "POST"])
 @login_required
 def crossword_setters_new():
+    """
+    Add a new crossword setter
+    """
     if request.method == "GET":
         setter = {"name": "New setter", "setter_type_id": 1}
         return render_template(
@@ -109,29 +112,23 @@ def crossword_setters_new():
         description=fdata["description"],
     )
     cs.save()
-    log = "name: %s\nsetter_type_id: %s\ndescription: %s" % (
-        fdata["name"],
-        fdata["setter_type_id"],
-        fdata["description"],
-    )
+    log = f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\ndescription: {fdata['description']}"
     add_log(users.get_name(current_user), "insert", "crossword_setters", cs.rowid, log)
-    flash("Saved new crossword setter, %s" % fdata["name"])
+    flash(f"Saved new crossword setter, {fdata['name']}")
     return redirect("/crossword-setters/")
-
-
-"""
-Edit an existing setter
-"""
 
 
 @application.route("/crossword-setters/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def crossword_setters_edit(id):
+    """
+    Edit an existing setter
+    """
     if request.method == "GET":
         try:
             rs = crossword_setters.get(crossword_setters.rowid == id)
         except DoesNotExist:
-            flash("Cannot find crossword setter record for id, %s." % id)
+            flash(f"Cannot find crossword setter record for id, {id}.")
             return redirect("/crossword-setters")
         rs = crossword_setters.get(crossword_setters.rowid == id)
         return render_template(
@@ -158,35 +155,25 @@ def crossword_setters_edit(id):
         updated_at=datetime.now(),
     )
     cs.save()
-    log = "name: %s\nsetter_type_id: %s\ndescription: %s" % (
-        fdata["name"],
-        fdata["setter_type_id"],
-        fdata["description"],
-    )
+    log = f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\ndescription: {fdata['description']}"
     add_log(users.get_name(current_user), "update", "crossword_setters", id, log)
-    flash("Updated crossword setter, %s" % fdata["name"])
+    flash(f"Updated crossword setter, {fdata['name']}")
     return redirect("/crossword-setters")
-
-
-"""
-Delete an existing setter
-"""
 
 
 @application.route("/crossword-setters/<int:id>/delete", methods=["GET"])
 @login_required
 def crossword_setters_delete(id):
+    """
+    Delete an existing setter
+    """
     try:
         rs = crossword_setters.get(crossword_setters.rowid == id)
     except DoesNotExist:
-        flash("Cannot find crssword setter record for id, %s." % id)
+        flash("Cannot find crssword setter record for id, {id}.")
         return redirect("/crossword-setters/")
-    log = "name: %s\nsetter_type_id: %s\ndescription: %s" % (
-        rs.name,
-        rs.setter_type_id,
-        rs.description,
-    )
+    log = f"name: {rs.name}\nsetter_type_id: {rs.setter_type_id,}\ndescription: {rs.description}"
     rs.delete_instance()
     add_log(users.get_name(current_user), "delete", "crossword_setters", id, log)
-    flash("Deleted crossword setter, %s" % rs.name)
+    flash("Deleted crossword setter, {rs.name}")
     return redirect("/crossword-setters/")

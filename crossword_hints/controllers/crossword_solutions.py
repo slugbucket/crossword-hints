@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword solutions
+"""
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import (
     crossword_setters,
@@ -13,14 +16,6 @@ from flask_login import login_required, current_user
 from peewee import *
 from crossword_hints.views.crossword_hints import *
 
-"""
-Index listing of known solutions
-Params:
-  None
-Returns:
-  jinja2 template render of list of active requests
-"""
-
 
 @application.route("/crossword-solutions/", defaults={"page": 1})
 @application.route("/crossword-solutions/page/<int:page>")
@@ -28,6 +23,13 @@ Returns:
     "/crossword-solutions/search", methods=["POST"], defaults={"page": 1}
 )
 def crossword_solution_index(page):
+    """
+    Index listing of known solutions
+    Params:
+      page: int for the page number of results to display
+    Returns:
+      jinja2 template render of list of retrieved solutions
+    """
     if "solutions_page" not in session:
         session["solutions_page"] = page
     elif page != 1:
@@ -74,7 +76,7 @@ def crossword_solution_index(page):
     )
     count = len(rs)
     offset = (page_num - 1) * application.config["PER_PAGE"]
-    # Display a 409 not found page for an out of bounds request, but don't error for emmpty result set
+    # Display a 409 not found page for out of bounds request, but no error for emmpty result set
     try:
         solutions = rs.paginate(page_num, application.config["PER_PAGE"])
     except:
@@ -92,13 +94,11 @@ def crossword_solution_index(page):
     )
 
 
-"""
-Display an existing solution
-"""
-
-
 @application.route("/crossword-solutions/<int:id>", methods=["GET"])
 def crossword_solutions_show(id):
+    """
+    Display an existing solution
+    """
     rs = (
         crossword_setters.select(
             crossword_solutions.rowid.alias("csid"),
@@ -134,14 +134,12 @@ def crossword_solutions_show(id):
     return render_template("crossword-solutions/show.html", soln=xsol, r=request)
 
 
-"""
-Add a new crossowrd solution
-"""
-
-
 @application.route("/crossword-solutions/new", methods=["GET", "POST"])
 @login_required
 def crossword_solutions_new():
+    """
+    Add a new crossowrd solution
+    """
     if request.method == "GET":
         setter_id = 1 if "setter_id" not in session else session["setter_id"]
         solution = {
@@ -198,14 +196,12 @@ def crossword_solutions_new():
     return redirect("/crossword-solutions/")
 
 
-"""
-Edit an existing solution
-"""
-
-
 @application.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def crossword_solutions_edit(id):
+    """
+    Edit an existing solution
+    """
     if request.method == "GET":
         try:
             rs = crossword_solutions.get(crossword_solutions.rowid == id)
@@ -259,6 +255,9 @@ def crossword_solutions_edit(id):
 @application.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
 @login_required
 def crossword_solutions_delete(id):
+    """ "
+    Delete an existing solution
+    """
     try:
         rs = crossword_solutions.get(crossword_solutions.rowid == id)
     except DoesNotExist:

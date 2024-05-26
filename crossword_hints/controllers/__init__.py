@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Initialisation for crossword hints controller
+"""
 
 import os
 import glob

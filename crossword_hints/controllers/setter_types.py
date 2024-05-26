@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Setter types
+"""
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import setter_types
 from jur_ldap_login.models.users import users
@@ -9,14 +12,13 @@ from peewee import *
 from datetime import date, timedelta, datetime
 from crossword_hints.views.crossword_hints import *
 
-"""              """
-""" Setter types """
-"""              """
-
 
 @application.route("/setter-types/", methods=["GET"], defaults={"page": 1})
 @application.route("/setter-types/page/<int:page>")
 def setter_types_index(page):
+    """
+    Setter types index route
+    """
     count = setter_types.select(fn.COUNT(setter_types.rowid)).scalar()
     offset = (int(page) - 1) * application.config["PER_PAGE"]
     rs = (
@@ -40,6 +42,9 @@ def setter_types_index(page):
 
 @application.route("/setter-types/<int:id>", methods=["GET"])
 def setter_types_show(id):
+    """
+    Setter types show route
+    """
     rs = setter_types.get(setter_types.rowid == id)
     return render_template("setter-types/show.html", stype=rs, r=request)
 
@@ -47,6 +52,9 @@ def setter_types_show(id):
 @application.route("/setter-types/new", methods=["GET", "POST"])
 @login_required
 def setter_types_new():
+    """
+    Setter types new route
+    """
     if request.method == "GET":
         stype = {
             "name": "New setter type",
@@ -72,6 +80,9 @@ def setter_types_new():
 @application.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def setter_types_edit(id):
+    """
+    Setter types edit route
+    """
     if request.method == "GET":
         try:
             rs = setter_types.get(setter_types.rowid == id)
@@ -106,6 +117,9 @@ def setter_types_edit(id):
 @application.route("/setter-types/<int:id>/delete", methods=["GET"])
 @login_required
 def setter_types_delete(id):
+    """
+    Setter types delete route
+    """
     try:
         rs = setter_types.get(setter_types.rowid == id)
     except DoesNotExist:

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword clue indicators
+"""
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import cue_words
 from jur_ldap_login.models.users import users
@@ -9,17 +12,16 @@ from flask_login import login_required, current_user
 from peewee import *
 from crossword_hints.views.crossword_hints import sanitize_input
 
-"""                                                    """
-""" Search database for cue words matching search term """
-""" JQuery is used to handle an AJAX request to search """
-""" the database for a matching cue word. This submits """
-""" via a GET request with a callback reference that   """
-""" needs to be included in the response in JSONP      """
-"""                                                    """
-
 
 @application.route("/cue-words/", methods=["GET"])
 def crossword_cue_search():
+    """
+    Search database for cue words matching search term
+    JQuery is used to handle an AJAX request to search
+    the database for a matching cue word. This submits
+    via a GET request with a callback reference that
+    needs to be included in the response in JSONP
+    """
     callback = request.args.get("callback")
     if not callback or callback == "":
         return (
@@ -38,14 +40,12 @@ def crossword_cue_search():
     return Response(ret, mimetype="text/json")
 
 
-"""
-Submit a new cue word to the database
-"""
-
-
 @application.route("/cue-words/new", methods=["GET", "POST"])
 @login_required
 def crossword_cue_new():
+    """
+    Submit a new cue word to the database
+    """
     if request.method == "GET":
         cue = {"cue_word": "Cue word", "meaning": "Cue meaning"}
         return render_template(

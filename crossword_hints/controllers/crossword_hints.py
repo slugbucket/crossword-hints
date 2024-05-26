@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword hints
+"""
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import (
     crossword_setters,
@@ -15,12 +18,16 @@ from crossword_hints.views.crossword_hints import *
 
 @application.route("/crossword-hints/heartbeat", methods=["GET"])
 def heartbeat():
+    """Healthcheck"""
     return "OK"
 
 
 @application.route("/crossword-hints/", methods=["GET", "POST"], defaults={"path": ""})
 @application.route("/", methods=["GET", "POST"], defaults={"path": ""})
 def crossowrd_hints_index(path):
+    """
+    Crossword hints index
+    """
     if request.method == "GET":
         return render_template("crossword-hints/index.html", r=request)
     (rc, fdata) = sanitize_input(request.form)
