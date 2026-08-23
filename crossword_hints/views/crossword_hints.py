@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-     I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S
+I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S
 """
+
 from datetime import datetime
 from html.parser import HTMLParser
-from math import ceil # For use with pagination
+from math import ceil  # For use with pagination
 import re
 from urllib.parse import urljoin, urlparse
 from flask import request, url_for, redirect
 from peewee import fn
+
 # from crossword_hints import application
 from crossword_hints.models import crossword_hints as xwordmodel
+
 # For input (and output) sanitization. Taken from:
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
 
@@ -19,28 +22,22 @@ class HTMLStripper(HTMLParser):
     """
     Custom class for stripping HTML tags and entity references
     """
+
     convert_charrefs = True
 
-
     def __init__(self):
-        """Class constructor
-        """
+        """Class constructor"""
         super().__init__()
         self.reset()
         self.fed = []
 
-
     def handle_data(self, data):
-        """Class method for handling parsed data
-        """
+        """Class method for handling parsed data"""
         self.fed.append(data)
 
-
     def handle_entityref(self, name):
-        """Class method for handling entity references
-        """
+        """Class method for handling entity references"""
         self.fed.append(f"&{name};")
-
 
     def get_data(self):
         """Class method for returing data as a string"""
@@ -194,11 +191,11 @@ def sanitize_input(form) -> tuple:
     rc = ""
     for elem in request.form:
         if elem == "name":
-            (r, data[elem]) = validate_name(form[elem])
+            r, data[elem] = validate_name(form[elem])
         elif re.match(r"^.*_id$", elem):
-            (r, data[elem]) = validate_id(form[elem])
+            r, data[elem] = validate_id(form[elem])
         else:
-            (r, data[elem]) = validate_text(form[elem])
+            r, data[elem] = validate_text(form[elem])
         if rc == "":
             rc = r
     return (rc, data)
@@ -256,39 +253,29 @@ class Pagination:
     From http://flask.pocoo.org/snippets/44/
     """
 
-
     def __init__(self, page, per_page, total_count):
-        """ Pagination class constructor
-        """
+        """Pagination class constructor"""
         self.page = page
         self.per_page = per_page
         self.total_count = total_count
 
-
     @property
     def pages(self) -> int:
-        """Class method for pages count
-        """
+        """Class method for pages count"""
         return int(ceil(self.total_count / float(self.per_page)))
-
 
     @property
     def has_prev(self) -> bool:
-        """Class method for a previous pagination page
-        """
+        """Class method for a previous pagination page"""
         return self.page > 1
-
 
     @property
     def has_next(self) -> bool:
-        """Class method for a next pagination page
-        """
+        """Class method for a next pagination page"""
         return self.page < self.pages
 
-
     def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
-        """Class iterator for pagination Generator
-        """
+        """Class iterator for pagination Generator"""
         last = 0
         for num in range(1, self.pages + 1):
             if (

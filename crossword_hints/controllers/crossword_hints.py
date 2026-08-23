@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-    C  R  O  S  S  W  O  R  D      H  I  N  T  S
+C  R  O  S  S  W  O  R  D      H  I  N  T  S
 """
+
 from flask import request, flash, render_template
 from peewee import JOIN, fn
 from crossword_hints.models.crossword_hints import (
@@ -10,13 +11,14 @@ from crossword_hints.models.crossword_hints import (
     crossword_solutions,
 )
 from crossword_hints import application, sanitize_input
+
 # from crossword_hints.views.crossword_hints import *
 
 
 @application.route("/crossword-hints/heartbeat", methods=["GET"])
 def heartbeat():
     """
-        Healthcheck
+    Healthcheck
     """
     return "OK"
 
@@ -29,7 +31,7 @@ def crossword_hints_index():
     """
     if request.method == "GET":
         return render_template("crossword-hints/index.html", r=request)
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(

@@ -2,6 +2,7 @@
 """
 Crossword hints database model
 """
+
 from datetime import datetime
 import sqlite3
 from peewee import (
@@ -51,17 +52,19 @@ def init_db():
 
 class BaseModel(Model):
     """
-     D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G
+    D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G
 
     """
+
     with application.app_context():
+
         class Meta:
             """
             A base model that will use our Sqlite database.
             Appears to be incompatible with Flask TestCase
             """
-            database = database
 
+            database = database
 
         def __str__(self):
             return f"{self.__class__.__name__}"
@@ -71,6 +74,7 @@ class activity_logs(BaseModel):
     """
     Activity log model
     """
+
     rowid = AutoField()
     actor = CharField(max_length=32)
     action = CharField(max_length=32)
@@ -85,6 +89,7 @@ class setter_types(BaseModel):
     """
     Setter types model
     """
+
     rowid = AutoField()
     name = CharField(null=False, max_length=16, unique=True)
     description = TextField()
@@ -96,6 +101,7 @@ class crossword_setters(BaseModel):
     """
     Crossword setters model
     """
+
     rowid = AutoField()
     name = CharField(null=False, unique=True, max_length=32)
     setter_type = ForeignKeyField(setter_types)
@@ -108,6 +114,7 @@ class solution_types(BaseModel):
     """
     Solution types model
     """
+
     rowid = AutoField()
     name = CharField(null=False, unique=True, max_length=32)
     description = TextField()
@@ -119,6 +126,7 @@ class crossword_solutions(BaseModel):
     """
     Crossword solutions model
     """
+
     rowid = AutoField()
     crossword_setter = ForeignKeyField(crossword_setters)
     clue = CharField(null=False, max_length=96)
@@ -133,6 +141,7 @@ class cue_words(BaseModel):
     """
     Cue words model
     """
+
     rowid = AutoField()
     cue_word = CharField(null=False, max_length=32)
     meaning = CharField(null=False, max_length=128)
@@ -144,6 +153,7 @@ class users(BaseModel):
     """
     Users model
     """
+
     rowid = AutoField()
     username = CharField(null=False, max_length=32, unique=True)
     created_at = DateTimeField(default=datetime.now())

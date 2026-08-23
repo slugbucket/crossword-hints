@@ -2,14 +2,24 @@
 """
 Crossword setters
 """
+
 from datetime import datetime
 from peewee import fn, JOIN, DoesNotExist
 from flask import request, flash, redirect, render_template
 from flask_login import login_required, current_user
 from crossword_hints import application, add_log
-from crossword_hints.models.crossword_hints import crossword_setters, setter_types, database
-from crossword_hints.views.crossword_hints import Pagination, sanitize_input, get_setter_types
+from crossword_hints.models.crossword_hints import (
+    crossword_setters,
+    setter_types,
+    database,
+)
+from crossword_hints.views.crossword_hints import (
+    Pagination,
+    sanitize_input,
+    get_setter_types,
+)
 from jur_ldap_login.models.users import Users
+
 # from jur_ldap_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
 
@@ -98,7 +108,7 @@ def crossword_setters_new():
             r=request,
             sbmt="Save new crossword setter",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(
@@ -143,7 +153,7 @@ def crossword_setters_edit(csid):
             r=request,
             sbmt="Update crossword setter",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(

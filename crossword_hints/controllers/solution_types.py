@@ -2,6 +2,7 @@
 """
 Crossword solution types
 """
+
 from datetime import datetime
 from peewee import fn, DoesNotExist
 from flask import request, flash, redirect, render_template, jsonify
@@ -10,6 +11,7 @@ from crossword_hints import application, add_log
 from crossword_hints.models.crossword_hints import solution_types, database
 from crossword_hints.views.crossword_hints import Pagination, sanitize_input
 from jur_ldap_login.models.users import users
+
 # from jur_ldap_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
 
@@ -94,7 +96,7 @@ def solution_types_new():
             r=request,
             sbmt="Save new solution type",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(
@@ -129,7 +131,7 @@ def solution_types_edit(stid):
             r=request,
             sbmt="Update solution type",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(

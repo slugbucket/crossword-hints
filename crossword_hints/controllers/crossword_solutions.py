@@ -2,6 +2,7 @@
 """
 Crossword solutions
 """
+
 from datetime import datetime
 from flask import request, flash, redirect, render_template, session
 from flask_login import login_required, current_user
@@ -15,6 +16,7 @@ from crossword_hints.views.crossword_hints import (
     get_solution_types,
 )
 from jur_ldap_login.models.users import Users
+
 # from jur_ldap_login.controllers.login import load_user
 
 
@@ -41,7 +43,7 @@ def crossword_solution_index(page):
     # JUR: This can most likely be removed as it is not used anywhere.
     # qtrm = "%"
     if request.method == "POST":
-        (_, fdata) = sanitize_input(request.form)
+        _, fdata = sanitize_input(request.form)
         term = fdata["search_box"]
         # qtrm = "%" + term + "%"
         page_num = 1
@@ -52,34 +54,46 @@ def crossword_solution_index(page):
 
     rs = (
         crossword_hints.models.crossword_hints.crossword_setters.select(
-            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias("csid"),
+            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias(
+                "csid"
+            ),
             crossword_hints.models.crossword_hints.crossword_solutions.solution,
             crossword_hints.models.crossword_hints.crossword_solutions.clue,
             crossword_hints.models.crossword_hints.solution_types.name.alias("soltype"),
-            crossword_hints.models.crossword_hints.crossword_setters.name.alias("setter"),
+            crossword_hints.models.crossword_hints.crossword_setters.name.alias(
+                "setter"
+            ),
         )
         .join(
             crossword_hints.models.crossword_hints.crossword_solutions,
             JOIN.INNER,
             on=(
-                crossword_hints.models.crossword_hints.crossword_setters.rowid ==
-                crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
+                crossword_hints.models.crossword_hints.crossword_setters.rowid
+                == crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
             ),
         )
         .join(
             crossword_hints.models.crossword_hints.solution_types,
             JOIN.INNER,
             on=(
-                crossword_hints.models.crossword_hints.crossword_solutions.solution_type ==
-                crossword_hints.models.crossword_hints.solution_types.rowid
+                crossword_hints.models.crossword_hints.crossword_solutions.solution_type
+                == crossword_hints.models.crossword_hints.solution_types.rowid
             ),
         )
         .where(
-            crossword_hints.models.crossword_hints.crossword_solutions.solution.contains(term)
-            | crossword_hints.models.crossword_hints.crossword_setters.name.contains(term)
+            crossword_hints.models.crossword_hints.crossword_solutions.solution.contains(
+                term
+            )
+            | crossword_hints.models.crossword_hints.crossword_setters.name.contains(
+                term
+            )
             | crossword_hints.models.crossword_hints.solution_types.name.contains(term)
         )
-        .order_by(fn.Lower(crossword_hints.models.crossword_hints.crossword_solutions.solution))
+        .order_by(
+            fn.Lower(
+                crossword_hints.models.crossword_hints.crossword_solutions.solution
+            )
+        )
         .dicts()
     )
     count = len(rs)
@@ -109,31 +123,41 @@ def crossword_solutions_show(csid):
     """
     rs = (
         crossword_hints.models.crossword_hints.crossword_setters.select(
-            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias("csid"),
+            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias(
+                "csid"
+            ),
             crossword_hints.models.crossword_hints.crossword_solutions.solution,
             crossword_hints.models.crossword_hints.crossword_solutions.clue,
-            crossword_hints.models.crossword_hints.crossword_solutions.solution_hint.alias("hint"),
+            crossword_hints.models.crossword_hints.crossword_solutions.solution_hint.alias(
+                "hint"
+            ),
             crossword_hints.models.crossword_hints.solution_types.name.alias("soltype"),
-            crossword_hints.models.crossword_hints.crossword_setters.name.alias("setter"),
+            crossword_hints.models.crossword_hints.crossword_setters.name.alias(
+                "setter"
+            ),
         )
         .join(
             crossword_hints.models.crossword_hints.crossword_solutions,
             JOIN.INNER,
             on=(
-                crossword_hints.models.crossword_hints.crossword_setters.rowid ==
-                crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
+                crossword_hints.models.crossword_hints.crossword_setters.rowid
+                == crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
             ),
         )
         .join(
             crossword_hints.models.crossword_hints.solution_types,
             JOIN.INNER,
             on=(
-                crossword_hints.models.crossword_hints.crossword_solutions.solution_type ==
-                crossword_hints.models.crossword_hints.solution_types.rowid
+                crossword_hints.models.crossword_hints.crossword_solutions.solution_type
+                == crossword_hints.models.crossword_hints.solution_types.rowid
             ),
         )
         .where(crossword_hints.models.crossword_hints.crossword_solutions.rowid == csid)
-        .order_by(fn.Lower(crossword_hints.models.crossword_hints.crossword_solutions.solution))
+        .order_by(
+            fn.Lower(
+                crossword_hints.models.crossword_hints.crossword_solutions.solution
+            )
+        )
         .tuples()
     )
     for solid, solution, clue, hint, soltype, setter in rs:
@@ -171,7 +195,7 @@ def crossword_solutions_new():
             r=request,
             sbmt="Save new crossword solution",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(
@@ -229,7 +253,7 @@ def crossword_solutions_edit(csid):
             r=request,
             sbmt="Update crossword solution",
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(

@@ -2,6 +2,7 @@
 """
 Setter types
 """
+
 # from crossword_hints import application
 # from crossword_hints.models.crossword_hints import setter_types
 # from jur_ldap_login.controllers.login import load_user
@@ -9,6 +10,7 @@ from datetime import datetime
 from flask import request, flash, redirect, render_template
 from peewee import fn, DoesNotExist
 from flask_login import login_required, current_user
+
 # from crossword_hints.views.crossword_hints import *
 from crossword_hints.models.crossword_hints import database, setter_types
 from crossword_hints.views.crossword_hints import Pagination
@@ -70,7 +72,7 @@ def setter_types_new():
         return render_template(
             "setter-types/new.html", stype=stype, r=request, sbmt="Save new setter type"
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(
@@ -99,7 +101,7 @@ def setter_types_edit(stid):
         return render_template(
             "setter-types/edit.html", stype=rs, r=request, sbmt="Update setter type"
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(
