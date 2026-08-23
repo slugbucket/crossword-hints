@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword hints models initialisation
+"""
 import os
 import glob
 

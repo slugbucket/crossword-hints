@@ -2,15 +2,16 @@
 """
 Crossword setters
 """
-from crossword_hints import application
-from crossword_hints.models.crossword_hints import crossword_setters, setter_types
-from jur_ldap_login.models.users import users
-from jur_ldap_login.controllers.login import load_user
+from datetime import datetime
+from peewee import fn, JOIN, DoesNotExist
 from flask import request, flash, redirect, render_template
 from flask_login import login_required, current_user
-from datetime import date, timedelta, datetime
-from peewee import *
-from crossword_hints.views.crossword_hints import *
+from crossword_hints import application, add_log
+from crossword_hints.models.crossword_hints import crossword_setters, setter_types, database
+from crossword_hints.views.crossword_hints import Pagination, sanitize_input, get_setter_types
+from jur_ldap_login.models.users import Users
+# from jur_ldap_login.controllers.login import load_user
+# from crossword_hints.views.crossword_hints import *
 
 
 @application.route("/crossword-setters/", methods=["GET"], defaults={"page": 1})
@@ -19,7 +20,8 @@ def crossword_setters_index(page):
     """
     Index listing of known setters
     """
-    count = crossword_setters.select(fn.COUNT(crossword_setters.rowid)).scalar()
+    # count = crossword_setters.select(fn.COUNT(crossword_setters.rowid)).scalar()
+    count = crossword_setters.select().count(database=database)
     offset = (int(page) - 1) * application.config["PER_PAGE"]
     rs = (
         crossword_setters.select(
@@ -29,7 +31,7 @@ def crossword_setters_index(page):
             setter_types.name.alias("setter_type_name"),
         )
         .join(setter_types)
-        .where(crossword_setters.setter_type_id == setter_types.rowid)
+        .where(crossword_setters.setter_type == setter_types.rowid)
         .limit(application.config["PER_PAGE"])
         .offset(offset)
         .order_by(fn.Lower(crossword_setters.name))
@@ -49,7 +51,7 @@ def crossword_setters_index(page):
 
 
 @application.route("/crossword-setters/<int:id>", methods=["GET"])
-def crossword_setters_show(id):
+def crossword_setters_show(csid):
     """
     Show a new crossword setter
     """
@@ -66,14 +68,14 @@ def crossword_setters_show(id):
         .join(
             setter_types,
             JOIN.INNER,
-            on=(crossword_setters.setter_type_id == setter_types.rowid),
+            on=(crossword_setters.setter_type == setter_types.rowid),
         )
-        .where(crossword_setters.rowid == id)
+        .where(crossword_setters.rowid == csid)
         .tuples()
     )
-    for id, sname, descrip, stname in rs:
+    for rid, sname, descrip, stname in rs:
         setter = {
-            "rowid": id,
+            "rowid": rid,
             "name": sname,
             "description": descrip,
             "setter_type_name": stname,
@@ -112,25 +114,28 @@ def crossword_setters_new():
         description=fdata["description"],
     )
     cs.save()
-    log = f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "insert", "crossword_setters", cs.rowid, log)
+    log = (
+        f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\n"
+        f"description: {fdata['description']}"
+    )
+    add_log(Users.get_name(current_user), "insert", "crossword_setters", cs.rowid, log)
     flash(f"Saved new crossword setter, {fdata['name']}")
     return redirect("/crossword-setters/")
 
 
 @application.route("/crossword-setters/<int:id>/edit", methods=["GET", "POST"])
 @login_required
-def crossword_setters_edit(id):
+def crossword_setters_edit(csid):
     """
     Edit an existing setter
     """
     if request.method == "GET":
         try:
-            rs = crossword_setters.get(crossword_setters.rowid == id)
+            rs = crossword_setters.get(crossword_setters.rowid == csid)
         except DoesNotExist:
-            flash(f"Cannot find crossword setter record for id, {id}.")
+            flash(f"Cannot find crossword setter record for id, {csid}.")
             return redirect("/crossword-setters")
-        rs = crossword_setters.get(crossword_setters.rowid == id)
+        rs = crossword_setters.get(crossword_setters.rowid == csid)
         return render_template(
             "crossword-setters/edit.html",
             setter=rs,
@@ -148,32 +153,35 @@ def crossword_setters_edit(id):
             sbmt=request.form["submit"],
         )
     cs = crossword_setters(
-        rowid=id,
+        rowid=csid,
         name=fdata["name"],
         setter_type_id=fdata["setter_type_id"],
         description=fdata["description"],
         updated_at=datetime.now(),
     )
     cs.save()
-    log = f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "update", "crossword_setters", id, log)
+    log = (
+        f"name: {fdata['name']}\nsetter_type_id: {fdata['setter_type_id']}\n"
+        f"description: {fdata['description']}"
+    )
+    add_log(Users.get_name(current_user), "update", "crossword_setters", csid, log)
     flash(f"Updated crossword setter, {fdata['name']}")
     return redirect("/crossword-setters")
 
 
 @application.route("/crossword-setters/<int:id>/delete", methods=["GET"])
 @login_required
-def crossword_setters_delete(id):
+def crossword_setters_delete(csid):
     """
     Delete an existing setter
     """
     try:
-        rs = crossword_setters.get(crossword_setters.rowid == id)
+        rs = crossword_setters.get(crossword_setters.rowid == csid)
     except DoesNotExist:
-        flash("Cannot find crssword setter record for id, {id}.")
+        flash(f"Cannot find crossword setter record for id, {csid}.")
         return redirect("/crossword-setters/")
     log = f"name: {rs.name}\nsetter_type_id: {rs.setter_type_id,}\ndescription: {rs.description}"
     rs.delete_instance()
-    add_log(users.get_name(current_user), "delete", "crossword_setters", id, log)
-    flash("Deleted crossword setter, {rs.name}")
+    add_log(Users.get_name(current_user), "delete", "crossword_setters", csid, log)
+    flash(f"Deleted crossword setter, {rs.name}")
     return redirect("/crossword-setters/")

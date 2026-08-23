@@ -2,19 +2,20 @@
 """
 Crossword solutions
 """
-from crossword_hints import application
-from crossword_hints.models.crossword_hints import (
-    crossword_setters,
-    setter_types,
-    crossword_solutions,
-    solution_types,
-)
-from jur_ldap_login.models.users import users
-from jur_ldap_login.controllers.login import load_user
+from datetime import datetime
 from flask import request, flash, redirect, render_template, session
 from flask_login import login_required, current_user
-from peewee import *
-from crossword_hints.views.crossword_hints import *
+from peewee import fn, JOIN, DoesNotExist
+from crossword_hints import application, add_log
+import crossword_hints.models.crossword_hints
+from crossword_hints.views.crossword_hints import (
+    Pagination,
+    sanitize_input,
+    get_crossword_setters,
+    get_solution_types,
+)
+from jur_ldap_login.models.users import Users
+# from jur_ldap_login.controllers.login import load_user
 
 
 @application.route("/crossword-solutions/", defaults={"page": 1})
@@ -37,49 +38,56 @@ def crossword_solution_index(page):
     page_num = int(session["solutions_page"])
 
     term = ""
-    qtrm = "%"
+    # JUR: This can most likely be removed as it is not used anywhere.
+    # qtrm = "%"
     if request.method == "POST":
-        (rc, fdata) = sanitize_input(request.form)
+        (_, fdata) = sanitize_input(request.form)
         term = fdata["search_box"]
-        qtrm = "%" + term + "%"
+        # qtrm = "%" + term + "%"
         page_num = 1
     else:
         if request.args.get("q"):
             term = request.args.get("q")
-            qtrm = "%" + term + "%"
+            # qtrm = "%" + term + "%"
 
     rs = (
-        crossword_setters.select(
-            crossword_solutions.rowid.alias("csid"),
-            crossword_solutions.solution,
-            crossword_solutions.clue,
-            solution_types.name.alias("soltype"),
-            crossword_setters.name.alias("setter"),
+        crossword_hints.models.crossword_hints.crossword_setters.select(
+            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias("csid"),
+            crossword_hints.models.crossword_hints.crossword_solutions.solution,
+            crossword_hints.models.crossword_hints.crossword_solutions.clue,
+            crossword_hints.models.crossword_hints.solution_types.name.alias("soltype"),
+            crossword_hints.models.crossword_hints.crossword_setters.name.alias("setter"),
         )
         .join(
-            crossword_solutions,
+            crossword_hints.models.crossword_hints.crossword_solutions,
             JOIN.INNER,
-            on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id),
+            on=(
+                crossword_hints.models.crossword_hints.crossword_setters.rowid ==
+                crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
+            ),
         )
         .join(
-            solution_types,
+            crossword_hints.models.crossword_hints.solution_types,
             JOIN.INNER,
-            on=(crossword_solutions.solution_type_id == solution_types.rowid),
+            on=(
+                crossword_hints.models.crossword_hints.crossword_solutions.solution_type ==
+                crossword_hints.models.crossword_hints.solution_types.rowid
+            ),
         )
         .where(
-            crossword_solutions.solution.contains(term)
-            | crossword_setters.name.contains(term)
-            | solution_types.name.contains(term)
+            crossword_hints.models.crossword_hints.crossword_solutions.solution.contains(term)
+            | crossword_hints.models.crossword_hints.crossword_setters.name.contains(term)
+            | crossword_hints.models.crossword_hints.solution_types.name.contains(term)
         )
-        .order_by(fn.Lower(crossword_solutions.solution))
+        .order_by(fn.Lower(crossword_hints.models.crossword_hints.crossword_solutions.solution))
         .dicts()
     )
     count = len(rs)
-    offset = (page_num - 1) * application.config["PER_PAGE"]
+    # offset = (page_num - 1) * application.config["PER_PAGE"]
     # Display a 409 not found page for out of bounds request, but no error for emmpty result set
     try:
         solutions = rs.paginate(page_num, application.config["PER_PAGE"])
-    except:
+    except DoesNotExist:
         session.pop("solutions_page")
         return (
             render_template("errors/409.html", errmsg="Requested page out of bounds"),
@@ -94,37 +102,43 @@ def crossword_solution_index(page):
     )
 
 
-@application.route("/crossword-solutions/<int:id>", methods=["GET"])
-def crossword_solutions_show(id):
+@application.route("/crossword-solutions/<int:csid>", methods=["GET"])
+def crossword_solutions_show(csid):
     """
     Display an existing solution
     """
     rs = (
-        crossword_setters.select(
-            crossword_solutions.rowid.alias("csid"),
-            crossword_solutions.solution,
-            crossword_solutions.clue,
-            crossword_solutions.solution_hint.alias("hint"),
-            solution_types.name.alias("soltype"),
-            crossword_setters.name.alias("setter"),
+        crossword_hints.models.crossword_hints.crossword_setters.select(
+            crossword_hints.models.crossword_hints.crossword_solutions.rowid.alias("csid"),
+            crossword_hints.models.crossword_hints.crossword_solutions.solution,
+            crossword_hints.models.crossword_hints.crossword_solutions.clue,
+            crossword_hints.models.crossword_hints.crossword_solutions.solution_hint.alias("hint"),
+            crossword_hints.models.crossword_hints.solution_types.name.alias("soltype"),
+            crossword_hints.models.crossword_hints.crossword_setters.name.alias("setter"),
         )
         .join(
-            crossword_solutions,
+            crossword_hints.models.crossword_hints.crossword_solutions,
             JOIN.INNER,
-            on=(crossword_setters.rowid == crossword_solutions.crossword_setter_id),
+            on=(
+                crossword_hints.models.crossword_hints.crossword_setters.rowid ==
+                crossword_hints.models.crossword_hints.crossword_solutions.crossword_setter
+            ),
         )
         .join(
-            solution_types,
+            crossword_hints.models.crossword_hints.solution_types,
             JOIN.INNER,
-            on=(crossword_solutions.solution_type_id == solution_types.rowid),
+            on=(
+                crossword_hints.models.crossword_hints.crossword_solutions.solution_type ==
+                crossword_hints.models.crossword_hints.solution_types.rowid
+            ),
         )
-        .where(crossword_solutions.rowid == id)
-        .order_by(fn.Lower(crossword_solutions.solution))
+        .where(crossword_hints.models.crossword_hints.crossword_solutions.rowid == csid)
+        .order_by(fn.Lower(crossword_hints.models.crossword_hints.crossword_solutions.solution))
         .tuples()
     )
-    for csid, solution, clue, hint, soltype, setter in rs:
+    for solid, solution, clue, hint, soltype, setter in rs:
         xsol = {
-            "csid": csid,
+            "csid": solid,
             "setter": setter,
             "solution": solution,
             "clue": clue,
@@ -168,7 +182,7 @@ def crossword_solutions_new():
             r=request,
             sbmt=request.form["submit"],
         )
-    cs = crossword_solutions(
+    cs = crossword_hints.models.crossword_hints.crossword_solutions(
         crossword_setter_id=fdata["crossword_setter_id"],
         clue=fdata["clue"],
         solution=fdata["solution"],
@@ -180,33 +194,32 @@ def crossword_solutions_new():
     cs.save()
     session["setter_id"] = fdata["crossword_setter_id"]
     log = (
-        "crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s"
-        % (
-            fdata["crossword_setter_id"],
-            fdata["clue"],
-            fdata["solution"],
-            fdata["solution_hint"],
-            fdata["solution_type_id"],
-        )
+        f"crossword_setter_id: {fdata['crossword_setter_id']}\n"
+        f"clue: {fdata['clue']}\n"
+        f"solution: {fdata['solution']}\n"
+        f"solution_hint: {fdata['solution_hint']}\n"
+        f"solution_type_id: {fdata['solution_type_id']}"
     )
     add_log(
-        users.get_name(current_user), "insert", "crossword_solutions", cs.rowid, log
+        Users.get_name(current_user), "insert", "crossword_solutions", cs.rowid, log
     )
-    flash("Saved new crossword solution, %s" % fdata["solution"])
+    flash(f"Saved new crossword solution, {fdata['solution']}")
     return redirect("/crossword-solutions/")
 
 
 @application.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
 @login_required
-def crossword_solutions_edit(id):
+def crossword_solutions_edit(csid):
     """
     Edit an existing solution
     """
     if request.method == "GET":
         try:
-            rs = crossword_solutions.get(crossword_solutions.rowid == id)
+            rs = crossword_hints.models.crossword_hints.crossword_solutions.get(
+                crossword_hints.models.crossword_hints.crossword_solutions.rowid == csid
+            )
         except DoesNotExist:
-            flash("Cannot find crossword solution record for id, %s." % id)
+            flash(f"Cannot find crossword solution record for id, {csid}.")
             return redirect("/crossword-solutions")
         return render_template(
             "crossword-solutions/edit.html",
@@ -227,8 +240,8 @@ def crossword_solutions_edit(id):
             r=request,
             sbmt=request.form["submit"],
         )
-    cs = crossword_solutions(
-        rowid=id,
+    cs = crossword_hints.models.crossword_hints.crossword_solutions(
+        rowid=csid,
         crossword_setter_id=fdata["crossword_setter_id"],
         clue=fdata["clue"],
         solution=fdata["solution"],
@@ -238,42 +251,38 @@ def crossword_solutions_edit(id):
     )
     cs.save()
     log = (
-        "crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s"
-        % (
-            fdata["crossword_setter_id"],
-            fdata["clue"],
-            fdata["solution"],
-            fdata["solution_hint"],
-            fdata["solution_type_id"],
-        )
+        f"crossword_setter_id: {fdata['crossword_setter_id']}\n"
+        f"clue: {fdata['clue']}\n"
+        f"solution: {fdata['solution']}\n"
+        f"solution_hint: {fdata['solution_hint']}\n"
+        f"solution_type_id: {fdata['solution_type_id']}"
     )
-    add_log(users.get_name(current_user), "update", "crossword_solutions", id, log)
-    flash("Updated crossword solution, %s" % fdata["solution"])
+    add_log(Users.get_name(current_user), "update", "crossword_solutions", csid, log)
+    flash(f"Updated crossword solution, {fdata['solution']}")
     return redirect("/crossword-solutions")
 
 
 @application.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
 @login_required
-def crossword_solutions_delete(id):
+def crossword_solutions_delete(csid):
     """ "
     Delete an existing solution
     """
     try:
-        rs = crossword_solutions.get(crossword_solutions.rowid == id)
+        rs = crossword_hints.models.crossword_hints.crossword_solutions.get(
+            crossword_hints.models.crossword_hints.crossword_solutions.rowid == csid
+        )
     except DoesNotExist:
-        flash("Cannot find solution record for id, %s." % id)
+        flash(f"Cannot find solution record for id, {csid}.")
         return redirect("/crossword-solutions")
     log = (
-        "crossword_setter_id: %s\nclue: %s\nsolution: %s\nsolution_hint: %s\nsolution_type_id: %s"
-        % (
-            rs.crossword_setter_id,
-            rs.clue,
-            rs.solution,
-            rs.solution_hint,
-            rs.solution_type_id,
-        )
+        f"crossword_setter_id: {rs.crossword_setter_id}\n"
+        f"clue: {rs.clue}\n"
+        f"solution: {rs.solution}\n"
+        f"solution_hint: {rs.solution_hint}\n"
+        f"solution_type_id: {rs.solution_type_id}"
     )
     rs.delete_instance()
-    add_log(users.get_name(current_user), "delete", "crossword_solutions", id, log)
-    flash("Deleted crossword solution, %s" % rs.solution)
+    add_log(Users.get_name(current_user), "delete", "crossword_solutions", csid, log)
+    flash(f"Deleted crossword solution, {rs.solution}")
     return redirect("/crossword-solutions")

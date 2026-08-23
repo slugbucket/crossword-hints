@@ -2,15 +2,16 @@
 """
 Crossword solution types
 """
-from crossword_hints import application
-from crossword_hints.models.crossword_hints import solution_types
-from jur_ldap_login.models.users import users
-from jur_ldap_login.controllers.login import load_user
-from flask import flash, jsonify, redirect, render_template, request, Response
+from datetime import datetime
+from peewee import fn, DoesNotExist
+from flask import request, flash, redirect, render_template, jsonify
 from flask_login import login_required, current_user
-from datetime import date, timedelta, datetime
-from peewee import *
-from crossword_hints.views.crossword_hints import *
+from crossword_hints import application, add_log
+from crossword_hints.models.crossword_hints import solution_types, database
+from crossword_hints.views.crossword_hints import Pagination, sanitize_input
+from jur_ldap_login.models.users import users
+# from jur_ldap_login.controllers.login import load_user
+# from crossword_hints.views.crossword_hints import *
 
 
 @application.route("/solution-types/", methods=["GET"], defaults={"page": 1})
@@ -19,7 +20,8 @@ def solution_types_index(page):
     """
     Solution types index
     """
-    count = solution_types.select(fn.COUNT(solution_types.rowid)).scalar()
+    # count = solution_types.select(fn.COUNT(solution_types.rowid)).scalar()
+    count = solution_types.select().count(database=database)
     offset = (int(page) - 1) * application.config["PER_PAGE"]
     rs = (
         solution_types.select()
@@ -29,7 +31,10 @@ def solution_types_index(page):
     )
     if not rs and page != 1:
         return (
-            render_template("errors/409.html", errmsg="Requested page out of bounds"),
+            render_template(
+                "errors/409.html",
+                errmsg="Requested page out of bounds",
+            ),
             409,
         )
     return render_template(
@@ -56,19 +61,19 @@ def solution_types_index_json():
     """
     rs = solution_types.select().order_by(fn.Lower(solution_types.name)).dicts()
     if not rs:
-        return Response('{"result": "error"}', mimetype="text/json", status_code=400)
+        return jsonify({"result": "error"})
     res = []
     for row in rs:
         res.append(dict(row))
     return jsonify(res)
 
 
-@application.route("/solution-types/<int:id>", methods=["GET"])
-def solution_types_show(id):
+@application.route("/solution-types/<int:stid>", methods=["GET"])
+def solution_types_show(stid):
     """
     Render a template of the detail of a spefic solution type
     """
-    rs = solution_types.get(solution_types.rowid == id)
+    rs = solution_types.get(solution_types.rowid == stid)
     return render_template("solution-types/show.html", stype=rs, r=request)
 
 
@@ -102,20 +107,20 @@ def solution_types_new():
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
     add_log(users.get_name(current_user), "insert", "solution_types", st.rowid, log)
-    flash(f"Saved new solution type, {fdata["name"]}")
+    flash(f"Saved new solution type, {fdata['name']}")
     return redirect("/solution-types")
 
 
-@application.route("/solution-types/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/solution-types/<int:stid>/edit", methods=["GET", "POST"])
 @login_required
-def solution_types_edit(id):
+def solution_types_edit(stid):
     """
     Display a form to edit the details of an existing solution type
     """
     try:
-        stype = solution_types.get(solution_types.rowid == id)
+        stype = solution_types.get(solution_types.rowid == stid)
     except DoesNotExist:
-        flash("Cannot find solution type record for id, {id}.")
+        flash(f"Cannot find solution type record for id, {stid}.")
         return redirect("/solution-types")
     if request.method == "GET":
         return render_template(
@@ -134,31 +139,31 @@ def solution_types_edit(id):
             sbmt=request.form["submit"],
         )
     st = solution_types(
-        rowid=id,
+        rowid=stid,
         name=fdata["name"],
         description=fdata["description"],
         updated_at=datetime.now(),
     )
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "update", "solution_types", id, log)
+    add_log(users.get_name(current_user), "update", "solution_types", stid, log)
     flash(f"Updated solution type, {fdata['name']}")
     return redirect("/solution-types")
 
 
-@application.route("/solution-types/<int:id>/delete", methods=["GET", "POST"])
+@application.route("/solution-types/<int:stid>/delete", methods=["GET", "POST"])
 @login_required
-def solution_types_delete(id):
+def solution_types_delete(stid):
     """
     Delete an existing solution type
     """
     try:
-        rs = solution_types.get(solution_types.rowid == id)
+        rs = solution_types.get(solution_types.rowid == stid)
     except DoesNotExist:
-        flash(f"Cannot find solution type record for id, {id}.")
+        flash(f"Cannot find solution type record for id, {stid}.")
         return redirect("/solution-types")
     log = f"name: {rs.name}\ndescription: {rs.description}"
     rs.delete_instance()
     add_log(users.get_name(current_user), "delete", "solution_types", rs.rowid, log)
-    flash("Deleted solution type, {rs.name}")
+    flash(f"Deleted solution type, {rs.name}")
     return redirect("/solution-types")

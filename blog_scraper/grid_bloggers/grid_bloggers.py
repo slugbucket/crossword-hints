@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Scraping crossword grid clues and solutions
+"""
+Scraping crossword grid clues and solutions
 
 This script defines functions that attempt to take an HTML page from an external blog
 and scrape the crossword clues, solutions and parsing after stripping any HTML tags.
@@ -32,8 +33,8 @@ class HTMLStripper(HTMLParser):
     """HTML Stripper class
     Defines class methods and variables used for handling HTML entities and data
     """
-
     convert_charrefs = True
+
 
     def __init__(self):
         """Class constructor"""
@@ -41,13 +42,16 @@ class HTMLStripper(HTMLParser):
         self.reset()
         self.fed = []
 
+
     def handle_data(self, data):
         """Class method to handle data"""
         self.fed.append(data)
 
+
     def handle_entityref(self, name):
         """Class method for handling entity refs"""
         self.fed.append(f"&{name};")
+
 
     def get_data(self):
         """Class method to return data as a string"""
@@ -105,7 +109,7 @@ def indy_quirister(html_doc: str) -> list:
                 p = ""
             linelist.append(line)
             lct = lct + 1
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -151,7 +155,7 @@ def indy_john(html_doc: str) -> list:
         if re.search(r"^$", line) and lct == 0:
             continue
         if re.search(r"^[0-9]+$", line):
-            logger.debug(f"Found a clue block for {line}")
+            logger.debug("Found a clue block for %s", line)
             lct = 1
             linelist.append(line)
             continue
@@ -159,20 +163,20 @@ def indy_john(html_doc: str) -> list:
             # There are blank lines in the clue block to be ignored
             if re.search(r"^$", line):
                 continue
-            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
+            logger.debug("Found a solution fragment, %s, in clue line %s", line, lct)
             linelist.append(line)
             lct = lct + 1
             if lct > 3:  # solution , clue and parse have been collected
-                logger.debug(f"On line {lct} save the solution and parsing")
+                logger.debug("On line %s save the solution and parsing", lct)
                 c = re.sub(r" \([\d,-]+\)", "", linelist[2])
                 clue_list.append(
                     {"clue": c, "solution": linelist[1], "parse": linelist[3]}
                 )
-                logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
+                logger.debug("Adding %s to the list of %s clues", c, len(clue_list))
                 linelist = []
                 lct = 0
                 continue
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -218,12 +222,12 @@ def indy_john2(html_doc: str) -> list:
         if re.search(r"^$", line) and lct == 0:
             continue
         if re.search(r"^[0-9]+", line) and in_the_clues:
-            logger.debug(f"Found a clue block for {line}")
+            logger.debug("Found a clue block for %s", line)
             lct = 1
             linelist.append(line)
             continue
         if in_the_clues and lct > 0:
-            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
+            logger.debug("Found a solution fragment, %s, in clue line %s", line, lct)
             linelist.append(line)
             lct = lct + 1
             if lct > 1:  # solution , clue and parse have been collected
@@ -233,11 +237,11 @@ def indy_john2(html_doc: str) -> list:
                         {"clue": ncs[2], "solution": ncs[3], "parse": linelist[1]}
                     )
                 else:
-                    logger.error(f"Could not process clue from {linelist[0]}")
+                    logger.error("Could not process clue from %s", linelist[0])
                 linelist = []
                 lct = 0
                 continue
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -319,7 +323,7 @@ def indy_bertandjoyce(html_doc: str) -> list:
             if bct > 2:
                 in_the_clues = False
                 linelist = []
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -372,7 +376,7 @@ def indy_nealh(html_doc: str) -> list:
                 p = ""
             linelist.append(line)
             lct = lct + 1
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -432,7 +436,7 @@ def indy_ratkojariku(html_doc: str) -> list:
                 continue
             linelist.append(line)
             lct = lct + 1
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -490,7 +494,7 @@ def indy_mc_rapper67(html_doc: str) -> list:
                 continue
             linelist.append(line)
             lct = lct + 1
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -532,25 +536,25 @@ def indy_kitty(html_doc: str) -> list:
         if re.search(r"^$", line) and lct == 0:
             continue
         if re.search(r"^[0-9]+[ad][ ]+", line):
-            logger.debug(f"Found a clue block for {line}")
+            logger.debug("Found a clue block for %s", line)
             lct = 1
             linelist.append(line)
             continue
         if in_the_clues and lct > 0:
-            logger.debug(f"Found a solution fragment, {line}, in clue line {lct}")
+            logger.debug("Found a solution fragment, %s, in clue line %s", line, lct)
             linelist.append(line)
             lct = lct + 1
             if lct > 2:  # solution , clue and parse have been collected
-                logger.debug(f"On line {lct} save the solution and parsing")
+                logger.debug("On line %s save the solution and parsing", lct)
                 c = re.sub(r"^[0-9]+[ad][ ]+", "", linelist[0])
                 c = re.sub(r" \([\d,-]+\)", "", c)
                 s = re.sub(r"^[ ]+", "", linelist[1])
                 clue_list.append({"clue": c, "solution": s, "parse": linelist[2]})
-                logger.debug(f"Adding {c} to the list of {len(clue_list)} clues")
+                logger.debug("Adding %s to the list of %s clues", c, len(clue_list))
                 linelist = []
                 lct = 0
                 continue
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list
 
 
@@ -568,7 +572,7 @@ def indy_beermagnet(html_doc: str) -> list:
     1
     SLEEPING PARTNER
     He’ll go to bed with you, but his involvement is strictly financial (8,7)
-    A Double Def. combining a literal and a figurative meaning into a suggestive scene.  First one in.
+    Double Def. combining literal and figurative meaning into a suggestive scene.
         From:
         * https://www.fifteensquared.net/2020/05/16/independent-10481-sat-16-may-2020-by-morph/
         Params:
@@ -614,5 +618,5 @@ def indy_beermagnet(html_doc: str) -> list:
                 continue
             linelist.append(line)
             lct = lct + 1
-    logger.debug(f"The are {len(clue_list)} clues in the grid.")
+    logger.debug("The are %s clues in the grid.", len(clue_list))
     return clue_list

@@ -1,13 +1,24 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword hints database model
+"""
+from datetime import datetime
 import sqlite3
-from peewee import *
-from datetime import date, timedelta, datetime
+from peewee import (
+    AutoField,
+    CharField,
+    DateTimeField,
+    IntegerField,
+    TextField,
+    ForeignKeyField,
+    Model,
+)
 from crossword_hints import application
 
 __all__ = ["database", "init_db"]
 
 
-database = SqliteDatabase(
+database = sqlite3.SqliteDatabase(
     application.config["DATABASE"], pragmas=(("foreign_keys", "on"),)
 )
 database.row_factory = sqlite3.Row
@@ -22,6 +33,9 @@ Returns:
 
 
 def init_db():
+    """
+    Database initialiser
+    """
     database.create_tables(
         [
             setter_types,
@@ -35,22 +49,28 @@ def init_db():
     )
 
 
-"""                                                        """
-"""  D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G  """
-"""                                                        """
-"""                                                        """
-"""     A base model that will use our Sqlite database.    """
-"""     Appears to be incompatible with Flask TestCase     """
-
-
 class BaseModel(Model):
-    with application.app_context():
+    """
+     D  A  T  A  B  A  S  E     M  O  D  E  L  L  I  N  G
 
+    """
+    with application.app_context():
         class Meta:
+            """
+            A base model that will use our Sqlite database.
+            Appears to be incompatible with Flask TestCase
+            """
             database = database
 
 
+        def __str__(self):
+            return f"{self.__class__.__name__}"
+
+
 class activity_logs(BaseModel):
+    """
+    Activity log model
+    """
     rowid = AutoField()
     actor = CharField(max_length=32)
     action = CharField(max_length=32)
@@ -62,6 +82,9 @@ class activity_logs(BaseModel):
 
 
 class setter_types(BaseModel):
+    """
+    Setter types model
+    """
     rowid = AutoField()
     name = CharField(null=False, max_length=16, unique=True)
     description = TextField()
@@ -70,6 +93,9 @@ class setter_types(BaseModel):
 
 
 class crossword_setters(BaseModel):
+    """
+    Crossword setters model
+    """
     rowid = AutoField()
     name = CharField(null=False, unique=True, max_length=32)
     setter_type = ForeignKeyField(setter_types)
@@ -79,6 +105,9 @@ class crossword_setters(BaseModel):
 
 
 class solution_types(BaseModel):
+    """
+    Solution types model
+    """
     rowid = AutoField()
     name = CharField(null=False, unique=True, max_length=32)
     description = TextField()
@@ -87,6 +116,9 @@ class solution_types(BaseModel):
 
 
 class crossword_solutions(BaseModel):
+    """
+    Crossword solutions model
+    """
     rowid = AutoField()
     crossword_setter = ForeignKeyField(crossword_setters)
     clue = CharField(null=False, max_length=96)
@@ -98,6 +130,9 @@ class crossword_solutions(BaseModel):
 
 
 class cue_words(BaseModel):
+    """
+    Cue words model
+    """
     rowid = AutoField()
     cue_word = CharField(null=False, max_length=32)
     meaning = CharField(null=False, max_length=128)
@@ -106,12 +141,15 @@ class cue_words(BaseModel):
 
 
 class users(BaseModel):
+    """
+    Users model
+    """
     rowid = AutoField()
     username = CharField(null=False, max_length=32, unique=True)
     created_at = DateTimeField(default=datetime.now())
     updated_at = DateTimeField(default=datetime.now())
 
 
-"""                                             """
-"""  E N D   O F   D A T A B A S E   M O D E L  """
-"""                                             """
+#
+#    E N D   O F   D A T A B A S E   M O D E L
+#

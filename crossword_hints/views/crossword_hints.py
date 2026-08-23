@@ -1,41 +1,46 @@
 # -*- coding: utf-8 -*-
-"""                                                        """
-"""  I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S   """
-"""                                                        """
-from flask import request, url_for, redirect
-from crossword_hints import application
-from crossword_hints.models import crossword_hints as xwordmodel
-from peewee import *
+"""
+     I  N  T  E  R  N  A  L    F  U  N  C  T  I  O  N  S
+"""
+from datetime import datetime
+from html.parser import HTMLParser
+from math import ceil # For use with pagination
 import re
-from datetime import date, timedelta, datetime
-
-# For use with pagination
-from math import ceil
-
+from urllib.parse import urljoin, urlparse
+from flask import request, url_for, redirect
+from peewee import fn
+# from crossword_hints import application
+from crossword_hints.models import crossword_hints as xwordmodel
 # For input (and output) sanitization. Taken from:
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
-from html.parser import HTMLParser
-from urllib.parse import urljoin, urlparse
 
 
 class HTMLStripper(HTMLParser):
-    """Custom class for stripping HTML tags and entity references"""
-
+    """
+    Custom class for stripping HTML tags and entity references
+    """
     convert_charrefs = True
 
+
     def __init__(self):
-        """Class constructor"""
+        """Class constructor
+        """
         super().__init__()
         self.reset()
         self.fed = []
 
+
     def handle_data(self, data):
-        """Class method for handling parsed data"""
+        """Class method for handling parsed data
+        """
         self.fed.append(data)
 
+
     def handle_entityref(self, name):
-        """Class method for handling entity references"""
-        self.fed.append("&%s;" % name)
+        """Class method for handling entity references
+        """
+        self.fed.append(f"&{name};")
+
 
     def get_data(self):
         """Class method for returing data as a string"""
@@ -59,10 +64,9 @@ def highlight_text(text: str, word: str, cls: str) -> str:
     p = re.compile(word, re.IGNORECASE)
     m = p.search(text)
     if m:
-        hstr = "<span class='%s'>%s</span>" % (cls, m.group())
+        hstr = f"<span class='{cls}'>{m.group()}</span>"
         return p.sub(hstr, text)
-    else:
-        return text
+    return text
 
 
 def is_safe_url(target) -> str:
@@ -95,6 +99,7 @@ def get_redirect_target() -> str:
             continue
         if is_safe_url(target):
             return target
+    return ""
 
 
 def redirect_back(endpoint, **values) -> str:
@@ -158,7 +163,7 @@ def get_crossword_setters() -> list:
     """
     cs = xwordmodel.crossword_setters.select(
         xwordmodel.crossword_setters.rowid, xwordmodel.crossword_setters.name
-    ).order_by(fn.Lower(xwordmodel.crossword_setters.name))
+    ).order_by(fn.LOWER(xwordmodel.crossword_setters.name))
     setters = []
     for row in cs.dicts():
         setters.append([row["rowid"], row["name"]])
@@ -172,7 +177,7 @@ def get_solution_types() -> list:
     """
     rs = xwordmodel.solution_types.select(
         xwordmodel.solution_types.rowid, xwordmodel.solution_types.name
-    ).order_by(fn.Lower(xwordmodel.solution_types.name))
+    ).order_by(fn.LOWER(xwordmodel.solution_types.name))
     s_types = []
     for row in rs.dicts():
         s_types.append([row["rowid"], row["name"]])
@@ -199,80 +204,91 @@ def sanitize_input(form) -> tuple:
     return (rc, data)
 
 
-def validate_name(str) -> tuple:
-    """Validation function to check that input is a string"""
-    if not re.match(r"^[a-zA-Z0-9-_.\' ()]*$", str):
+def validate_name(vstr) -> tuple:
+    """
+    Validation function to check that input is a string
+    """
+    if not re.match(r"^[a-zA-Z0-9-_.\' ()]*$", vstr):
         return (
             "Invalid characters in name field: Only allowed a-zA-Z0-9-_. '",
-            re.sub("[^a-zA-Z0-9-_'. ]", "", str),
+            re.sub("[^a-zA-Z0-9-_'. ]", "", vstr),
         )
-    return ("", str)
+    return ("", vstr)
 
 
-def validate_text(str) -> tuple:
+def validate_text(vstr) -> tuple:
     """
-    Initial attempt at stripping any unwanted HTML from the input so that it can be displayed on an output page.
+    Initial attempt at stripping any unwanted HTML from the input
+    so that it can be displayed on an output page.
     Uses the HTMLStripper to subclass HTMLParser
     Params:
-    str: string submitted via an HTTP request
+    vstr: string submitted via an HTTP request
     Returns:
     (error-msg, sanitized-string)
     """
     s = HTMLStripper()
-    s.feed(str)
+    s.feed(vstr)
     return ("", s.get_data())
 
 
-def validate_id(str) -> tuple:
+def validate_id(vstr) -> tuple:
     """
     We expect submitted id values to be numeric
     """
     try:
-        int(str)
+        int(vstr)
     except ValueError:
         return ("id values must be numeric", "0")
-    return ("", str)
+    return ("", vstr)
 
 
-def nextId(tbl):
-    """
-    Need to calculate the next rowid value for a table - not used with SQLite3
-    """
-    return (
-        xwordmodel.database.execute_sql("SELECT MAX(rowid)+1 FROM %s" % tbl),
-        scalar(),
-    )
+# def next_id(tbl): Not used
+#     """
+#     Need to calculate the next rowid value for a table - not used with SQLite3
+#     """
+#     return (xwordmodel.database.execute_sql("SELECT MAX(rowid)+1 FROM {tbl}", scalar()))
 
 
-class Pagination(object):
+class Pagination:
     """
      P A G I N A T I O N    C L A S S
 
     From http://flask.pocoo.org/snippets/44/
     """
 
+
     def __init__(self, page, per_page, total_count):
+        """ Pagination class constructor
+        """
         self.page = page
         self.per_page = per_page
         self.total_count = total_count
 
+
     @property
     def pages(self) -> int:
-        """Class method for pages count"""
+        """Class method for pages count
+        """
         return int(ceil(self.total_count / float(self.per_page)))
+
 
     @property
     def has_prev(self) -> bool:
-        """Class method for a previous pagination page"""
+        """Class method for a previous pagination page
+        """
         return self.page > 1
+
 
     @property
     def has_next(self) -> bool:
-        """Class method for a next pagination page"""
+        """Class method for a next pagination page
+        """
         return self.page < self.pages
 
+
     def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
-        """Class iterator for pagination Generator"""
+        """Class iterator for pagination Generator
+        """
         last = 0
         for num in range(1, self.pages + 1):
             if (
@@ -296,8 +312,3 @@ def url_for_other_page(page) -> str:
     args = request.view_args.copy()
     args["page"] = page
     return url_for(request.endpoint, **args)
-
-
-"""                                                  """
-"""  E N D   O F   P A G I N A T I O N    C L A S S  """
-"""                                                  """

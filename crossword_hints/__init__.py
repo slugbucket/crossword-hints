@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword hints initialisation
+"""
+import os
 from flask import (
     Flask,
     request,
@@ -11,7 +15,17 @@ from flask import (
     send_file,
     url_for,
 )
-import os
+from crossword_hints.views.crossword_hints import *
+# from crossword_hints.controllers import (
+#     setter_types,
+#     crossword_setters,
+#     solution_types,
+#     crossword_solutions,
+#     crossword_hints,
+#     cue_words,
+# )
+# from jur_ldap_login.controllers import login
+
 
 # Based on https://github.com/salimane/flask-mvc/blob/master/project/__init__.py
 __version__ = "1.0.25"
@@ -37,45 +51,49 @@ application.config.from_envvar("APP_SETTINGS")
 # logger.addHandler(logging.StreamHandler())
 # logger.setLevel(logging.DEBUG)
 
-from crossword_hints.views.crossword_hints import *
-from crossword_hints.controllers import (
-    setter_types,
-    crossword_setters,
-    solution_types,
-    crossword_solutions,
-    crossword_hints,
-    cue_words,
-)
-from jur_ldap_login.controllers import login
-
 application.jinja_env.globals["url_for_other_page"] = url_for_other_page
 application.jinja_env.filters["highlight_text"] = highlight_text
 
-"""                                                        """
-"""  E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G   """
-"""                                                        """
+"""
+     E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G
+"""
 
 
 @application.errorhandler(DoesNotExist)
 def handle_database_error(error):
+    """
+    Handle database error
+    """
     return (render_template("errors/409.html", errmsg=error), 409)
 
 
 @application.errorhandler(409)
 def handle_409_error(error):
+    """
+    Handle 409 error
+    """
     return (render_template("errors/409.html", errmsg=error), 409)
 
 
 @application.errorhandler(OperationalError)
 def handle_operational_error(error):
+    """
+    Handle operational error
+    """
     return (render_template("errors/409.html", errmsg=error), 409)
 
 
 @application.errorhandler(404)
-def handle_opertional_error(error):
+def handle_page_not_found_error(error):
+    """
+    Handle page not found error
+    """
     return render_template("errors/404.html", errmsg=error)
 
 
 @application.errorhandler(500)
-def handle_opertional_error(error):
+def handle_server_error(error):
+    """
+    Handle 500 server error
+    """
     return render_template("errors/500.html", errmsg=error)

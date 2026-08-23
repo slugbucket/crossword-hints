@@ -2,15 +2,18 @@
 """
 Setter types
 """
-from crossword_hints import application
-from crossword_hints.models.crossword_hints import setter_types
-from jur_ldap_login.models.users import users
-from jur_ldap_login.controllers.login import load_user
+# from crossword_hints import application
+# from crossword_hints.models.crossword_hints import setter_types
+# from jur_ldap_login.controllers.login import load_user
+from datetime import datetime
 from flask import request, flash, redirect, render_template
+from peewee import fn, DoesNotExist
 from flask_login import login_required, current_user
-from peewee import *
-from datetime import date, timedelta, datetime
-from crossword_hints.views.crossword_hints import *
+# from crossword_hints.views.crossword_hints import *
+from crossword_hints.models.crossword_hints import database, setter_types
+from crossword_hints.views.crossword_hints import Pagination
+from crossword_hints import application, sanitize_input, add_log
+from jur_ldap_login.models.users import users
 
 
 @application.route("/setter-types/", methods=["GET"], defaults={"page": 1})
@@ -19,7 +22,8 @@ def setter_types_index(page):
     """
     Setter types index route
     """
-    count = setter_types.select(fn.COUNT(setter_types.rowid)).scalar()
+    # count = setter_types.select(fn.COUNT(setter_types.rowid)).scalar()
+    count = setter_types.select().count(database=database)
     offset = (int(page) - 1) * application.config["PER_PAGE"]
     rs = (
         setter_types.select()
@@ -29,7 +33,10 @@ def setter_types_index(page):
     )
     if not rs and page != 1:
         return (
-            render_template("errors/409.html", errmsg="Requested page out of bounds"),
+            render_template(
+                "errors/409.html",
+                errmsg="Requested page out of bounds",
+            ),
             409,
         )
     return render_template(
@@ -41,11 +48,11 @@ def setter_types_index(page):
 
 
 @application.route("/setter-types/<int:id>", methods=["GET"])
-def setter_types_show(id):
+def setter_types_show(rowid):
     """
     Setter types show route
     """
-    rs = setter_types.get(setter_types.rowid == id)
+    rs = setter_types.get(setter_types.rowid == rowid)
     return render_template("setter-types/show.html", stype=rs, r=request)
 
 
@@ -71,23 +78,23 @@ def setter_types_new():
         )
     st = setter_types(name=fdata["name"], description=fdata["description"])
     st.save()
-    log = "name: %s\ndescription: %s" % (fdata["name"], fdata["description"])
+    log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
     add_log(users.get_name(current_user), "insert", "setter_types", st.rowid, log)
-    flash("Saved new setter type, %s" % fdata["name"])
+    flash(f"Saved new setter type, {fdata['name']}")
     return redirect("/setter-types")
 
 
 @application.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
 @login_required
-def setter_types_edit(id):
+def setter_types_edit(stid):
     """
     Setter types edit route
     """
     if request.method == "GET":
         try:
-            rs = setter_types.get(setter_types.rowid == id)
+            rs = setter_types.get(setter_types.rowid == stid)
         except DoesNotExist:
-            flash("Cannot find setter type record for id, %s." % id)
+            flash(f"Cannot find setter type record for id, {stid}.")
             return redirect("/setter-types")
         return render_template(
             "setter-types/edit.html", stype=rs, r=request, sbmt="Update setter type"
@@ -102,31 +109,31 @@ def setter_types_edit(id):
             sbmt=request.form["submit"],
         )
     st = setter_types(
-        rowid=id,
+        rowid=stid,
         name=fdata["name"],
         description=fdata["description"],
         updated_at=datetime.now(),
     )
     st.save()
-    log = "name: %s\ndescription: %s" % (fdata["name"], fdata["description"])
-    add_log(users.get_name(current_user), "update]", "setter_types", id, log)
-    flash("Updated setter type, %s" % fdata["name"])
+    log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
+    add_log(users.get_name(current_user), "update]", "setter_types", stid, log)
+    flash(f"Updated setter type, {fdata['name']}")
     return redirect("/setter-types")
 
 
 @application.route("/setter-types/<int:id>/delete", methods=["GET"])
 @login_required
-def setter_types_delete(id):
+def setter_types_delete(stid):
     """
     Setter types delete route
     """
     try:
-        rs = setter_types.get(setter_types.rowid == id)
+        rs = setter_types.get(setter_types.rowid == stid)
     except DoesNotExist:
-        flash("Cannot find setter type record for id, %s." % id)
+        flash(f"Cannot find setter type record for id, {stid}.")
         return redirect("/setter-types")
-    log = "name: %s\ndescription: %s" % (rs.name, rs.description)
+    log = f"name: {rs.name}\ndescription: {rs.description}"
     rs.delete_instance()
     add_log(users.get_name(current_user), "delete", "setter_types", rs.rowid, log)
-    flash("Deleted setter type, %s" % rs.name)
+    flash(f"Deleted setter type, {rs.name}")
     return redirect("/setter-types")

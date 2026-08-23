@@ -1,68 +1,57 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Crossword hints tests
+See http://flask.pocoo.org/docs/0.12/testing/ for reference for this testing
+"""
 import os
-import sys
 import unittest
-import tempfile
 import sqlite3
-import json
-import io
 
 try:
     from StringIO import StringIO
 except ModuleNotFoundError:
     from io import StringIO
-import re
-import zipfile
-import socket
-from peewee import *
-from flask import (
-    Flask,
-    request,
-    flash,
-    redirect,
-    render_template,
-    g,
-    jsonify,
-    Response,
-    send_file,
-    current_app,
-)
 import datetime
+from peewee import *
+from flask import current_app
 from crossword_hints import application
 from crossword_hints.models import crossword_hints as xwordmodel
-from jur_ldap_login.models import users
-
-"""                                           """
-""" http://flask.pocoo.org/docs/0.12/testing/ """
-"""                                           """
+# from jur_ldap_login.models import users
 
 
 class MyAnonymousUser:
-    """Anonymous user class"""
+    """Anonymous user class
+    """
 
     def __init__(self):
-        """Class constructor"""
+        """Class constructor
+        """
         self.username = "unittest"
 
     def is_authenticated(self):
-        """User authenticated method"""
+        """User authenticated method
+        """
         return True
 
     def is_active(self):
-        """Active user method"""
+        """Active user method
+        """
         return True
 
     def is_anonymous(self) -> bool:
-        """Anonymous user method"""
+        """Anonymous user method
+        """
         return False
 
     def get_id(self) -> int:
-        """Return anonymous user id"""
+        """Return anonymous user id
+        """
         return 1
 
     def get_name(self) -> str:
-        """Anonymous username method"""
+        """Anonymous username method
+        """
         return self.username
 
 
@@ -87,27 +76,26 @@ class XwordhintsTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Class method to remove db config"""
+        """Class method to remove db config
+        """
         try:
             os.close(application.config["DB_FD"])
-        except:
-            print("Error closing database %s" % application.config["DATABASE"])
+        except OSError:
+            print(f"Error closing database {application.config['DATABASE']}")
         os.unlink(application.config["DATABASE"])
 
     def setUp(self):
-        """Class method to setup test area"""
+        """Class method to setup test area
+        """
         self.app = application.test_client()
         self.numx = application.config["NUM_SOLUTION_ROWS"]
         self.numst = application.config["NUM_SOLUTION_TYPES"]
         self.numcs = application.config["NUM_CROSSWORD_SETTERS"]
         self.numsy = application.config["NUM_SETTER_TYPES"]
 
-    def tearDown(self):
-        """empty class method"""
-        pass
-
-    def loadSampleData(self):
-        """Class method to load sample data"""
+    def load_sample_data(self):
+        """Class method to load sample data
+        """
         with application.app_context():
             for sql in (
                 "setter_types",
@@ -116,14 +104,15 @@ class XwordhintsTestCase(unittest.TestCase):
                 "crossword_solutions",
                 "users",
             ):
-                with current_app.open_resource(("tests/%s.sql" % sql), mode="r") as f:
+                with current_app.open_resource((f"tests/{sql}.sql"), mode="r") as f:
                     try:
                         xwordmodel.database.execute_sql(f.read())
                     except OSError:
-                        print("Error executing SQL for %s" % sql)
+                        print(f"Error executing SQL for {sql}")
 
-    def clearSampleData(self):
-        """Class method to clear sample data"""
+    def clear_sample_data(self):
+        """Class method to clear sample data
+        """
         with application.app_context():
             for tbl in (
                 "setter_types",
@@ -132,22 +121,21 @@ class XwordhintsTestCase(unittest.TestCase):
                 "crossword_solutions",
             ):
                 try:
-                    xwordmodel.database.execute_sql("DELETE FROM %s" % tbl)
-                except sqlite3.OperationalError as e:
-                    print("clearSampleData failed for %s" % tbl)
+                    xwordmodel.database.execute_sql(f"DELETE FROM {tbl}")
+                except sqlite3.OperationalError:
+                    print(f"clear_ample_data failed for {tbl}")
 
-    def get_request(self, req, follow):
+    def get_request(self, req, follow=True):
         """Class method to follow redirect"""
         with application.app_context():
-            rv = self.app.get(req, follow_redirects=True)
+            rv = self.app.get(req, follow_redirects=follow)
             return rv
 
-    def post_request(self, req, data, follow):
-        """Class method to post request"""
-        with application.app_context():
-            rv = crossword_hints.app.post(
-                "/crossword_hints/1/copy", follow_redirects=True
-            )
+    def post_request(self, req, data, follow=True):
+        """Class method to post request
+        """
+        with application.app_context() as xwordhints:
+            rv = xwordhints.post(req, follow_redirects=follow, data=data)
             return rv
 
     def db_count(self, table):
@@ -157,13 +145,13 @@ class XwordhintsTestCase(unittest.TestCase):
         """
         with application.app_context():
             rs = application.query_db(
-                ("SELECT COUNT(rowid) AS count FROM %s" % table), one=True
+                (f"SELECT COUNT(rowid) AS count FROM {table}"), one=True
             )
             return rs[0]
 
-    """                   """
-    """   T  E  S  T  S   """
-    """                   """
+    """
+          T  E  S  T  S
+    """
 
     def test_0000_empty_db(self):
         """Test empty database"""
@@ -174,14 +162,14 @@ class XwordhintsTestCase(unittest.TestCase):
 
     def test_0001_initial_data(self):
         """Test initial data"""
-        self.loadSampleData()
+        self.load_sample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(
             nr,
             self.numx,
             f"Unexpected number of solutions, {nr} rather than {self.numsy}",
         )
-        self.clearSampleData()
+        self.clear_ample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
@@ -189,7 +177,7 @@ class XwordhintsTestCase(unittest.TestCase):
 
     def test_000_count_setter_types(self):
         """ Load sample data """
-        self.loadSampleData()
+        self.load_sample_data()
         nr = xwordmodel.setter_types.select().count()
         self.assertEqual(
             nr,
@@ -222,7 +210,7 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(
             nr,
             self.numsy + 1,
-            "New setter type failed, expected %s rather than %s" % (self.numsy + 1, nr),
+            f"New setter type failed, expected {self.numsy + 1} rather than {nr}",
         )
 
     def test_003_edit_setter_type(self):
@@ -257,15 +245,17 @@ class XwordhintsTestCase(unittest.TestCase):
 
     def test_099_clear_data(self):
         """ End of test clear data """
-        self.clearSampleData()
+        self.clear_ample_data()
         nr = xwordmodel.setter_types.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
-    """    C R O S S W O R D   S E T T E R S   """
+    """
+            C R O S S W O R D   S E T T E R S
+    """
 
     def test_101_count_crossword_setters(self):
         """ Test count setters """
-        self.loadSampleData()
+        self.load_sample_data()
         nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(
             nr,
@@ -336,7 +326,7 @@ class XwordhintsTestCase(unittest.TestCase):
             .scalar()
         )
         rv = self.app.get(
-            ("/crossword-setters/%s/delete" % csid), follow_redirects=True
+        (f"/crossword-setters/{csid}/delete"), follow_redirects=True
         )
         self.assertIn(
             b"Deleted crossword setter, Slydeshow",
@@ -347,26 +337,27 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(
             nr,
             self.numcs,
-            "Crossword setter deletion failed, found %s rather than %s"
-            % (nr, self.numcs),
+            f"Crossword setter deletion failed, found {nr} rather than {self.numcs}",
         )
 
     def test_199_clear_data(self):
         """ End of test clear data """
-        self.clearSampleData()
+        self.clear_ample_data()
         nr = xwordmodel.crossword_setters.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
-    """        S O L U T I O N   T Y P E S     """
+    """
+        S O L U T I O N   T Y P E S
+    """
 
     def test_200_count_solution_types(self):
         """ Test count solution types """
-        self.loadSampleData()
+        self.load_sample_data()
         nr = xwordmodel.solution_types.select().count()
         self.assertEqual(
             nr,
             self.numst,
-            "Expected %s solution types, but found %s" % (self.numst, nr),
+            f"Expected {self.numst} solution types, but found {nr}",
         )
 
     def test_201_list_solution_types(self):
@@ -392,7 +383,7 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(
             nr,
             self.numst + 1,
-            "New solution type failed: (expectecd %s, found %s)" % (self.numst + 1, nr),
+            f"New solution type failed: (expectecd {self.numst + 1}, found {nr})",
         )
 
     def test_203_edit_solution_type(self):
@@ -418,50 +409,60 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_204_delete_solution_type(self):
-        """ Test delete solution type """
+        """
+        Test delete solution type
+        """
         stid = (
             xwordmodel.solution_types.select(xwordmodel.solution_types.rowid)
             .where(xwordmodel.solution_types.name == "Reverse splice")
             .scalar()
         )
-        rv = self.app.get(("/solution-types/%s/delete" % stid), follow_redirects=True)
+        rv = self.app.get(f"/solution-types/{stid}/delete", follow_redirects=True)
         assert b"Deleted solution type, Reverse splice" in rv.data
         nr = xwordmodel.solution_types.select().count()
         self.assertEqual(
             nr,
             self.numst,
-            "Delete solution type failed: (expected %s, found %s.)" % (self.numst, nr),
+            f"Delete solution type failed: (expected {self.numst}, found {nr}.)",
         )
 
     def test_299_clear_data(self):
-        """ End of test clear data """
-        self.clearSampleData()
+        """
+        End of test clear data
+        """
+        self.clear_ample_data()
         nr = xwordmodel.solution_types.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
-    """             S O L U T I O N S          """
+    """
+        S O L U T I O N S
+    """
 
     def test_300_count_crossword_solutions(self):
-        """ Load sample data """
-        self.loadSampleData()
+        """
+        Load sample data
+        """
+        self.load_sample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(
             nr,
             self.numx,
-            "AssertionError(300): Expected %s rows, but found %s." % (self.numx, nr),
+            "AssertionError(300): Expected {self.numx} rows, but found {nr}.",
         )
 
     def test_301_list_crossword_solutions(self):
-        """ List solutions """
+        """ List solutions
+        """
         rv = self.app.get("/crossword-solutions/")
         self.assertIn(
             b"New crossword solution",
             rv.data,
-            "AssertionError(301): Add solution failed: Received data of %s" % rv.data,
+            "AssertionError(301): Add solution failed: Received data of {rv.data}",
         )
 
     def test_302_new_crossword_solution(self):
-        """ Test new solution """
+        """ Test new solution
+        """
         csid = (
             xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid)
             .where(xwordmodel.crossword_setters.name == "Hypnos")
@@ -489,11 +490,12 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(
             nr,
             self.numx + 1,
-            "New solution failed (expected %s, found %s)" % (self.numx, nr),
+            f"New solution failed (expected {self.numx}, found {nr})",
         )
 
     def test_303_edit_crossword_solution(self):
-        """ Test edit solution """
+        """ Test edit solution
+        """
         csid = (
             xwordmodel.crossword_setters.select(xwordmodel.crossword_setters.rowid)
             .where(xwordmodel.crossword_setters.name == "Klingsor")
@@ -515,22 +517,23 @@ class XwordhintsTestCase(unittest.TestCase):
             "updated_at": datetime.datetime.now(),
         }
         rv = self.app.post(
-            ("/crossword-solutions/%s/edit" % csid),
+            ("/crossword-solutions/{csid}/edit"),
             data=upd_solution,
             follow_redirects=True,
         )
         self.assertIn(
             b"Updated crossword solution, islands",
             rv.data,
-            "Crossword solution update failed for %s" % upd_solution["solution"],
+            f"Crossword solution update failed for {upd_solution['solution']}",
         )
 
     def test_304_show_crosword_solution(self):
-        """ Test show solution """
+        """ Test show solution
+        """
         soln = xwordmodel.crossword_solutions.get(
             xwordmodel.crossword_solutions.solution == "islands"
         )
-        rv = self.app.get("/crossword-solutions/%s" % soln)
+        rv = self.app.get("/crossword-solutions/{soln}")
         self.assertIn(
             b"One son comes down for Christmas and Easter, perhaps",
             rv.data,
@@ -538,13 +541,12 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_305_delete_crossword_solution(self):
-        """ Test delete solution """
+        """ Test delete solution
+        """
         csid = xwordmodel.crossword_solutions.get(
             xwordmodel.crossword_solutions.solution == "islands"
         )
-        rv = self.app.get(
-            ("/crossword-solutions/%s/delete" % csid), follow_redirects=True
-        )
+        rv = self.app.get(f"/crossword-solutions/{csid}/delete", follow_redirects=True)
         self.assertIn(
             b"Deleted crossword solution, islands", rv.data, "Solution deletion failed"
         )
@@ -552,21 +554,24 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertEqual(
             nr,
             self.numx,
-            "Solution deletion failed (expected %s, found %s)" % (self.numx, nr),
+            f"Solution deletion failed (expected {self.numx}, found {nr})",
         )
 
     def test_399_clear_data(self):
-        """ End of test clear data """
-        self.clearSampleData()
+        """ End of test clear data
+        """
+        self.clear_ample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
-    """ Pagination tests
+    """
+        Pagination tests
     """
 
     def test_400_solution_pagination(self):
-        """ Load sample data """
-        self.loadSampleData()
+        """ Load sample data
+        """
+        self.load_sample_data()
         rv = self.app.get("/crossword-solutions/", follow_redirects=True)
         self.assertIn(
             b'<span class="pagination nolink">&laquo; Prev</span>',
@@ -580,7 +585,8 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_401_get_next_page(self):
-        """ Test pagination next page """
+        """ Test pagination next page
+        """
         rv = self.app.get("/crossword-solutions/page/2?q=", follow_redirects=True)
         self.assertIn(
             b"ALLEGRETTO",
@@ -589,7 +595,8 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_402_get_last_page(self):
-        """ Test pagination last page """
+        """ Test pagination last page
+        """
         rv = self.app.get("/crossword-solutions/page/31?q=", follow_redirects=True)
         self.assertIn(
             b"ZEAL", rv.data, "Cannot find expected solution (ZEAL) on last page"
@@ -606,7 +613,8 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_403_more_items_per_page(self):
-        """ Test pagination more items """
+        """ Test pagination more items
+        """
         oldpp = application.config["PER_PAGE"]
         application.config["PER_PAGE"] = 60
         rv = self.app.get("/crossword-solutions/", follow_redirects=True)
@@ -624,8 +632,9 @@ class XwordhintsTestCase(unittest.TestCase):
         application.config["PER_PAGE"] = oldpp
 
     def test_499_clear_data(self):
-        """ End of test clear data """
-        self.clearSampleData()
+        """ End of test clear data
+        """
+        self.clear_ample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
@@ -633,8 +642,9 @@ class XwordhintsTestCase(unittest.TestCase):
     """
 
     def test_500_search_solution(self):
-        """ Load sample data """
-        self.loadSampleData()
+        """ Load sample data
+        """
+        self.load_sample_data()
         word = {"search_box": "CINEMA"}
         rv = self.app.post(
             "/crossword-solutions/search", data=word, follow_redirects=True
@@ -642,11 +652,12 @@ class XwordhintsTestCase(unittest.TestCase):
         self.assertIn(
             b"At home in church with mother where Rebecca and Arthur might be seen",
             rv.data,
-            "Clue solution search failed for %s." % word["search_box"],
+            f"Clue solution search failed for {word['search_box']}.",
         )
 
     def test_501_search_many_solutions(self):
-        """ Test search many solutions """
+        """ Test search many solutions
+        """
         word = {"search_box": "AGE"}
         rv = self.app.post(
             "/crossword-solutions/search", data=word, follow_redirects=True
@@ -663,7 +674,7 @@ class XwordhintsTestCase(unittest.TestCase):
             self.assertIn(
                 res,
                 rv.data,
-                "Cannot find expected solution %s in search results" % str(res),
+                f"Cannot find expected solution {str(res)} in search results",
             )
         self.assertIn(
             b'<span class="pagination nolink">Next &raquo;</span>',
@@ -677,7 +688,8 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_502_search_solution_pages(self):
-        """ Test search solution pages """
+        """ Test search solution pages
+        """
         word = {"search_box": "dac"}
         rv = self.app.post(
             "/crossword-solutions/search", data=word, follow_redirects=True
@@ -686,7 +698,7 @@ class XwordhintsTestCase(unittest.TestCase):
             self.assertIn(
                 res,
                 rv.data,
-                "Cannot find expected solution %s in search results" % str(res),
+                f"Cannot find expected solution {str(res)} in search results",
             )
         self.assertIn(
             b'<span class="pagination nolink">&laquo; Prev</span>',
@@ -729,13 +741,14 @@ class XwordhintsTestCase(unittest.TestCase):
         )
 
     def test_599_clear_data(self):
-        """ End of test clear data """
-        self.clearSampleData()
+        """ End of test clear data
+        """
+        self.clear_ample_data()
         nr = xwordmodel.crossword_solutions.select().count()
         self.assertEqual(nr, 0, "Failed to empty database after test sequence")
 
 
-__unittest = True
+__UNITTEST = True
 
 if __name__ == "__main__":
     unittest.main(exit=True)

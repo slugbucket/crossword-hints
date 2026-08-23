@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Crossword hints start script
+"""
 import os
 
 # Load the local application and login packages
