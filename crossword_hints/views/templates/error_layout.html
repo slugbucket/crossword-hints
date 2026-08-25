@@ -1,10 +1,13 @@
 {%- extends "layout.html" -%}
+{% block page_header %}
+{%- include "partials/_page_header.html" -%}
+{% endblock %}
 {%- block navmenu -%}
 {%- include "partials/_navbar.html" -%}
 {%- endblock -%}
 
 {%- block main_heading -%}
-Application error
+Crossword hints application error
 {%- endblock -%}
 
 {%- block page_content -%}

@@ -10,17 +10,14 @@ import re
 from urllib.parse import urljoin, urlparse
 from flask import request, url_for, redirect
 from peewee import fn
-
-# from crossword_hints import application
 from crossword_hints.models import crossword_hints as xwordmodel
-
-# For input (and output) sanitization. Taken from:
-# https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
 
 
 class HTMLStripper(HTMLParser):
     """
     Custom class for stripping HTML tags and entity references
+    For input (and output) sanitization. Taken from:
+    https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python (comment 16)
     """
 
     convert_charrefs = True

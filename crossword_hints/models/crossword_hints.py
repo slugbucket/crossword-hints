@@ -4,7 +4,6 @@ Crossword hints database model
 """
 
 from datetime import datetime
-import sqlite3
 from peewee import (
     AutoField,
     CharField,
@@ -14,15 +13,10 @@ from peewee import (
     ForeignKeyField,
     Model,
 )
-from crossword_hints import application
+from crossword_hints import database
 
 __all__ = ["database", "init_db"]
 
-
-database = sqlite3.SqliteDatabase(
-    application.config["DATABASE"], pragmas=(("foreign_keys", "on"),)
-)
-database.row_factory = sqlite3.Row
 """
 Initialise the database - only to be used for testing and database restore
 To bootstrap a database, either empty or with new schema:
@@ -56,15 +50,13 @@ class BaseModel(Model):
 
     """
 
-    with application.app_context():
+    class Meta:
+        """
+        A base model that will use our Sqlite database.
+        Appears to be incompatible with Flask TestCase
+        """
 
-        class Meta:
-            """
-            A base model that will use our Sqlite database.
-            Appears to be incompatible with Flask TestCase
-            """
-
-            database = database
+        database = database
 
         def __str__(self):
             return f"{self.__class__.__name__}"
@@ -158,8 +150,3 @@ class users(BaseModel):
     username = CharField(null=False, max_length=32, unique=True)
     created_at = DateTimeField(default=datetime.now())
     updated_at = DateTimeField(default=datetime.now())
-
-
-#
-#    E N D   O F   D A T A B A S E   M O D E L
-#

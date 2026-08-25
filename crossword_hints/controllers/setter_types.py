@@ -13,9 +13,9 @@ from flask_login import login_required, current_user
 
 # from crossword_hints.views.crossword_hints import *
 from crossword_hints.models.crossword_hints import database, setter_types
-from crossword_hints.views.crossword_hints import Pagination
-from crossword_hints import application, sanitize_input, add_log
-from jur_ldap_login.models.users import users
+from crossword_hints.views.crossword_hints import Pagination, sanitize_input, add_log
+from crossword_hints import application
+from jur_ldap_login.models.users import Users
 
 
 @application.route("/setter-types/", methods=["GET"], defaults={"page": 1})
@@ -81,7 +81,7 @@ def setter_types_new():
     st = setter_types(name=fdata["name"], description=fdata["description"])
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "insert", "setter_types", st.rowid, log)
+    add_log(Users.get_name(current_user), "insert", "setter_types", st.rowid, log)
     flash(f"Saved new setter type, {fdata['name']}")
     return redirect("/setter-types")
 
@@ -118,7 +118,7 @@ def setter_types_edit(stid):
     )
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "update]", "setter_types", stid, log)
+    add_log(Users.get_name(current_user), "update]", "setter_types", stid, log)
     flash(f"Updated setter type, {fdata['name']}")
     return redirect("/setter-types")
 
@@ -136,6 +136,6 @@ def setter_types_delete(stid):
         return redirect("/setter-types")
     log = f"name: {rs.name}\ndescription: {rs.description}"
     rs.delete_instance()
-    add_log(users.get_name(current_user), "delete", "setter_types", rs.rowid, log)
+    add_log(Users.get_name(current_user), "delete", "setter_types", rs.rowid, log)
     flash(f"Deleted setter type, {rs.name}")
     return redirect("/setter-types")

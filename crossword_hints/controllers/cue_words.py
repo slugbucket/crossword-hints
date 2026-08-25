@@ -2,14 +2,20 @@
 """
 Crossword clue indicators
 """
+
+import json
+from flask import (
+    request,
+    redirect,
+    Response,
+    render_template,
+)
+from flask_login import login_required
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import cue_words
-from jur_ldap_login.models.users import users
-from jur_ldap_login.controllers.login import load_user
-from flask import request, redirect, Response, render_template
-import json
-from flask_login import login_required, current_user
-from peewee import *
+
+# from jur_ldap_login.models.users import Users
+# from jur_ldap_login.controllers.login import load_user
 from crossword_hints.views.crossword_hints import sanitize_input
 
 
@@ -36,7 +42,8 @@ def crossword_cue_search():
     ary = []
     for row in rs:
         ary.append(row.cue_word)
-    ret = "{0}({1})".format(callback, json.dumps(ary))
+    # ret = "{0}({1})".format(callback, json.dumps(ary))
+    ret = f"{callback}({json.dumps(ary)})"
     return Response(ret, mimetype="text/json")
 
 
@@ -51,7 +58,7 @@ def crossword_cue_new():
         return render_template(
             "cue-words/new.html", cue=cue, r=request, sbmt="Save new cue word"
         )
-    (rc, fdata) = sanitize_input(request.form)
+    rc, fdata = sanitize_input(request.form)
     if not rc == "":
         flash(rc)
         return render_template(

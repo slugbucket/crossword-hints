@@ -10,9 +10,8 @@ from crossword_hints.models.crossword_hints import (
     solution_types,
     crossword_solutions,
 )
-from crossword_hints import application, sanitize_input
-
-# from crossword_hints.views.crossword_hints import *
+from crossword_hints import application
+from crossword_hints.views.crossword_hints import sanitize_input
 
 
 @application.route("/crossword-hints/heartbeat", methods=["GET"])
@@ -23,8 +22,8 @@ def heartbeat():
     return "OK"
 
 
-@application.route("/crossword-hints/", methods=["GET", "POST"], defaults={"path": ""})
-@application.route("/", methods=["GET", "POST"], defaults={"path": ""})
+@application.route("/crossword-hints/", methods=["GET", "POST"])
+@application.route("/", methods=["GET", "POST"])
 def crossword_hints_index():
     """
     Crossword hints index

@@ -7,10 +7,10 @@ from datetime import datetime
 from peewee import fn, DoesNotExist
 from flask import request, flash, redirect, render_template, jsonify
 from flask_login import login_required, current_user
-from crossword_hints import application, add_log
+from crossword_hints import application, logger
 from crossword_hints.models.crossword_hints import solution_types, database
-from crossword_hints.views.crossword_hints import Pagination, sanitize_input
-from jur_ldap_login.models.users import users
+from crossword_hints.views.crossword_hints import add_log, Pagination, sanitize_input
+from jur_ldap_login.models.users import Users
 
 # from jur_ldap_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
@@ -39,6 +39,9 @@ def solution_types_index(page):
             ),
             409,
         )
+    logger.debug(
+        "solution_types_index: page=%s, count=%s, offset=%s", page, count, offset
+    )
     return render_template(
         "solution-types/index.html",
         stypes=rs.dicts(),
@@ -108,7 +111,7 @@ def solution_types_new():
     st = solution_types(name=fdata["name"], description=fdata["description"])
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "insert", "solution_types", st.rowid, log)
+    add_log(Users.get_name(current_user), "insert", "solution_types", st.rowid, log)
     flash(f"Saved new solution type, {fdata['name']}")
     return redirect("/solution-types")
 
@@ -148,7 +151,7 @@ def solution_types_edit(stid):
     )
     st.save()
     log = f"name: {fdata['name']}\ndescription: {fdata['description']}"
-    add_log(users.get_name(current_user), "update", "solution_types", stid, log)
+    add_log(Users.get_name(current_user), "update", "solution_types", stid, log)
     flash(f"Updated solution type, {fdata['name']}")
     return redirect("/solution-types")
 
@@ -166,6 +169,6 @@ def solution_types_delete(stid):
         return redirect("/solution-types")
     log = f"name: {rs.name}\ndescription: {rs.description}"
     rs.delete_instance()
-    add_log(users.get_name(current_user), "delete", "solution_types", rs.rowid, log)
+    add_log(Users.get_name(current_user), "delete", "solution_types", rs.rowid, log)
     flash(f"Deleted solution type, {rs.name}")
     return redirect("/solution-types")

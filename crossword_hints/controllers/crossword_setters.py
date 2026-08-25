@@ -7,13 +7,14 @@ from datetime import datetime
 from peewee import fn, JOIN, DoesNotExist
 from flask import request, flash, redirect, render_template
 from flask_login import login_required, current_user
-from crossword_hints import application, add_log
+from crossword_hints import application
 from crossword_hints.models.crossword_hints import (
     crossword_setters,
     setter_types,
     database,
 )
 from crossword_hints.views.crossword_hints import (
+    add_log,
     Pagination,
     sanitize_input,
     get_setter_types,
