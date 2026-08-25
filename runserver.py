@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Crossword hints start script
+"""
 import os
 
 # Load the local application and login packages
 from crossword_hints import application
-#from jur_ldap_login import *
+
+# from jur_ldap_login import *
 
 # To run the application as standalone,
 # export FLASK_APP=runserver.py
@@ -13,7 +17,8 @@ from crossword_hints import application
 # uwsgi --ini crossword_hints.ini
 #
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
-    port = int(os.environ.get('PORT', 5000))
-    application.run(host='0.0.0.0', port=port)
+
+    port = int(os.environ.get("PORT", 5000))
+    application.run(host="0.0.0.0", port=port)
