@@ -16,9 +16,8 @@ from crossword_hints.views.crossword_hints import (
     get_crossword_setters,
     get_solution_types,
 )
-from jur_ldap_login.models.users import Users
-
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 
 
 @application.route("/crossword-solutions/", defaults={"page": 1})

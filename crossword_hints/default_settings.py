@@ -2,11 +2,12 @@
 import os
 
 DATABASE = "crossword_hints.db"
-try:
-    SECRET_KEY = os.environ["SECRET_KEY"]
-except KeyError:
-    SECRET_KEY = "HJuyjrRtyhy8hhjEDgYujNKUDL2356H"
+SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(24)
 TESTING = False
-LDAP_PROVIDER_URL = "ldap://localhost:389"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+GOOGLE_DISCOVERY_URL = (
+    "https://accounts.google.com/.well-known/openid-configuration"
+)
 # Pagination settings
 PER_PAGE = 25

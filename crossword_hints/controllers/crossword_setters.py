@@ -19,9 +19,8 @@ from crossword_hints.views.crossword_hints import (
     sanitize_input,
     get_setter_types,
 )
-from jur_ldap_login.models.users import Users
-
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
 
 

@@ -5,7 +5,6 @@ Setter types
 
 # from crossword_hints import application
 # from crossword_hints.models.crossword_hints import setter_types
-# from jur_ldap_login.controllers.login import load_user
 from datetime import datetime
 from flask import request, flash, redirect, render_template
 from peewee import fn, DoesNotExist
@@ -15,7 +14,8 @@ from flask_login import login_required, current_user
 from crossword_hints.models.crossword_hints import database, setter_types
 from crossword_hints.views.crossword_hints import Pagination, sanitize_input, add_log
 from crossword_hints import application
-from jur_ldap_login.models.users import Users
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 
 
 @application.route("/setter-types/", methods=["GET"], defaults={"page": 1})

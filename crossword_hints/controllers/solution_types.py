@@ -10,9 +10,8 @@ from flask_login import login_required, current_user
 from crossword_hints import application, logger
 from crossword_hints.models.crossword_hints import solution_types, database
 from crossword_hints.views.crossword_hints import add_log, Pagination, sanitize_input
-from jur_ldap_login.models.users import Users
-
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
 
 

@@ -100,3 +100,10 @@ class Users(BaseModel):
         Return username
         """
         return self.username
+
+    def current_user(self):
+        """
+        Return current user
+        """
+        # return self.username
+        return "julian"
