@@ -1,0 +1,6 @@
+<div id="nav">
+  <p>
+    <ul class="navbar"><li><a href="/crossword-hints">Hints</a></li><li><a href="/crossword-solutions">Solutions</a></li><li><a href="/crossword-setters">Setters</a></li><li><a href="/setter-types">Setter types</a></li><li><a href="/solution-types">Solution types</a></li></ul>
+    {% if current_user.get_id() is not none %}Logged in {{ current_user.get_name() }}&nbsp; <a href="/logout">Logout</a>{% endif %}
+  </p>
+</div><!-- nav -->
