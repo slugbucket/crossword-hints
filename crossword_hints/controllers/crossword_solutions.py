@@ -231,7 +231,7 @@ def crossword_solutions_new():
     return redirect("/crossword-solutions/")
 
 
-@application.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/crossword-solutions/<int:csid>/edit", methods=["GET", "POST"])
 @login_required
 def crossword_solutions_edit(csid):
     """
@@ -286,7 +286,7 @@ def crossword_solutions_edit(csid):
     return redirect("/crossword-solutions")
 
 
-@application.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
+@application.route("/crossword-solutions/<int:csid>/delete", methods=["GET"])
 @login_required
 def crossword_solutions_delete(csid):
     """ "

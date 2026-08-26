@@ -11,7 +11,11 @@ from flask_login import (
 import requests
 from oauthlib.oauth2 import WebApplicationClient
 from crossword_hints import application
-from crossword_hints.default_settings import GOOGLE_CLIENT_ID
+from crossword_hints.default_settings import (
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_DISCOVERY_URL,
+)
 from crossword_hints.views.crossword_hints import add_log
 from jur_oauth2_login.models.users import Users
 
@@ -25,11 +29,11 @@ client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 
 @login_manager.user_loader
-def load_user(id):
+def load_user(uid):
     """
     Flask-Login helper to retrieve a user from our db
     """
-    return Users.get(Users.rowid == int(id))
+    return Users.get(Users.rowid == uid) #  Users.get_name(uid)
 
 
 def get_google_provider_cfg():
@@ -107,9 +111,8 @@ def callback():
 
     # Create a user in our db with the information provided
     # by Google
-    user = Users.get_or_create(
-        username=users_email,
-        defaults={"created_at": None, "updated_at": None},
+    user = Users.get(
+        username=users_email
     )[0]
 
     # Begin user session by logging the user in
@@ -128,8 +131,8 @@ def logout():
         "logout",
         "user",
         Users.get_id(current_user),
-        ("Successful logout for %s" % u),
+        f"Successful logout for {u}",
     )
     logout_user()
-    flash("%s logout successful. Please close browser for best security." % u)
+    flash(f"{u} logout successful. Please close browser for best security.")
     return redirect("/")

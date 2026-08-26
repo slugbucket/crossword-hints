@@ -49,12 +49,12 @@ def setter_types_index(page):
     )
 
 
-@application.route("/setter-types/<int:id>", methods=["GET"])
-def setter_types_show(rowid):
+@application.route("/setter-types/<int:stid>", methods=["GET"])
+def setter_types_show(stid):
     """
     Setter types show route
     """
-    rs = setter_types.get(setter_types.rowid == rowid)
+    rs = setter_types.get(setter_types.rowid == stid)
     return render_template("setter-types/show.html", stype=rs, r=request)
 
 
@@ -86,7 +86,7 @@ def setter_types_new():
     return redirect("/setter-types")
 
 
-@application.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/setter-types/<int:stid>/edit", methods=["GET", "POST"])
 @login_required
 def setter_types_edit(stid):
     """
@@ -123,7 +123,7 @@ def setter_types_edit(stid):
     return redirect("/setter-types")
 
 
-@application.route("/setter-types/<int:id>/delete", methods=["GET"])
+@application.route("/setter-types/<int:stid>/delete", methods=["GET"])
 @login_required
 def setter_types_delete(stid):
     """

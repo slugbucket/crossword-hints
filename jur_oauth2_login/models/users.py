@@ -4,9 +4,7 @@ Users model for LDAP auth
 """
 from datetime import datetime
 import sqlite3
-# from peewee import AutoField, CharField, DateTimeField, SqliteDatabase
 from peewee import Model, AutoField, CharField, DateTimeField, SqliteDatabase
-import ldap
 from crossword_hints import application
 
 __all__ = ["database"]
@@ -16,14 +14,6 @@ database = SqliteDatabase(
     application.config["DATABASE"], pragmas=(("foreign_keys", "on"),)
 )
 database.row_factory = sqlite3.Row
-
-
-def get_ldap_connection():
-    """
-    Get directory connection
-    """
-    conn = ldap.initialize(application.config["LDAP_PROVIDER_URL"])
-    return conn
 
 
 class BaseModel(Model):
@@ -58,15 +48,6 @@ class Users(BaseModel):
 
 
     @staticmethod
-    def try_login(username, password):
-        """
-        Attempt login
-        """
-        # return username
-        conn = get_ldap_connection()
-        conn.simple_bind_s(f"uid={username},ou=People,dc=my-domain,dc=com", password)
-
-
     def is_authenticated(self):
         """"
         Confirm authenticated user
@@ -99,11 +80,11 @@ class Users(BaseModel):
         """
         Return username
         """
-        return self.username
+        return self
 
-    def current_user(self):
-        """
-        Return current user
-        """
-        # return self.username
-        return "julian"
+    # def current_user(self):
+    #     """
+    #     Return current user
+    #     """
+    #     # return self.username
+    #     return "julian"
