@@ -5,7 +5,6 @@ Setter types
 
 # from crossword_hints import application
 # from crossword_hints.models.crossword_hints import setter_types
-# from jur_ldap_login.controllers.login import load_user
 from datetime import datetime
 from flask import request, flash, redirect, render_template
 from peewee import fn, DoesNotExist
@@ -15,7 +14,8 @@ from flask_login import login_required, current_user
 from crossword_hints.models.crossword_hints import database, setter_types
 from crossword_hints.views.crossword_hints import Pagination, sanitize_input, add_log
 from crossword_hints import application
-from jur_ldap_login.models.users import Users
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 
 
 @application.route("/setter-types/", methods=["GET"], defaults={"page": 1})
@@ -49,12 +49,12 @@ def setter_types_index(page):
     )
 
 
-@application.route("/setter-types/<int:id>", methods=["GET"])
-def setter_types_show(rowid):
+@application.route("/setter-types/<int:stid>", methods=["GET"])
+def setter_types_show(stid):
     """
     Setter types show route
     """
-    rs = setter_types.get(setter_types.rowid == rowid)
+    rs = setter_types.get(setter_types.rowid == stid)
     return render_template("setter-types/show.html", stype=rs, r=request)
 
 
@@ -86,7 +86,7 @@ def setter_types_new():
     return redirect("/setter-types")
 
 
-@application.route("/setter-types/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/setter-types/<int:stid>/edit", methods=["GET", "POST"])
 @login_required
 def setter_types_edit(stid):
     """
@@ -123,7 +123,7 @@ def setter_types_edit(stid):
     return redirect("/setter-types")
 
 
-@application.route("/setter-types/<int:id>/delete", methods=["GET"])
+@application.route("/setter-types/<int:stid>/delete", methods=["GET"])
 @login_required
 def setter_types_delete(stid):
     """

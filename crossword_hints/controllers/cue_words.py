@@ -14,8 +14,8 @@ from flask_login import login_required
 from crossword_hints import application
 from crossword_hints.models.crossword_hints import cue_words
 
-# from jur_ldap_login.models.users import Users
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 from crossword_hints.views.crossword_hints import sanitize_input
 
 

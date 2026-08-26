@@ -16,9 +16,8 @@ from crossword_hints.views.crossword_hints import (
     get_crossword_setters,
     get_solution_types,
 )
-from jur_ldap_login.models.users import Users
-
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 
 
 @application.route("/crossword-solutions/", defaults={"page": 1})
@@ -232,7 +231,7 @@ def crossword_solutions_new():
     return redirect("/crossword-solutions/")
 
 
-@application.route("/crossword-solutions/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/crossword-solutions/<int:csid>/edit", methods=["GET", "POST"])
 @login_required
 def crossword_solutions_edit(csid):
     """
@@ -287,7 +286,7 @@ def crossword_solutions_edit(csid):
     return redirect("/crossword-solutions")
 
 
-@application.route("/crossword-solutions/<int:id>/delete", methods=["GET"])
+@application.route("/crossword-solutions/<int:csid>/delete", methods=["GET"])
 @login_required
 def crossword_solutions_delete(csid):
     """ "

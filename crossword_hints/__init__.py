@@ -27,7 +27,7 @@ from werkzeug.exceptions import NotFound, InternalServerError
 #     crossword_hints,
 #     cue_words,
 # )
-# from jur_ldap_login.controllers import login
+# from jur_oauth2_login.controllers import login
 
 # Based on https://github.com/salimane/flask-mvc/blob/master/project/__init__.py
 __version__ = "1.0.25"
@@ -72,7 +72,7 @@ from crossword_hints.controllers import (
 
 
 def custom_error_handler(e):
-    """ "     E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G"""
+    """     E  X  C  E  P  T  I  O  N    H  A  N  D  L  I  N  G    """
     return jsonify({"error": str(e)})  # Return a JSON response with the error message
 
 

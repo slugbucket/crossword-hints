@@ -19,9 +19,8 @@ from crossword_hints.views.crossword_hints import (
     sanitize_input,
     get_setter_types,
 )
-from jur_ldap_login.models.users import Users
-
-# from jur_ldap_login.controllers.login import load_user
+from jur_oauth2_login.models.users import Users
+from jur_oauth2_login.controllers.login import load_user
 # from crossword_hints.views.crossword_hints import *
 
 
@@ -61,7 +60,7 @@ def crossword_setters_index(page):
     )
 
 
-@application.route("/crossword-setters/<int:id>", methods=["GET"])
+@application.route("/crossword-setters/<int:csid>", methods=["GET"])
 def crossword_setters_show(csid):
     """
     Show a new crossword setter
@@ -134,7 +133,7 @@ def crossword_setters_new():
     return redirect("/crossword-setters/")
 
 
-@application.route("/crossword-setters/<int:id>/edit", methods=["GET", "POST"])
+@application.route("/crossword-setters/<int:csid>/edit", methods=["GET", "POST"])
 @login_required
 def crossword_setters_edit(csid):
     """
@@ -180,7 +179,7 @@ def crossword_setters_edit(csid):
     return redirect("/crossword-setters")
 
 
-@application.route("/crossword-setters/<int:id>/delete", methods=["GET"])
+@application.route("/crossword-setters/<int:csid>/delete", methods=["GET"])
 @login_required
 def crossword_setters_delete(csid):
     """
