@@ -1,0 +1,14 @@
+{%- extends "layouts/crossword-hints.html" %}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>Crossword setter type - {{ stype['name']}}</h2>
+
+{%- if stype['description'] -%}
+<p>
+<strong>Description</strong>: {{ stype['description']|safe }}
+</p>
+{%- endif -%}
+<br />
+<a href="/setter-types/{{ stype['rowid'] }}/edit">Edit</a> | <a href="/setter-types">Back to index</a>
+{% endblock %}

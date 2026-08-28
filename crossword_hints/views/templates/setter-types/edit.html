@@ -1,0 +1,12 @@
+{%- extends "layouts/crossword-hints.html" %}
+{%- block page_heading -%}
+Crossword Setter types
+{%- endblock -%}
+
+{%- block page_content -%}
+{{ super() }}
+<h2>Edit crossword setter type</h2>
+
+{% include "setter-types/_form.html" %}
+
+{% endblock %}

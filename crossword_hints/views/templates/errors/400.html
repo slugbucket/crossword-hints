@@ -1,0 +1,8 @@
+{%- extends "error_layout.html" -%}
+{%- block fourzerozero -%}
+<p>
+A bad request has been received: {{ errmsg }}
+</p>
+<p>Back to <a href="/">cue search</a>.
+{%- endblock -%}
+{{ super() }}
