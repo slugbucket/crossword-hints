@@ -13,8 +13,8 @@ Create, update or delete crossword solutions and add new trigger words.
 <tr class="{{ loop.cycle('ma_row_dark', 'ma_row_light') }}">
     <td><a href="/crossword-solutions/{{ sln['csid']}}">{{ sln['solution'] }}</a></td>
     <td>{{ sln['clue'] }}</td><td>{{ sln['setter'] }}</td><td>{{ sln['soltype'] }}</td>
-    <td><a href="/crossword-solutions/{{ sln['csid'] }}/edit" title="Edit {{ sln['solution'] }}"><img src="/static/images/edit-icon.png"</a>&nbsp;
-        <a onclick="return(confirm('Delete {{ sln['solution'] }}?'));" href="/crossword-solutions/{{ sln['csid'] }}/delete" title="Delete {{ sln['solution'] }}"><img src="/static/images/delete-icon.png" /></a></td>
+    <td><a href="/crossword-solutions/{{ sln['csid'] }}/edit" title="Edit {{ sln.solution }}"><img src="/static/images/edit-icon.png" alt="Edit {{ sln.solution }}" /></a>&nbsp;
+        <a onclick="return confirm('Delete {{ sln.solution }}?');" href="/crossword-solutions/{{ sln['csid'] }}/delete" title="Delete {{ sln.solution }}"><img src="/static/images/delete-icon.png" alt="Delete {{ sln.solution }}" /></a></td>
 </tr>
 {%- endfor -%}
 </table>

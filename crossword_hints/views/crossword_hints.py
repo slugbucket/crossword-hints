@@ -236,13 +236,6 @@ def validate_id(vstr) -> tuple:
     return ("", vstr)
 
 
-# def next_id(tbl): Not used
-#     """
-#     Need to calculate the next rowid value for a table - not used with SQLite3
-#     """
-#     return (xwordmodel.database.execute_sql("SELECT MAX(rowid)+1 FROM {tbl}", scalar()))
-
-
 class Pagination:
     """
      P A G I N A T I O N    C L A S S

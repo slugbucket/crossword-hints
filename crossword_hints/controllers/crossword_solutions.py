@@ -4,6 +4,7 @@ Crossword solutions
 """
 
 from datetime import datetime
+import re
 from flask import request, flash, redirect, render_template, session
 from flask_login import login_required, current_user
 from peewee import fn, JOIN, DoesNotExist
@@ -17,7 +18,6 @@ from crossword_hints.views.crossword_hints import (
     get_solution_types,
 )
 from jur_oauth2_login.models.users import Users
-from jur_oauth2_login.controllers.login import load_user
 
 
 @application.route("/crossword-solutions/", defaults={"page": 1})
@@ -35,9 +35,14 @@ def crossword_solution_index(page):
     """
     if "solutions_page" not in session:
         session["solutions_page"] = page
-    elif page != 1:
-        session["solutions_page"] = page
-    page_num = int(session["solutions_page"])
+    else:  # "solutions_page" in session
+        if re.match(r"^.*/crossword-solutions.*", request.referrer):
+            session["solutions_page"] = page
+            # print(f"Came from other solutions page, update the session['solutions_page'] to {page}")
+        #else:  # useful for debugging, but not needed in production
+        #    pass
+        #    print(f"clicked on solutions link, page = {page} with session['solutions_page'] = {session['solutions_page']}. Do nothing.")
+    page_num = session["solutions_page"]
 
     term = ""
     # JUR: This can most likely be removed as it is not used anywhere.

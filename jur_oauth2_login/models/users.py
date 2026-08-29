@@ -47,7 +47,6 @@ class Users(BaseModel):
     updated_at = DateTimeField(default=datetime.now())
 
 
-    @staticmethod
     def is_authenticated(self):
         """"
         Confirm authenticated user
@@ -80,11 +79,4 @@ class Users(BaseModel):
         """
         Return username
         """
-        return self
-
-    # def current_user(self):
-    #     """
-    #     Return current user
-    #     """
-    #     # return self.username
-    #     return "julian"
+        return self.username

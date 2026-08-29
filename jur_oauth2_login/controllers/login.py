@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Crossword hints login controller"""
 import json
-from flask import request, redirect, render_template, flash
+from flask import request, redirect, flash
 from flask_login import (
     LoginManager,
     current_user,
@@ -125,6 +127,8 @@ def callback():
 @application.route("/logout")
 @login_required
 def logout():
+    """
+    Logout user and redirect to home page"""
     u = Users.get_name(current_user)
     add_log(
         u,

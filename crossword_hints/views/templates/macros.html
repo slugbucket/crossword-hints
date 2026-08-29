@@ -85,7 +85,7 @@
   <ul>
       {%- if pagination.has_prev -%}
         <li><a href="{{ url_for_other_page(pagination.page - 1) }}?q={{ search_term }}">&laquo; Prev</a></li>
-        {%- else -%}
+      {%- else -%}
           <li><span class="pagination nolink">&laquo; Prev</span></li>
       {% endif %}
   {%- for page in pagination.iter_pages() %}
